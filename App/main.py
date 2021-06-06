@@ -21,6 +21,7 @@ from html2docx import html2docx
 from API.google_trans_API import GoogleTranslate
 from flashcard_list_manager import FlashcardManager
 from help_page import HelpWindow
+import datetime
 
 
 class MainWindow(MainUIWidget):
@@ -136,7 +137,7 @@ class MainWindow(MainUIWidget):
             context_bold = "".join(split_context)
             self.autofill_flashcard(context_bold)
             self.handle_lookup(word, context)
-            
+
     def get_sel_in_context(self):
         cursor = self.browser.textCursor()
         selection = self.browser.textCursor().selectedText()
@@ -161,7 +162,7 @@ class MainWindow(MainUIWidget):
                 break
         context = cursor.selectedText()
         if not_reached_lower_limit:
-            context = context + "..."
+            context = context.strip() + "..."
         if not_reached_upper_limit:
             context = "..." + context
         return context
@@ -169,6 +170,7 @@ class MainWindow(MainUIWidget):
     def autofill_flashcard(self,context):
         self.flash_front.clear()
         self.flash_front.setHtml(context)
+
 
     def handle_lookup(self, selection, context):
         if selection != "":
@@ -239,7 +241,7 @@ class MainWindow(MainUIWidget):
                         f.write(file_data)
     
     def open_file(self):
-        file_path = QFileDialog.getOpenFileName(self,'select a document or audio file')[0]
+        file_path = QFileDialog.getOpenFileName(self,'select a text file to open')[0]
         resources_path = self.get_folder_from_path(file_path)
         filetype = self.get_file_extension_from_path(file_path)
         self.browser.document().setMetaInformation(QTextDocument.DocumentUrl, QtCore.QUrl.fromLocalFile(resources_path).toString())
@@ -283,6 +285,11 @@ class MainWindow(MainUIWidget):
         
 
     def add_flashcard(self): # this appends card to json file
+        pos = self.audio_player.position()
+        dur = self.audio_player.duration()
+        start_time = self.get_start_time(pos,5000)
+        end_time = self.get_end_time(pos,5000,dur)
+        
         front = self.flash_front.toHtml()
         back = self.flash_back.toHtml()
         front_html = BeautifulSoup(front,"html.parser")
@@ -384,6 +391,28 @@ class MainWindow(MainUIWidget):
         self.audio_slider.blockSignals(True)
         self.audio_slider.setValue(position)
         self.audio_slider.blockSignals(False)
+        # get audio timestamp
+        min_mil_sec = 5000
+        current_pos_mil = position
+        duration = self.audio_player.duration()
+        start_time = self.get_start_time(current_pos_mil,min_mil_sec)
+        end_time = self.get_end_time(current_pos_mil,min_mil_sec,duration)
+        new_string = f"Timestamps: {datetime.timedelta(seconds=round(start_time/1000))}--{datetime.timedelta(seconds=round(end_time/1000))}"
+        self.flash_audio_label.setText(new_string)
+    
+    def get_start_time(self,pos,min_mil):
+        if pos < min_mil:
+            return 0
+        else:
+            return pos - min_mil
+    def get_end_time(self,pos,min_mil,dur):
+        if pos < dur - min_mil:
+            return pos + min_mil
+        else:
+            return dur
+
+
+
 
     def get_filename_from_path(self, path):
         filename = os.path.basename(path)
