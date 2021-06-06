@@ -1,0 +1,7 @@
+for dist/ 
+.vscode
+*.docx
+venv/
+*.ico
+*_pycache_*
+unused APIs/

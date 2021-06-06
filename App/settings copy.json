@@ -1,0 +1,132 @@
+{
+    "autofill_flashcards": true,
+    "dark_theme": false,
+    "discourse_highlighter": {
+        "a1connector": {
+            "color": "255,0,0",
+            "list": [
+                "dengan",
+                "juga",
+                "tetapi",
+                "dan",
+                "atau",
+                "nah"
+            ]
+        },
+        "b1referral": {
+            "color": "255,0,0",
+            "list": [
+                "selain",
+                "mengenai",
+                "tentang",
+                "yaitu",
+                "yang",
+                "melewati"
+            ]
+        },
+        "a2sequential": {
+            "color": "255,0,0",
+            "list": [
+                "lalu",
+                "setelah",
+                "sesudah",
+                "selanjutnya",
+                "antara",
+                "dari",
+                "sampai",
+                "sejak",
+                "hingga",
+                "selama",
+                "sepanjang",
+                "melalui",
+                "kemudian"
+            ]
+        },
+        "numbers": {
+            "color": "255,0,0",
+            "list": [
+                "pertama",
+                "terakhir",
+                "kedua",
+                "sisir",
+                "helai",
+                "ranting",
+                "satuan",
+                "lusin",
+                "setengah",
+                "seperempat",
+                "sepasang"
+            ]
+        },
+        "a3directional": {
+            "color": "255,0,0",
+            "list": [
+                "di",
+                "ke",
+                "dari",
+                "pada",
+                "daripada",
+                "kepada"
+            ]
+        },
+        "cause/consequence": {
+            "color": "255,0,0",
+            "list": [
+                "untuk",
+                "oleh",
+                "karena",
+                "supaya",
+                "agar",
+                "oleh sebab",
+                "jadi",
+                "jika",
+                "kalau",
+                "namun"
+            ]
+        }
+    },
+    "tabs": [
+        [
+            "Google Translate WORD",
+            "https://translate.google.com/?sl=id&tl=en&text=WORD&op=translate"
+        ],
+        [
+            "Google Translate SENT",
+            "https://translate.google.com/?sl=id&tl=en&text=SENT&op=translate"
+        ],
+        [
+            "Google Images",
+            "https://www.google.com/search?site=&tbm=isch&source=hp&biw=1873&bih=990&q=WORD"
+        ],
+        [
+            "Glosbse",
+            "https://glosbe.com/id/en/WORD"
+        ],
+        [
+            "KBBI",
+            "https://kbbi.web.id/WORD"
+        ]
+    ],
+    "default_tabs": [
+        [
+            "Google Translate WORD",
+            "https://translate.google.com/?sl=id&tl=en&text=WORD&op=translate"
+        ],
+        [
+            "Google Translate SENT",
+            "https://translate.google.com/?sl=id&tl=en&text=SENT&op=translate"
+        ],
+        [
+            "Google Images",
+            "https://www.google.com/search?site=&tbm=isch&source=hp&biw=1873&bih=990&q=WORD"
+        ],
+        [
+            "Glosbse",
+            "https://glosbe.com/id/en/WORD"
+        ],
+        [
+            "KBBI",
+            "https://kbbi.web.id/WORD"
+        ]
+    ]
+}
