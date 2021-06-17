@@ -311,7 +311,7 @@ class MainWindow(MainUIWidget):
         if back_text == "\n" and image is None:
             self.display_msg("Oops!","No text or images were found for back of the Flashcard.")
             return 0
-        flash_dict = {"front":str(front), "back":str(back),"img":source}
+        flash_dict = {"front":str(front), "back":str(back),"img":source,"audio":[start_time,end_time]}
         path = "App\\flashcards.json"
         self.flash_front.clear()
         self.flash_back.clear()
