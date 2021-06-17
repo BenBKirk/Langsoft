@@ -49,28 +49,31 @@ class FlashcardManager(QWidget):
     def save_flashcards_to_json(self):
         # loop through and get html data from widgets, to make a dict ready to save as json
         tempDict = {"cards":[]}
-
+        print(self.text_edits_front.keys())
 
         # for i in range(self.listTableWidget.rowCount()):
         if self.list_table_widget.rowCount() != False:
-
+        # try to get the current state of the widgets (how many exist)
             for key in self.text_edits_front.keys():
                 i = int(key)
                 card = {}
-                card["front"] = str(self.makeSoup(self.text_edits_front[i].toHtml()).body)
-                card["back"] = str(self.makeSoup(self.text_edits_back[i].toHtml()).body)
-                img = None
                 try:
-                    imgSoup = self.makeSoup(self.text_edits_img[i].toHtml())
-                    img = imgSoup.find("img")["src"]
-                except:
-                    pass
+                    card["front"] = str(self.makeSoup(self.text_edits_front[key].toHtml()).body)
+                    card["back"] = str(self.makeSoup(self.text_edits_back[key].toHtml()).body)
+                    img = None
+                    try:
+                        imgSoup = self.makeSoup(self.text_edits_img[key].toHtml())
+                        img = imgSoup.find("img")["src"]
+                    except:
+                        pass
 
-                if img is not None:
-                    card["img"] = str(img)
-                else:
-                    card["img"] = ""
-                tempDict["cards"].append(card)
+                    if img is not None:
+                        card["img"] = str(img)
+                    else:
+                        card["img"] = ""
+                    tempDict["cards"].append(card)
+                except Exception as e:
+                    print(f"THERE WAS AN ERROR WHEN SAVING FLASHCARDS --- {e}")
 
         #delete old json and save new one
         path = os.path.join(os.getcwd(),"App","flashcards.json")
@@ -110,10 +113,6 @@ class FlashcardManager(QWidget):
             self.list_table_widget.setCellWidget(i,0,btn)
         self.list_table_widget.resizeColumnsToContents()
         self.list_table_widget.resizeRowsToContents()
-        print(self.text_edits_front)
-        print(self.text_edits_back)
-        print(self.text_edits_img)
-
 
     def create_text_edit_widget(self,html):
         text_edit_widget = QTextEdit()
@@ -130,18 +129,22 @@ class FlashcardManager(QWidget):
     
     def remove_table_row(self):
         current_index = self.list_table_widget.currentIndex().row()
+        # get keys from dict of widgets
+        the_keys = self.text_edits_front.keys()
+        for i, key in enumerate(the_keys):
+            if i == current_index:
+                key_index = int(key)
         try:
-
             self.list_table_widget.removeRow(current_index)
-            del self.text_edits_front[current_index]
-            del self.text_edits_back[current_index]
+            self.text_edits_front.pop(key_index)
+            self.text_edits_back.pop(key_index)
             try:
-                del self.text_edits_img[current_index]
-            except KeyError:
+                self.text_edits_img.pop(key_index)
+            except Exception as e:
                 pass
         except Exception as e:
-            print(e)
-        print(current_index)
+            print(f"THERE WAS AN ERROR WHEN REMOVING ITEM FROM LIST AT INDEX {current_index} --- {e}")
+        print(self.text_edits_front.keys())
         
 
 if __name__ == "__main__":
