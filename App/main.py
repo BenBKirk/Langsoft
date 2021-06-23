@@ -69,7 +69,7 @@ class MainWindow(MainUIWidget):
         self.skip_back_shortcut.activated.connect(self.skip_back)
         self.skip_forward_shortcut = QShortcut(QtGui.QKeySequence("Alt+Right"),self)
         self.skip_forward_shortcut.activated.connect(self.skip_forward)
-    
+
     def clear_formating(self):
         cursor = self.browser.textCursor()
         the_format = QTextCharFormat()
@@ -221,25 +221,29 @@ class MainWindow(MainUIWidget):
 
     def save_file(self):
         file_path = QFileDialog.getSaveFileName(self, 'Save File','',"HTML Files (*.html);; TXT Files (*.txt) ;; DOCX Files (*.docx)")[0]
-        file_type = self.get_file_extension_from_path(file_path)
-        filename = self.get_filename_from_path(file_path)
         if file_path:
+            file_type = self.get_file_extension_from_path(file_path)
+            filename = self.get_filename_from_path(file_path)
             if file_type == '.txt':
                 file_data = self.browser.toPlainText()
                 with open(file_path, 'w', encoding='utf8', errors='ignore') as f:
                         f.write(file_data)
-            if file_type == '.html':
+            elif file_type == '.html':
                 file_data = self.browser.toHtml()
                 with open(file_path, 'w', encoding='utf8', errors='ignore') as f:
                         f.write(file_data)
-            if file_type == '.docx':
+            elif file_type == '.docx':
                 file_data = self.browser.toHtml()
                 file_data = html2docx(file_data,title=filename).getvalue()
                 with open(file_path, 'wb') as f:
                         f.write(file_data)
+            else:
+                self.display_msg("Error", f'Only ".txt", ".html", and ".docx" file extensions are supported.')
     
     def open_file(self):
         file_path = QFileDialog.getOpenFileName(self,'select a document or audio file')[0]
+        if not file_path:
+            return
         resources_path = self.get_folder_from_path(file_path)
         filetype = self.get_file_extension_from_path(file_path)
         self.browser.document().setMetaInformation(QTextDocument.DocumentUrl, QtCore.QUrl.fromLocalFile(resources_path).toString())
@@ -251,7 +255,7 @@ class MainWindow(MainUIWidget):
             self.load_audio(file_path)
             return
         if filetype == ".html" or filetype == ".htm" or filetype == ".mhtml" or filetype == ".mht":
-            with open(file_path,'r',encoding='utf8', errors='ignore') as f: #                 
+            with open(file_path,'r',encoding='utf8', errors='ignore') as f:
                 data = f.read()
                 # print(data)
                 self.browser.clear()
@@ -391,9 +395,11 @@ class MainWindow(MainUIWidget):
         return name
     
     def get_file_extension_from_path(self, path):
-        filename = os.path.basename(path)
-        extension = "." + filename.split('.')[1]
-        return extension
+        parts = os.path.splitext(path)
+        if len(parts) == 2:
+            return parts[1]
+        else:
+            return None
 
     def get_folder_from_path(self, path):
         folder = os.path.dirname(path)
@@ -472,10 +478,6 @@ class MainWindow(MainUIWidget):
             i = f"\\b{i}\\b"
             new_list.append(i)
         return new_list
-
-
-
-
 
 
 if __name__ == "__main__":
