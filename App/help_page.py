@@ -12,7 +12,7 @@ class HelpWindow(QWidget):
         super(HelpWindow, self).__init__()
         self.resize(800,800)
         self.setWindowTitle("Help")
-        self.setWindowIcon(QtGui.QIcon("App\\img\\help.png"))
+        self.setWindowIcon(QtGui.QIcon(os.path.join("App", "img", "help.png")))
         self.help_browser = QTextBrowser()
         # self.help_browser.loadResource(.HtmlResource, QUrl(os.path.join(os.getcwd(),"App","Help File.html")))
         # import html file and put it in text browser

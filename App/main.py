@@ -305,12 +305,12 @@ class MainWindow(MainUIWidget):
             self.display_msg("Oops!","No text or images were found for back of the Flashcard.")
             return 0
         flash_dict = {"front":str(front), "back":str(back),"img":source}
-        path = "App\\flashcards.json"
+        cards_path = os.path.join("App", "flashcards.json")
         self.flash_front.clear()
         self.flash_back.clear()
-        if not os.path.exists(path):
+        if not os.path.exists(cards_path):
             self.reset_flashcard_json()
-        with open(path,"r+") as f:
+        with open(cards_path,"r+") as f:
             data = json.load(f)
             data["cards"].append(flash_dict)
             f.seek(0)
@@ -322,7 +322,7 @@ class MainWindow(MainUIWidget):
             return 0
         deck_name = self.get_filename_from_path(filepath)
 
-        with open("App\\flashcards.json","r+") as f:
+        with open(os.path.join("App", "flashcards.json"),"r+") as f:
             data = json.load(f)
         if data["cards"] == []:
             self.display_msg("Oops!", "There are no cards to make an anki deck with.\nUse the flashcard generator in the top right corner to make some.")
@@ -332,11 +332,11 @@ class MainWindow(MainUIWidget):
 
     def reset_flashcard_json(self):
         # create/clear flashcards.json
-        path = "App\\flashcards.json"
+        cards_path = os.path.join("App", "flashcards.json")
         blank = {"cards":[]}
-        if os.path.exists(path):
-            os.remove(path)
-        with open("App\\flashcards.json",'w+') as f:
+        if os.path.exists(cards_path):
+            os.remove(cards_path)
+        with open(cards_path,'w+') as f:
             json.dump(blank,f)
     
     def load_audio(self, filePath):
@@ -355,15 +355,15 @@ class MainWindow(MainUIWidget):
         if state == 1:
             self.audio_player.pause()
             if self.json_settings["dark_theme"]:
-                self.play_action.setIcon(QIcon("App\\img\\play_dark.png"))
+                self.play_action.setIcon(QIcon(os.path.join("App", "img", "play_dark.png")))
             else:
-                self.play_action.setIcon(QIcon("App\\img\\play.png"))
+                self.play_action.setIcon(QIcon(os.path.join("App", "img", "play.png")))
         if state == 0 or state == 2:
             self.audio_player.play()
             if self.json_settings["dark_theme"]:
-                self.play_action.setIcon(QIcon("App\\img\\pause_dark.png"))
+                self.play_action.setIcon(QIcon(os.path.join("App", "img", "pause_dark.png")))
             else:
-                self.play_action.setIcon(QIcon("App\\img\\pause.png"))
+                self.play_action.setIcon(QIcon(os.path.join("App", "img", "pause.png")))
         
     def skip_forward(self):
         skip_amount = 3000

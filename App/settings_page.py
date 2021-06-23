@@ -41,7 +41,7 @@ class SettingsPage(QWidget):
         vbox.addWidget(widget_for_buttons)
         self.setLayout(vbox)
         self.setWindowTitle("Settings")
-        self.setWindowIcon(QtGui.QIcon("App\\img\\settings.png"))
+        self.setWindowIcon(QtGui.QIcon(os.path.join("App", "img", "settings.png")))
     
     def first_tab(self):
         self.tab1 = QWidget()

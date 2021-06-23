@@ -1,4 +1,4 @@
-
+import os.path
 import sys
 from PyQt5.QtWidgets import * 
 from PyQt5 import QtGui
@@ -9,7 +9,7 @@ class FormatSelectedText(QWidget):
         super(FormatSelectedText, self).__init__()
         self.resize(400,150)
         self.setWindowTitle("Format Selected Text")
-        self.setWindowIcon(QtGui.QIcon("App\\img\\format.png"))
+        self.setWindowIcon(QtGui.QIcon(os.path.join("App", "img", "format.png")))
         self.font_options = QComboBox()
         self.font_options.addItems(["Arial","Times New Roman","Comic Sans","Calibri","Ubuntu"])
         self.font_size_box = QSpinBox()
