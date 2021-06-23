@@ -5,3 +5,4 @@ venv/
 *.ico
 *_pycache_*
 unused APIs/
+.idea
