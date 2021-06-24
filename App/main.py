@@ -70,7 +70,7 @@ class MainWindow(MainUIWidget):
         self.skip_back_shortcut.activated.connect(self.skip_back)
         self.skip_forward_shortcut = QShortcut(QtGui.QKeySequence("Alt+Right"),self)
         self.skip_forward_shortcut.activated.connect(self.skip_forward)
-    
+
     def clear_formating(self):
         cursor = self.browser.textCursor()
         the_format = QTextCharFormat()
@@ -223,25 +223,29 @@ class MainWindow(MainUIWidget):
 
     def save_file(self):
         file_path = QFileDialog.getSaveFileName(self, 'Save File','',"HTML Files (*.html);; TXT Files (*.txt) ;; DOCX Files (*.docx)")[0]
-        file_type = self.get_file_extension_from_path(file_path)
-        filename = self.get_filename_from_path(file_path)
         if file_path:
+            file_type = self.get_file_extension_from_path(file_path)
+            filename = self.get_filename_from_path(file_path)
             if file_type == '.txt':
                 file_data = self.browser.toPlainText()
                 with open(file_path, 'w', encoding='utf8', errors='ignore') as f:
                         f.write(file_data)
-            if file_type == '.html':
+            elif file_type == '.html':
                 file_data = self.browser.toHtml()
                 with open(file_path, 'w', encoding='utf8', errors='ignore') as f:
                         f.write(file_data)
-            if file_type == '.docx':
+            elif file_type == '.docx':
                 file_data = self.browser.toHtml()
                 file_data = html2docx(file_data,title=filename).getvalue()
                 with open(file_path, 'wb') as f:
                         f.write(file_data)
+            else:
+                self.display_msg("Error", f'Only ".txt", ".html", and ".docx" file extensions are supported.')
     
     def open_file(self):
-        file_path = QFileDialog.getOpenFileName(self,'select a text file to open')[0]
+        file_path = QFileDialog.getOpenFileName(self,'select a document or audio file')[0]
+        if not file_path:
+            return
         resources_path = self.get_folder_from_path(file_path)
         filetype = self.get_file_extension_from_path(file_path)
         self.browser.document().setMetaInformation(QTextDocument.DocumentUrl, QtCore.QUrl.fromLocalFile(resources_path).toString())
@@ -253,7 +257,7 @@ class MainWindow(MainUIWidget):
             self.load_audio(file_path)
             return
         if filetype == ".html" or filetype == ".htm" or filetype == ".mhtml" or filetype == ".mht":
-            with open(file_path,'r',encoding='utf8', errors='ignore') as f: #                 
+            with open(file_path,'r',encoding='utf8', errors='ignore') as f:
                 data = f.read()
                 # print(data)
                 self.browser.clear()
@@ -312,12 +316,12 @@ class MainWindow(MainUIWidget):
             self.display_msg("Oops!","No text or images were found for back of the Flashcard.")
             return 0
         flash_dict = {"front":str(front), "back":str(back),"img":source,"audio":[start_time,end_time]}
-        path = "App\\flashcards.json"
+        cards_path = os.path.join("App", "flashcards.json")
         self.flash_front.clear()
         self.flash_back.clear()
-        if not os.path.exists(path):
+        if not os.path.exists(cards_path):
             self.reset_flashcard_json()
-        with open(path,"r+") as f:
+        with open(cards_path,"r+") as f:
             data = json.load(f)
             data["cards"].append(flash_dict)
             f.seek(0)
@@ -329,7 +333,7 @@ class MainWindow(MainUIWidget):
             return 0
         deck_name = self.get_filename_from_path(filepath)
 
-        with open("App\\flashcards.json","r+") as f:
+        with open(os.path.join("App", "flashcards.json"),"r+") as f:
             data = json.load(f)
         if data["cards"] == []:
             self.display_msg("Oops!", "There are no cards to make an anki deck with.\nUse the flashcard generator in the top right corner to make some.")
@@ -339,11 +343,11 @@ class MainWindow(MainUIWidget):
 
     def reset_flashcard_json(self):
         # create/clear flashcards.json
-        path = "App\\flashcards.json"
+        cards_path = os.path.join("App", "flashcards.json")
         blank = {"cards":[]}
-        if os.path.exists(path):
-            os.remove(path)
-        with open("App\\flashcards.json",'w+') as f:
+        if os.path.exists(cards_path):
+            os.remove(cards_path)
+        with open(cards_path,'w+') as f:
             json.dump(blank,f)
     
     def load_audio(self, filePath):
@@ -362,15 +366,15 @@ class MainWindow(MainUIWidget):
         if state == 1:
             self.audio_player.pause()
             if self.json_settings["dark_theme"]:
-                self.play_action.setIcon(QIcon("App\\img\\play_dark.png"))
+                self.play_action.setIcon(QIcon(os.path.join("App", "img", "play_dark.png")))
             else:
-                self.play_action.setIcon(QIcon("App\\img\\play.png"))
+                self.play_action.setIcon(QIcon(os.path.join("App", "img", "play.png")))
         if state == 0 or state == 2:
             self.audio_player.play()
             if self.json_settings["dark_theme"]:
-                self.play_action.setIcon(QIcon("App\\img\\pause_dark.png"))
+                self.play_action.setIcon(QIcon(os.path.join("App", "img", "pause_dark.png")))
             else:
-                self.play_action.setIcon(QIcon("App\\img\\pause.png"))
+                self.play_action.setIcon(QIcon(os.path.join("App", "img", "pause.png")))
         
     def skip_forward(self):
         skip_amount = 3000
@@ -420,9 +424,11 @@ class MainWindow(MainUIWidget):
         return name
     
     def get_file_extension_from_path(self, path):
-        filename = os.path.basename(path)
-        extension = "." + filename.split('.')[1]
-        return extension
+        parts = os.path.splitext(path)
+        if len(parts) == 2:
+            return parts[1]
+        else:
+            return None
 
     def get_folder_from_path(self, path):
         folder = os.path.dirname(path)
@@ -501,10 +507,6 @@ class MainWindow(MainUIWidget):
             i = f"\\b{i}\\b"
             new_list.append(i)
         return new_list
-
-
-
-
 
 
 if __name__ == "__main__":

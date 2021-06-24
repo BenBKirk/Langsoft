@@ -1,0 +1,22 @@
+
+Improvements over LWT:
+* Easier import - there is no parsing of the text before it can be used. Even simple copy and paste works.
+* Easier editing - If you see a spelling mistake or grammar mistake, you can change it straight away without distraction.
+* Ability to display pictures and custom highlighting - In language sessions we
+  often used images to elicit sentences and now we can have them right next to the text if we want to.
+* Easier to make a deck of flashcards related to the text you are studying.
+* Better flashcards - autofills context and makes selection bold + can add images + can add audio (in progress)
+* Simple installation process but still crossplatform * Easy development with python
+* The program doesn't store a full copy of all the texts you are studying, so if you need to change something then you can do that in one place instead of having different versions of the same text.
+
+Feature Ideas:
+* AUDIO SNIPPET FOR FLASHCARDS [in progress]
+* AUTOSAVE - Maybe have the program automatically save and delete a tempory version of the file every few minutes so that it can be restored when starting the program again in case the program/computer crashes before saving.  (maybe in a seperate thread?)
+* BASIC TEXT EDITING - [improvment] At the moment you need to open the HTML file in something like ms word to get more control over editing and thats ok but some more basic text editing features could be useful. E.g insert images into text, be able to toggle word lookup while making changes to the text etc...
+* VOCABULARY TRACKER - instead of defining and highlighting every word (like LWT) instead have the option to add the current word to a special word list and have it highlighted in future texts. then when you are finished focusing on that word, you can remove it from the special word list. Or have the program create a log of every instance of that word in its context, so that it can be focused on.
+* RECENT FILES - have a quick access menu to recently opened texts.
+* WORD SEARCH - be able to search through current/previous texts for a search term (assuming those files are in the same place on the harddrive) and see a preview of the context and the word in bold. maybe even a click to open that file with that word in a new window.
+* DIFFERENT USERS - be able to toggle between users and have different settings. this would also be useful for people learning more than one language or people who need to share a computer.
+* TIME STAMPS IN TEXT - add support for clickable time stamps (like hyperlinks) in the text window so that it's easy to make the audio jump to that section.
+* PUSH UPDATES - have the program alert the user that there is an update and then have it download and install while keeping the settings untouched.
+* VIM BINDINGS - not sure if this is actually sensible but it would be fun to implement and it you could have it as a setting that can be turned on or off.
