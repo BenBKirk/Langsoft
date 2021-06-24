@@ -79,7 +79,6 @@ class MainWindow(MainUIWidget):
         the_format.setBackground(QtGui.QBrush(QtGui.QColor("Transparent")))
         cursor.setCharFormat(the_format)
 
-    
     def highlight(self,color):
         cursor = self.browser.textCursor()
         the_format = QTextCharFormat()
@@ -103,13 +102,11 @@ class MainWindow(MainUIWidget):
             the_format.setFontWeight(weight)
             cursor.mergeCharFormat(the_format)
 
-
     def set_global_settings(self):
         with open(os.path.join(os.getcwd(),"App","settings.json"),"r+") as f:
             data = json.load(f)
             self.json_settings = data
 
-    
     def display_msg(self,title,text):
         msgBox = QMessageBox()
         msgBox.setText(text)
@@ -170,7 +167,6 @@ class MainWindow(MainUIWidget):
     def autofill_flashcard(self,context):
         self.flash_front.clear()
         self.flash_front.setHtml(context)
-
 
     def handle_lookup(self, selection, context):
         if selection != "":
@@ -243,7 +239,7 @@ class MainWindow(MainUIWidget):
                 self.display_msg("Error", f'Only ".txt", ".html", and ".docx" file extensions are supported.')
     
     def open_file(self):
-        file_path = QFileDialog.getOpenFileName(self,'select a document or audio file')[0]
+        file_path = QFileDialog.getOpenFileName(self,'select a text document')[0]
         if not file_path:
             return
         resources_path = self.get_folder_from_path(file_path)
@@ -259,7 +255,6 @@ class MainWindow(MainUIWidget):
         if filetype == ".html" or filetype == ".htm" or filetype == ".mhtml" or filetype == ".mht":
             with open(file_path,'r',encoding='utf8', errors='ignore') as f:
                 data = f.read()
-                # print(data)
                 self.browser.clear()
                 self.browser.insertHtml(data)
             self.load_audio(file_path)
