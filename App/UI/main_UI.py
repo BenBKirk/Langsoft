@@ -20,9 +20,7 @@ class MainUIWidget(QWidget):
         self.left = 1000
         self.width = 1000
         self.height = 600
-        self.browser = CustomTextBrowser()
-        self.browser.setFont(QtGui.QFont("Calibri",14))
-        self.browser.setWordWrapMode(QtGui.QTextOption.WordWrap)
+        self.left_pane = Left_Pane()
 
         self.flash_front = QTextEdit()
         self.flash_front.setFont(QtGui.QFont("Calibri",10))
@@ -35,51 +33,11 @@ class MainUIWidget(QWidget):
         self.make_flash_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.make_flash_btn.setFixedHeight(40)
 
-        self.toolbar = QToolBar()
         self.toolbar2 = QToolBar()
-        spacer_widget = QWidget()
-        spacer_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        spacer_widget2 = QWidget()
-        spacer_widget2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        folder_action = QAction("open",self)
-        folder_action.setToolTip("Open a File")
-        folder_action.setShortcut('Ctrl+o')
-        save_action = QAction("save",self)
-        save_action.setToolTip("save this file")
-        save_action.setShortcut('Ctrl+s')
-        helpaction = QAction("help",self) 
-        helpaction.setToolTip("How To Use This Program")
-        self.play_action = QAction("play",self)
-        skip_back_action = QAction("skip_back",self)
-        skip_forward_action = QAction("skip_forward",self)
-        download_flashcards_action = QAction("download",self)
-        download_flashcards_action.setToolTip("Download Flashcards as Anki deck")
-        settings_action = QAction("settings",self)
         list_of_flashcards_action = QAction("list",self)
         list_of_flashcards_action.setToolTip("List of Flashcards")
-        highlight_action = QAction("highlight",self)
-        highlight_action.setToolTip("Highlight Discourse Features")
-        format_action = QAction("format",self)
-        format_action.setToolTip("Format selected text")
-        self.toolbar.addAction(folder_action)
-        self.toolbar.addWidget(QLabel(" ")) 
-        self.toolbar.addWidget(QLabel(" ")) 
-        self.toolbar.addAction(save_action)
-        self.toolbar.addWidget(QLabel(" ")) 
-        self.toolbar.addWidget(QLabel(" ")) 
-        self.toolbar.addWidget(spacer_widget)
-        self.toolbar.addAction(skip_back_action)
-        self.toolbar.addAction(self.play_action)
-        self.toolbar.addAction(skip_forward_action)
-        self.toolbar.addWidget(spacer_widget2)
-        # self.toolbar.addWidget(QLabel(" ")) 
-        self.toolbar.addAction(format_action)
-        self.toolbar.addWidget(QLabel(" ")) 
-        self.toolbar.addAction(highlight_action)
-        self.toolbar.addWidget(QLabel(" ")) 
-        self.toolbar.addAction(helpaction)
-        self.toolbar.addWidget(QLabel(" ")) 
-        self.toolbar.addAction(settings_action)
+        download_flashcards_action = QAction("download",self)
+        download_flashcards_action.setToolTip("Download Flashcards as Anki deck")
         spacer_widget3 = QWidget()
         spacer_widget3.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         spacer_widget4 = QWidget()
@@ -97,28 +55,16 @@ class MainUIWidget(QWidget):
         self.tabs = QTabWidget()
         self.tabs.setDocumentMode(True)
 
-        #audio slider
-        self.audio_slider = QSlider()
-        self.audio_slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.audio_slider.setOrientation(Qt.Horizontal)
-        self.audio_slider.setFixedHeight(30)
-
-        widget_for_layout = QWidget()
-        layout_for_browser_and_buttons = QVBoxLayout()
-        layout_for_browser_and_buttons.addWidget(self.toolbar)
-        layout_for_browser_and_buttons.addWidget(self.audio_slider)
-        layout_for_browser_and_buttons.addWidget(self.browser)
-        widget_for_layout.setLayout(layout_for_browser_and_buttons)
 
         vbox = QVBoxLayout()
         splitter = QSplitter(Qt.Horizontal)
         splitter2 = QSplitter(Qt.Vertical)
         splitter3 = QSplitter(Qt.Vertical)
-        label1 = QLabel("Front of Flashcard")
+        label1 = QLabel("context")
         label1.setFixedHeight(10)
         splitter3.addWidget(label1)
         splitter3.addWidget(self.flash_front)
-        label2 = QLabel("Back of Flashcard")
+        label2 = QLabel("selection")
         label2.setFixedHeight(10)
         splitter3.addWidget(label2)
         splitter3.addWidget(self.flash_back)
@@ -126,7 +72,7 @@ class MainUIWidget(QWidget):
         splitter3.addWidget(self.toolbar2) 
         splitter2.addWidget(self.tabs)
         splitter2.setSizes([5,2000])
-        splitter.addWidget(widget_for_layout)
+        splitter.addWidget(self.left_pane)
         splitter.addWidget(splitter2)
         splitter.setSizes([500,500])
         vbox.addWidget(splitter)
@@ -161,7 +107,7 @@ class MainUIWidget(QWidget):
         
     def set_icons(self,dark):
         if dark:
-            for x in self.toolbar.actions() + self.toolbar2.actions():
+            for x in self.left_pane.toolbar.actions() + self.toolbar2.actions():
                 name = x.text()
                 path = os.path.join(os.getcwd(),"App","img",name + "_dark.png")
                 x.setIcon(QIcon(path))
@@ -194,9 +140,72 @@ class MainUIWidget(QWidget):
         # print(tabs)
         for i, tab in enumerate(tabs["tabs"]): 
             self.add_tab(i,tab[0],tab[1].replace("WORD","").replace("SENT",""))
+
+class Left_Pane(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.toolbar = QToolBar()
+        spacer_widget = QWidget()
+        spacer_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        spacer_widget2 = QWidget()
+        spacer_widget2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        folder_action = QAction("open",self)
+        folder_action.setToolTip("Open a File")
+        folder_action.setShortcut('Ctrl+o')
+        save_action = QAction("save",self)
+        save_action.setToolTip("save this file")
+        save_action.setShortcut('Ctrl+s')
+        helpaction = QAction("help",self) 
+        helpaction.setToolTip("How To Use This Program")
+        self.play_action = QAction("play",self)
+        skip_back_action = QAction("skip_back",self)
+        skip_forward_action = QAction("skip_forward",self)
+        settings_action = QAction("settings",self)
+        highlight_action = QAction("highlight",self)
+        highlight_action.setToolTip("Highlight Discourse Features")
+        format_action = QAction("format",self)
+        format_action.setToolTip("Format selected text")
+        self.toolbar.addAction(folder_action)
+        self.toolbar.addWidget(QLabel(" ")) 
+        self.toolbar.addWidget(QLabel(" ")) 
+        self.toolbar.addAction(save_action)
+        self.toolbar.addWidget(QLabel(" ")) 
+        self.toolbar.addWidget(QLabel(" ")) 
+        self.toolbar.addWidget(spacer_widget)
+        self.toolbar.addAction(skip_back_action)
+        self.toolbar.addAction(self.play_action)
+        self.toolbar.addAction(skip_forward_action)
+        self.toolbar.addWidget(spacer_widget2)
+        # self.toolbar.addWidget(QLabel(" ")) 
+        self.toolbar.addAction(format_action)
+        self.toolbar.addWidget(QLabel(" ")) 
+        self.toolbar.addAction(highlight_action)
+        self.toolbar.addWidget(QLabel(" ")) 
+        self.toolbar.addAction(helpaction)
+        self.toolbar.addWidget(QLabel(" ")) 
+        self.toolbar.addAction(settings_action)
+        #audio slider
+        self.audio_slider = QSlider()
+        self.audio_slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.audio_slider.setOrientation(Qt.Horizontal)
+        self.audio_slider.setFixedHeight(30)
+        #
+        self.browser = CustomTextBrowser()
+        self.browser.setFont(QtGui.QFont("Calibri",14))
+        self.browser.setWordWrapMode(QtGui.QTextOption.WordWrap)
+        # widget_for_layout = QWidget()
+        layout_for_browser_and_buttons = QVBoxLayout()
+        layout_for_browser_and_buttons.addWidget(self.toolbar)
+        layout_for_browser_and_buttons.addWidget(self.audio_slider)
+        layout_for_browser_and_buttons.addWidget(self.browser)
+        self.setLayout(layout_for_browser_and_buttons)
+
+class Top_Right_Pane(QWidget):
+    def __init__(self):
+        super().__init__()
+
+
  
-
-
 if __name__ == "__main__":
     from custom_text_browser import CustomTextBrowser
     import sys
