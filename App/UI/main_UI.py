@@ -10,8 +10,6 @@ from PyQt5.QtGui import QIcon
 from .custom_text_browser import CustomTextBrowser
 import os
 
-
-
 class MainUIWidget(QWidget):
     myTabs = {}
     def __init__(self):
@@ -63,7 +61,7 @@ class MainUIWidget(QWidget):
         
     def set_icons(self,dark):
         if dark:
-            for x in self.left_pane.toolbar.actions() + self.top_right_pane.toolbar2.actions():
+            for x in self.left_pane.toolbar.actions() + self.top_right_pane.toolbar.actions():
                 name = x.text()
                 path = os.path.join(os.getcwd(),"App","img",name + "_dark.png")
                 x.setIcon(QIcon(path))
