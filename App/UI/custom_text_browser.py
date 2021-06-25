@@ -2,25 +2,23 @@
 This needs to be custom in order to detect a click (actually release) in the main text window
 """
 from PyQt5 import QtWidgets, QtCore
-# from PyQt5.QtGui import QMenu, QCursor
-# from PyQt5.QtWidgets import *
-# from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QHelpEvent, QMouseEvent, QTextCursor
 class CustomTextBrowser(QtWidgets.QTextEdit):
     clicked = QtCore.pyqtSignal()
     hightlight = QtCore.pyqtSignal(str)
     clear_highlighting = QtCore.pyqtSignal()
+    hover = QtCore.pyqtSignal(QtCore.QPoint)
 
     def __init__(self):
         super().__init__()
-        self.setFontPointSize(16) #in the future it might be necessary to more this to the logic file because of the settings.
-        # self.setContextMenuPolicy(Qt.CustomContextMenu)
-        # self.customContextMenuRequested.connect()
-
-    # def mousePressEvent(self, QMouseEvent):
-    #     self.clicked.emit()
+        self.setFontPointSize(16) 
+        self.setMouseTracking(True) # for the tooltip
 
     def mouseReleaseEvent(self, QMouseEvent):
         self.clicked.emit()
+
+    def mouseMoveEvent(self, e: QMouseEvent):
+        self.hover.emit(e.pos())
     
     def contextMenuEvent(self,event):
         contextMenu = self.createStandardContextMenu(event.pos())
@@ -34,11 +32,4 @@ class CustomTextBrowser(QtWidgets.QTextEdit):
             self.hightlight.emit(color.name())
         if action == clear_highlighting:
             self.clear_highlighting.emit()
-
-            
-
-            # self.hightlight.emit("Green")
-
-
     
-

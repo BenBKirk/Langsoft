@@ -21,6 +21,7 @@ from html2docx import html2docx
 from API.google_trans_API import GoogleTranslate
 from flashcard_list_manager import FlashcardManager
 from help_page import HelpWindow
+import time
 
 
 class MainWindow(MainUIWidget):
@@ -42,9 +43,9 @@ class MainWindow(MainUIWidget):
         self.left_pane.browser.clicked.connect(self.browser_clicked)
         self.left_pane.browser.hightlight.connect(self.highlight)
         self.left_pane.browser.clear_highlighting.connect(self.clear_highlighting)
+        self.left_pane.browser.hover.connect(self.hover_over_word)
         self.left_pane.toolbar.actionTriggered[QAction].connect(self.handle_toolbar_click)
         self.top_right_pane.toolbar.actionTriggered[QAction].connect(self.handle_toolbar_click)
-        # self.font_size_box.valueChanged.connect(self.change_font_size)
         self.top_right_pane.make_flash_btn.clicked.connect(self.add_flashcard)
         self.audio_player.durationChanged.connect(self.update_slider_duration)
         self.audio_player.positionChanged.connect(self.update_slider_position)
@@ -91,6 +92,23 @@ class MainWindow(MainUIWidget):
         # the_format.setBackground(None)
         the_format.setBackground(QtGui.QBrush(QtGui.QColor("Transparent")))
         cursor.mergeCharFormat(the_format)
+    
+    def hover_over_word(self,pos):
+        text_cursor = QTextCursor()
+        text_cursor = self.left_pane.browser.cursorForPosition(pos)
+        text_cursor.select(QTextCursor.WordUnderCursor)
+        if text_cursor.hasSelection():
+            sel = text_cursor.selectedText()
+            pop_up = self.left_pane.browser.createStandardContextMenu(pos)
+            self.left_pane.browser.setToolTip(f"show saved def here -- {sel}")
+        else:
+            self.left_pane.browser.setToolTip("")
+
+
+
+
+        # pop_up.exec_(self.left_pane.browser.mapToGlobal(pos))
+
     
     def change_font_type(self):
         if self.left_pane.browser.textCursor().hasSelection():
@@ -447,7 +465,6 @@ class MainWindow(MainUIWidget):
         self.bottom_right_pane.start_tabs(self.json_settings)
     
     def highlight_grammar_terms(self):
-        index =0
         for key, value in self.json_settings["discourse_highlighter"].items():
             color_list = value["color"].split(",")
             color_ints = []
@@ -460,7 +477,6 @@ class MainWindow(MainUIWidget):
             the_format = QTextCharFormat()
             the_format.setBackground(QtGui.QBrush(color))
             self.apply_highlight(regex_for_word_list,the_format)
-            index += 1
 
     def apply_highlight(self,pattern,the_format):
         cursor = self.left_pane.browser.textCursor()
