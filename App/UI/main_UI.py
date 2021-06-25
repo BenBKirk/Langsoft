@@ -152,7 +152,6 @@ class TopRightPane(QWidget):
         self.make_flash_btn.setFont(QtGui.QFont("Calibri",12,200))
         self.make_flash_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.make_flash_btn.setFixedHeight(40)
-
         list_of_flashcards_action = QAction("list",self)
         list_of_flashcards_action.setToolTip("List of Flashcards")
         download_flashcards_action = QAction("download",self)
@@ -172,8 +171,6 @@ class TopRightPane(QWidget):
         label1.setFixedHeight(10)
         label2 = QLabel("Translation/Definition = Back of flashcard")
         label2.setFixedHeight(10)
-
-
         split_top_right_flash_side = QSplitter(Qt.Vertical)
         split_top_right_flash_side.addWidget(label1)
         split_top_right_flash_side.addWidget(self.flash_front)
@@ -181,15 +178,27 @@ class TopRightPane(QWidget):
         split_top_right_flash_side.addWidget(self.flash_back)
         split_top_right_flash_side.addWidget(self.toolbar)
         split_top_right_vocab_side = QSplitter(Qt.Horizontal)
+        split_up_right_vocab_side = QSplitter(Qt.Vertical)
         split_top_right_vocab_side.addWidget(split_top_right_flash_side)
-        label3 = QLabel("here")
-        # label3.setFixedWidth(250)
-        split_top_right_vocab_side.addWidget(label3)
+
+        searchbar_label = QLabel("Searchbar:")
+        searchbar_label.setFixedHeight(10)
+        self.searchbar_lineedit = QLineEdit()
+        self.searchbar_lineedit.setFixedHeight(40)
+        self.search_sel_btn = QPushButton("Search for word/selection")
+        self.search_sel_btn.setFixedHeight(40)
+        self.add_sel_to_vocab_tracker_btn = QPushButton("Track word/selection")
+        self.add_sel_to_vocab_tracker_btn.setFixedHeight(40)
+
+        split_up_right_vocab_side.addWidget(searchbar_label)
+        split_up_right_vocab_side.addWidget(self.searchbar_lineedit)
+        split_up_right_vocab_side.addWidget(self.search_sel_btn)
+        split_up_right_vocab_side.addWidget(self.add_sel_to_vocab_tracker_btn)
+        split_top_right_vocab_side.addWidget(split_up_right_vocab_side)
+
         layout = QVBoxLayout()
         layout.addWidget(split_top_right_vocab_side)
-
         self.setLayout(layout)
-
 class BottomRightPane(QWidget):
     def __init__(self):
         super().__init__()

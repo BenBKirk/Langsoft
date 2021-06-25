@@ -134,6 +134,7 @@ class MainWindow(MainUIWidget):
                 if w == word:
                     split_context[i] = "<b>" + split_context[i] + "</b>"
             context_bold = "".join(split_context)
+            self.autofill_searchbar(word)
             self.autofill_flashcard(context_bold)
             self.handle_lookup(word, context)
             
@@ -142,6 +143,7 @@ class MainWindow(MainUIWidget):
         selection = self.left_pane.browser.textCursor().selectedText()
         context = self.get_context(cursor)
         context_bold = context.replace(selection, "<b>" + selection + "</b>")
+        self.autofill_searchbar(selection)
         self.autofill_flashcard(context_bold)
         self.handle_lookup(selection, context)
 
@@ -165,6 +167,9 @@ class MainWindow(MainUIWidget):
         if not_reached_upper_limit:
             context = "..." + context
         return context
+    
+    def autofill_searchbar(self,search_term):
+        self.top_right_pane.searchbar_lineedit.setText(search_term)
 
     def autofill_flashcard(self,context):
         self.top_right_pane.flash_front.clear()
