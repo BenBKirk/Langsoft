@@ -3,6 +3,7 @@ import json
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui
+from PyQt5.QtGui import QIcon
 from bs4 import BeautifulSoup
 
 
@@ -11,6 +12,7 @@ class FlashcardManager(QWidget):
     text_edits_front = {}
     text_edits_back = {}
     text_edits_img = {}
+    text_edits_audio = {}
     btn = {}
     def __init__(self):
         super(FlashcardManager, self).__init__()
@@ -97,8 +99,8 @@ class FlashcardManager(QWidget):
         self.card_dict = self.get_flashcard_data_from_json()
         num_of_cards = len(self.card_dict["cards"])
         self.list_table_widget.setRowCount(num_of_cards)
-        self.list_table_widget.setColumnCount(4)
-        self.list_table_widget.setHorizontalHeaderLabels(["Del","Front","Back","Image"])
+        self.list_table_widget.setColumnCount(5)
+        self.list_table_widget.setHorizontalHeaderLabels(["Del","Front","Back","Image","Audio"])
         self.list_table_widget.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.list_table_widget.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
         for i, card in enumerate(self.card_dict["cards"]):
@@ -107,10 +109,13 @@ class FlashcardManager(QWidget):
             if card["img"] != "":
                 self.text_edits_img[i] = self.create_text_edit_widget('<img src="' + card["img"] + '>')
                 self.list_table_widget.setCellWidget(i, 3,self.text_edits_img[i])
+            if card["audio"] != []:
+                self.text_edits_audio[i] = self.create_audio_edit_widget(card["audio"])
+                self.list_table_widget.setCellWidget(i, 4,self.text_edits_audio[i])
             btn = self.make_btn(i)
+            self.list_table_widget.setCellWidget(i,0,btn)
             self.list_table_widget.setCellWidget(i, 1, self.text_edits_front[i])
             self.list_table_widget.setCellWidget(i, 2, self.text_edits_back[i])
-            self.list_table_widget.setCellWidget(i,0,btn)
         self.list_table_widget.resizeColumnsToContents()
         self.list_table_widget.resizeRowsToContents()
 
@@ -120,6 +125,14 @@ class FlashcardManager(QWidget):
         text_edit_widget.setFont(QtGui.QFont("Calibri",10))
         text_edit_widget.setHtml(html)
         return text_edit_widget
+    
+    def create_audio_edit_widget(self,timestamp):
+        # label = QLabel()
+        # label.setText(str(timestamp[0]) + "--" + str(timestamp[1]))
+        name = "play"
+        play_button = QPushButton()
+        play_button.setIcon(QIcon(os.path.join(os.getcwd(),"App","img",name + ".png")))
+        return play_button
 
     def make_btn(self,i):
         self.btn[i] = QPushButton("X")

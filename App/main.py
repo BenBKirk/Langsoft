@@ -21,7 +21,7 @@ from html2docx import html2docx
 from API.google_trans_API import GoogleTranslate
 from flashcard_list_manager import FlashcardManager
 from help_page import HelpWindow
-import time
+import datetime
 
 
 class MainWindow(MainUIWidget):
@@ -79,7 +79,6 @@ class MainWindow(MainUIWidget):
         the_format.setBackground(QtGui.QBrush(QtGui.QColor("Transparent")))
         cursor.setCharFormat(the_format)
 
-    
     def highlight(self,color):
         cursor = self.left_pane.browser.textCursor()
         the_format = QTextCharFormat()
@@ -120,13 +119,11 @@ class MainWindow(MainUIWidget):
             the_format.setFontWeight(weight)
             cursor.mergeCharFormat(the_format)
 
-
     def set_global_settings(self):
         with open(os.path.join(os.getcwd(),"App","settings.json"),"r+") as f:
             data = json.load(f)
             self.json_settings = data
 
-    
     def display_msg(self,title,text):
         msgBox = QMessageBox()
         msgBox.setText(text)
@@ -155,7 +152,7 @@ class MainWindow(MainUIWidget):
             self.autofill_searchbar(word)
             self.autofill_flashcard(context_bold)
             self.handle_lookup(word, context)
-            
+
     def get_sel_in_context(self):
         cursor = self.left_pane.browser.textCursor()
         selection = self.left_pane.browser.textCursor().selectedText()
@@ -181,7 +178,7 @@ class MainWindow(MainUIWidget):
                 break
         context = cursor.selectedText()
         if not_reached_lower_limit:
-            context = context + "..."
+            context = context.strip() + "..."
         if not_reached_upper_limit:
             context = "..." + context
         return context
@@ -264,7 +261,7 @@ class MainWindow(MainUIWidget):
                 self.display_msg("Error", f'Only ".txt", ".html", and ".docx" file extensions are supported.')
     
     def open_file(self):
-        file_path = QFileDialog.getOpenFileName(self,'select a document or audio file')[0]
+        file_path = QFileDialog.getOpenFileName(self,'select a text document')[0]
         if not file_path:
             return
         resources_path = self.get_folder_from_path(file_path)
@@ -310,6 +307,11 @@ class MainWindow(MainUIWidget):
         
 
     def add_flashcard(self): # this appends card to json file
+        pos = self.audio_player.position()
+        dur = self.audio_player.duration()
+        start_time = self.get_start_time(pos,5000)
+        end_time = self.get_end_time(pos,5000,dur)
+        
         front = self.top_right_pane.flash_front.toHtml()
         back = self.top_right_pane.flash_back.toHtml()
         front_html = BeautifulSoup(front,"html.parser")
@@ -331,7 +333,7 @@ class MainWindow(MainUIWidget):
         if back_text == "\n" and image is None:
             self.display_msg("Oops!","No text or images were found for back of the Flashcard.")
             return 0
-        flash_dict = {"front":str(front), "back":str(back),"img":source}
+        flash_dict = {"front":str(front), "back":str(back),"img":source,"audio":[start_time,end_time]}
         cards_path = os.path.join("App", "flashcards.json")
         self.top_right_pane.flash_front.clear()
         self.top_right_pane.flash_back.clear()
@@ -382,15 +384,15 @@ class MainWindow(MainUIWidget):
         if state == 1:
             self.audio_player.pause()
             if self.json_settings["dark_theme"]:
-                self.play_action.setIcon(QIcon(os.path.join("App", "img", "play_dark.png")))
+                self.left_pane.play_action.setIcon(QIcon(os.path.join("App", "img", "play_dark.png")))
             else:
-                self.play_action.setIcon(QIcon(os.path.join("App", "img", "play.png")))
+                self.left_pane.play_action.setIcon(QIcon(os.path.join("App", "img", "play.png")))
         if state == 0 or state == 2:
             self.audio_player.play()
             if self.json_settings["dark_theme"]:
-                self.play_action.setIcon(QIcon(os.path.join("App", "img", "pause_dark.png")))
+                self.left_pane.play_action.setIcon(QIcon(os.path.join("App", "img", "pause_dark.png")))
             else:
-                self.play_action.setIcon(QIcon(os.path.join("App", "img", "pause.png")))
+                self.left_pane.play_action.setIcon(QIcon(os.path.join("App", "img", "pause.png")))
         
     def skip_forward(self):
         skip_amount = 3000
@@ -411,6 +413,27 @@ class MainWindow(MainUIWidget):
         self.left_pane.audio_slider.blockSignals(True)
         self.left_pane.audio_slider.setValue(position)
         self.left_pane.audio_slider.blockSignals(False)
+        # get audio timestamp
+        min_mil_sec = 5000
+        current_pos_mil = position
+        duration = self.audio_player.duration()
+        start_time = self.get_start_time(current_pos_mil,min_mil_sec)
+        end_time = self.get_end_time(current_pos_mil,min_mil_sec,duration)
+        new_string = f"Timestamps: {datetime.timedelta(seconds=round(start_time/1000))}--{datetime.timedelta(seconds=round(end_time/1000))}"
+
+        # self.flash_audio_label.setText(new_string)
+    
+    def get_start_time(self,pos,min_mil):
+        if pos < min_mil:
+            return 0
+        else:
+            return pos - min_mil
+    def get_end_time(self,pos,min_mil,dur):
+        if pos < dur - min_mil:
+            return pos + min_mil
+        else:
+            return dur
+
 
     def get_filename_from_path(self, path):
         filename = os.path.basename(path)
