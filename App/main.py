@@ -71,7 +71,7 @@ class MainWindow(MainUIWidget):
         self.skip_forward_shortcut.activated.connect(self.skip_forward)
 
     def clear_formating(self):
-        cursor = self.browser.textCursor()
+        cursor = self.left_pane.browser.textCursor()
         the_format = QTextCharFormat()
         the_format.setFontPointSize(14)
         the_format.setFontWeight(0)
@@ -80,22 +80,22 @@ class MainWindow(MainUIWidget):
 
     
     def highlight(self,color):
-        cursor = self.browser.textCursor()
+        cursor = self.left_pane.browser.textCursor()
         the_format = QTextCharFormat()
         the_format.setBackground(QtGui.QBrush(QtGui.QColor(color)))
         cursor.mergeCharFormat(the_format)
     
     def clear_highlighting(self):
-        cursor = self.browser.textCursor()
+        cursor = self.left_pane.browser.textCursor()
         the_format = QTextCharFormat()
         # the_format.setBackground(None)
         the_format.setBackground(QtGui.QBrush(QtGui.QColor("Transparent")))
         cursor.mergeCharFormat(the_format)
     
     def change_font_type(self):
-        if self.browser.textCursor().hasSelection():
+        if self.left_pane.browser.textCursor().hasSelection():
             font = self.format_widget.font_options.currentText()
-            cursor = self.browser.textCursor()
+            cursor = self.left_pane.browser.textCursor()
             the_format = QTextCharFormat()
             weight = cursor.charFormat().fontWeight()
             the_format.setFont(QtGui.QFont(font))
