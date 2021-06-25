@@ -117,13 +117,13 @@ class MainWindow(MainUIWidget):
         msgBox.exec()
         
     def browser_clicked(self):
-        if self.browser.textCursor().hasSelection():
+        if self.left_pane.browser.textCursor().hasSelection():
             self.get_sel_in_context()
         else:
             self.get_word_in_context()
 
     def get_word_in_context(self):
-        cursor = self.browser.textCursor()
+        cursor = self.left_pane.browser.textCursor()
         pos_of_click = cursor.position()
         cursor.select(QTextCursor.WordUnderCursor)
         if cursor.hasSelection():
@@ -138,8 +138,8 @@ class MainWindow(MainUIWidget):
             self.handle_lookup(word, context)
             
     def get_sel_in_context(self):
-        cursor = self.browser.textCursor()
-        selection = self.browser.textCursor().selectedText()
+        cursor = self.left_pane.browser.textCursor()
+        selection = self.left_pane.browser.textCursor().selectedText()
         context = self.get_context(cursor)
         context_bold = context.replace(selection, "<b>" + selection + "</b>")
         self.autofill_flashcard(context_bold)
@@ -167,18 +167,18 @@ class MainWindow(MainUIWidget):
         return context
 
     def autofill_flashcard(self,context):
-        self.flash_front.clear()
-        self.flash_front.setHtml(context)
+        self.top_right_pane.flash_front.clear()
+        self.top_right_pane.flash_front.setHtml(context)
 
     def handle_lookup(self, selection, context):
         if selection != "":
             for i, tab in enumerate(self.json_settings["tabs"]):
-                self.my_tabs[i].setUrl(QUrl(tab[1].replace("WORD",selection).replace("SENT",context)))
+                self.bottom_right_pane.my_tabs[i].setUrl(QUrl(tab[1].replace("WORD",selection).replace("SENT",context)))
         if self.json_settings["autofill_flashcards"] == True:
-            self.flash_back.clear()
+            self.top_right_pane.flash_back.clear()
             try:
                 translation = self.translator.translate(selection)
-                self.flash_back.insertPlainText(translation)
+                self.top_right_pane.flash_back.insertPlainText(translation)
             except Exception as e:
                 print(f"there was an error with the autofill api: {e}")
 
@@ -225,15 +225,15 @@ class MainWindow(MainUIWidget):
             file_type = self.get_file_extension_from_path(file_path)
             filename = self.get_filename_from_path(file_path)
             if file_type == '.txt':
-                file_data = self.browser.toPlainText()
+                file_data = self.left_pane.browser.toPlainText()
                 with open(file_path, 'w', encoding='utf8', errors='ignore') as f:
                         f.write(file_data)
             elif file_type == '.html':
-                file_data = self.browser.toHtml()
+                file_data = self.left_pane.browser.toHtml()
                 with open(file_path, 'w', encoding='utf8', errors='ignore') as f:
                         f.write(file_data)
             elif file_type == '.docx':
-                file_data = self.browser.toHtml()
+                file_data = self.left_pane.browser.toHtml()
                 file_data = html2docx(file_data,title=filename).getvalue()
                 with open(file_path, 'wb') as f:
                         f.write(file_data)
@@ -246,20 +246,20 @@ class MainWindow(MainUIWidget):
             return
         resources_path = self.get_folder_from_path(file_path)
         filetype = self.get_file_extension_from_path(file_path)
-        self.browser.document().setMetaInformation(QTextDocument.DocumentUrl, QtCore.QUrl.fromLocalFile(resources_path).toString())
+        self.left_pane.browser.document().setMetaInformation(QTextDocument.DocumentUrl, QtCore.QUrl.fromLocalFile(resources_path).toString())
         if filetype == ".txt":
             with open(file_path,'r') as f:
                 data = f.read()
-                self.browser.clear()
-                self.browser.insertPlainText(data)
+                self.left_pane.browser.clear()
+                self.left_pane.browser.insertPlainText(data)
             self.load_audio(file_path)
             return
         if filetype == ".html" or filetype == ".htm" or filetype == ".mhtml" or filetype == ".mht":
             with open(file_path,'r',encoding='utf8', errors='ignore') as f:
                 data = f.read()
                 # print(data)
-                self.browser.clear()
-                self.browser.insertHtml(data)
+                self.left_pane.browser.clear()
+                self.left_pane.browser.insertHtml(data)
             self.load_audio(file_path)
             return
         if filetype == ".pdf":
@@ -269,8 +269,8 @@ class MainWindow(MainUIWidget):
                     pages.append(doc.load_page(i)) #TODO: should load all pages
                 for page in pages:
                     justHtml = page.get_text("html")
-                    self.browser.clear()
-                    self.browser.insertHtml(justHtml)
+                    self.left_pane.browser.clear()
+                    self.left_pane.browser.insertHtml(justHtml)
                 self.load_audio(file_path)
                 return
 
@@ -278,8 +278,8 @@ class MainWindow(MainUIWidget):
             with open(file_path,'rb') as f:
                 # data = f.read()
                 justHtml = mammoth.convert_to_html(f)
-                self.browser.clear()
-                self.browser.insertHtml(justHtml.value)
+                self.left_pane.browser.clear()
+                self.left_pane.browser.insertHtml(justHtml.value)
             self.load_audio(file_path)
             return
         # if not returned before
@@ -287,8 +287,8 @@ class MainWindow(MainUIWidget):
         
 
     def add_flashcard(self): # this appends card to json file
-        front = self.flash_front.toHtml()
-        back = self.flash_back.toHtml()
+        front = self.top_right_pane.flash_front.toHtml()
+        back = self.top_right_pane.flash_back.toHtml()
         front_html = BeautifulSoup(front,"html.parser")
         back_html = BeautifulSoup(back,"html.parser")
         front = front_html.body
@@ -310,8 +310,8 @@ class MainWindow(MainUIWidget):
             return 0
         flash_dict = {"front":str(front), "back":str(back),"img":source}
         cards_path = os.path.join("App", "flashcards.json")
-        self.flash_front.clear()
-        self.flash_back.clear()
+        self.top_right_pane.flash_front.clear()
+        self.top_right_pane.flash_back.clear()
         if not os.path.exists(cards_path):
             self.reset_flashcard_json()
         with open(cards_path,"r+") as f:
@@ -382,12 +382,12 @@ class MainWindow(MainUIWidget):
         self.audio_player.setPosition(new_pos)
     
     def update_slider_duration(self,duration):
-        self.audio_slider.setMaximum(duration)
+        self.left_pane.audio_slider.setMaximum(duration)
     
     def update_slider_position(self,position):
-        self.audio_slider.blockSignals(True)
-        self.audio_slider.setValue(position)
-        self.audio_slider.blockSignals(False)
+        self.left_pane.audio_slider.blockSignals(True)
+        self.left_pane.audio_slider.setValue(position)
+        self.left_pane.audio_slider.blockSignals(False)
 
     def get_filename_from_path(self, path):
         filename = os.path.basename(path)
@@ -458,17 +458,17 @@ class MainWindow(MainUIWidget):
             index += 1
 
     def apply_highlight(self,pattern,the_format):
-        cursor = self.browser.textCursor()
+        cursor = self.left_pane.browser.textCursor()
         regex = QtCore.QRegExp(pattern,Qt.CaseSensitivity.CaseInsensitive)
         # regex.setCaseSensitivity()
         pos = 0
-        index = regex.indexIn(self.browser.toPlainText(),pos)
+        index = regex.indexIn(self.left_pane.browser.toPlainText(),pos)
         while (index != -1):
             cursor.setPosition(index)
             cursor.movePosition(QTextCursor.EndOfWord,1)
             cursor.mergeCharFormat(the_format)
             pos = index + regex.matchedLength()
-            index = regex.indexIn(self.browser.toPlainText(),pos)
+            index = regex.indexIn(self.left_pane.browser.toPlainText(),pos)
 
 
     def wrap_in_b(self,the_list):
