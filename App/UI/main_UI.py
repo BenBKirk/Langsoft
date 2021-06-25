@@ -20,62 +20,20 @@ class MainUIWidget(QWidget):
         self.left = 1000
         self.width = 1000
         self.height = 600
-        self.left_pane = Left_Pane()
-
-        self.flash_front = QTextEdit()
-        self.flash_front.setFont(QtGui.QFont("Calibri",10))
-        self.flash_front.setMinimumHeight(60)
-        self.flash_back = QTextEdit()
-        self.flash_back.setFont(QtGui.QFont("Calibri",10))
-        self.flash_back.setMinimumHeight(60)
-        self.make_flash_btn = QPushButton(text="Make Flashcard")
-        self.make_flash_btn.setFont(QtGui.QFont("Calibri",12,200))
-        self.make_flash_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.make_flash_btn.setFixedHeight(40)
-
-        self.toolbar2 = QToolBar()
-        list_of_flashcards_action = QAction("list",self)
-        list_of_flashcards_action.setToolTip("List of Flashcards")
-        download_flashcards_action = QAction("download",self)
-        download_flashcards_action.setToolTip("Download Flashcards as Anki deck")
-        spacer_widget3 = QWidget()
-        spacer_widget3.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        spacer_widget4 = QWidget()
-        spacer_widget4.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.toolbar2.setFixedHeight(50)
-        self.toolbar2.addAction(list_of_flashcards_action)
-        self.toolbar2.addWidget(spacer_widget3) 
-        self.toolbar2.addWidget(self.make_flash_btn)
-        self.toolbar2.addWidget(spacer_widget4) 
-        self.toolbar2.addAction(download_flashcards_action)
-        # self.setIcons()
-        # self.toolBar2.addWidget(QLabel("    ")) 
-
-        #web browsers
-        self.tabs = QTabWidget()
-        self.tabs.setDocumentMode(True)
-
+        self.left_pane = LeftPane()
+        self.top_right_pane = TopRightPane()
+        self.bottom_right_pane = BottomRightPane()
 
         vbox = QVBoxLayout()
-        splitter = QSplitter(Qt.Horizontal)
-        splitter2 = QSplitter(Qt.Vertical)
-        splitter3 = QSplitter(Qt.Vertical)
-        label1 = QLabel("context")
-        label1.setFixedHeight(10)
-        splitter3.addWidget(label1)
-        splitter3.addWidget(self.flash_front)
-        label2 = QLabel("selection")
-        label2.setFixedHeight(10)
-        splitter3.addWidget(label2)
-        splitter3.addWidget(self.flash_back)
-        splitter2.addWidget(splitter3)
-        splitter3.addWidget(self.toolbar2) 
-        splitter2.addWidget(self.tabs)
-        splitter2.setSizes([5,2000])
-        splitter.addWidget(self.left_pane)
-        splitter.addWidget(splitter2)
-        splitter.setSizes([500,500])
-        vbox.addWidget(splitter)
+        split_down_middle = QSplitter(Qt.Horizontal)
+        split_right_side = QSplitter(Qt.Vertical)
+        split_right_side.addWidget(self.top_right_pane)
+        split_right_side.addWidget(self.bottom_right_pane)
+        split_right_side.setSizes([5,2000])
+        split_down_middle.addWidget(self.left_pane)
+        split_down_middle.addWidget(split_right_side)
+        split_down_middle.setSizes([500,500])
+        vbox.addWidget(split_down_middle)
         self.setLayout(vbox)
         self.setGeometry(self.left, self.top, self.width, self.height)
     
@@ -107,12 +65,12 @@ class MainUIWidget(QWidget):
         
     def set_icons(self,dark):
         if dark:
-            for x in self.left_pane.toolbar.actions() + self.toolbar2.actions():
+            for x in self.left_pane.toolbar.actions() + self.top_right_pane.toolbar2.actions():
                 name = x.text()
                 path = os.path.join(os.getcwd(),"App","img",name + "_dark.png")
                 x.setIcon(QIcon(path))
         else:
-            for x in self.toolbar.actions() + self.toolbar2.actions():
+            for x in self.left_pane.toolbar.actions() + self.top_right_pane.toolbar.actions():
                 name = x.text()
                 path = os.path.join(os.getcwd(),"App","img",name + ".png")
                 x.setIcon(QIcon(path))
@@ -130,18 +88,18 @@ class MainUIWidget(QWidget):
             self.set_icons(False)
 
     def add_tab(self,index, name,url):
-        self.my_tabs[index] = QWebEngineView() 
-        self.my_tabs[index].setUrl(QUrl(url))
-        self.tabs.addTab(self.my_tabs[index],name)
+        self.bottom_right_pane.my_tabs[index] = QWebEngineView() 
+        self.bottom_right_pane.my_tabs[index].setUrl(QUrl(url))
+        self.bottom_right_pane.tabs.addTab(self.bottom_right_pane.my_tabs[index],name)
 
     def start_tabs(self):
-        self.my_tabs = {}
+        self.bottom_right_pane.my_tabs = {}
         tabs = self.json_settings     
         # print(tabs)
         for i, tab in enumerate(tabs["tabs"]): 
             self.add_tab(i,tab[0],tab[1].replace("WORD","").replace("SENT",""))
 
-class Left_Pane(QWidget):
+class LeftPane(QWidget):
     def __init__(self):
         super().__init__()
         self.toolbar = QToolBar()
@@ -176,7 +134,6 @@ class Left_Pane(QWidget):
         self.toolbar.addAction(self.play_action)
         self.toolbar.addAction(skip_forward_action)
         self.toolbar.addWidget(spacer_widget2)
-        # self.toolbar.addWidget(QLabel(" ")) 
         self.toolbar.addAction(format_action)
         self.toolbar.addWidget(QLabel(" ")) 
         self.toolbar.addAction(highlight_action)
@@ -184,26 +141,70 @@ class Left_Pane(QWidget):
         self.toolbar.addAction(helpaction)
         self.toolbar.addWidget(QLabel(" ")) 
         self.toolbar.addAction(settings_action)
-        #audio slider
         self.audio_slider = QSlider()
         self.audio_slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.audio_slider.setOrientation(Qt.Horizontal)
         self.audio_slider.setFixedHeight(30)
-        #
         self.browser = CustomTextBrowser()
         self.browser.setFont(QtGui.QFont("Calibri",14))
         self.browser.setWordWrapMode(QtGui.QTextOption.WordWrap)
-        # widget_for_layout = QWidget()
         layout_for_browser_and_buttons = QVBoxLayout()
         layout_for_browser_and_buttons.addWidget(self.toolbar)
         layout_for_browser_and_buttons.addWidget(self.audio_slider)
         layout_for_browser_and_buttons.addWidget(self.browser)
         self.setLayout(layout_for_browser_and_buttons)
 
-class Top_Right_Pane(QWidget):
+class TopRightPane(QWidget):
     def __init__(self):
         super().__init__()
+        self.flash_front = QTextEdit()
+        self.flash_front.setFont(QtGui.QFont("Calibri",10))
+        self.flash_front.setMinimumHeight(60)
+        self.flash_back = QTextEdit()
+        self.flash_back.setFont(QtGui.QFont("Calibri",10))
+        self.flash_back.setMinimumHeight(60)
+        self.make_flash_btn = QPushButton(text="Make Flashcard")
+        self.make_flash_btn.setFont(QtGui.QFont("Calibri",12,200))
+        self.make_flash_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.make_flash_btn.setFixedHeight(40)
 
+        self.toolbar = QToolBar()
+        list_of_flashcards_action = QAction("list",self)
+        list_of_flashcards_action.setToolTip("List of Flashcards")
+        download_flashcards_action = QAction("download",self)
+        download_flashcards_action.setToolTip("Download Flashcards as Anki deck")
+        spacer_widget3 = QWidget()
+        spacer_widget3.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        spacer_widget4 = QWidget()
+        spacer_widget4.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.toolbar.setFixedHeight(50)
+        self.toolbar.addAction(list_of_flashcards_action)
+        self.toolbar.addWidget(spacer_widget3) 
+        self.toolbar.addWidget(self.make_flash_btn)
+        self.toolbar.addWidget(spacer_widget4) 
+        self.toolbar.addAction(download_flashcards_action)
+        text1 = QLabel("Selection in context = Front of flashcard")
+        text1.setFixedHeight(10)
+        text2 = QLabel("Translation/Definition = Back of flashcard")
+        text2.setFixedHeight(10)
+        split_top_right_side = QSplitter(Qt.Vertical)
+        split_top_right_side.addWidget(text1)
+        split_top_right_side.addWidget(self.flash_front)
+        split_top_right_side.addWidget(text2)
+        split_top_right_side.addWidget(self.flash_back)
+        split_top_right_side.addWidget(self.toolbar)
+        layout = QVBoxLayout()
+        layout.addWidget(split_top_right_side)
+        self.setLayout(layout)
+
+class BottomRightPane(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.tabs = QTabWidget()
+        self.tabs.setDocumentMode(True)
+        layout = QVBoxLayout()
+        layout.addWidget(self.tabs)
+        self.setLayout(layout)
 
  
 if __name__ == "__main__":
