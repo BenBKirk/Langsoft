@@ -23,8 +23,6 @@ class MainUIWidget(QWidget):
         self.left_pane = LeftPane()
         self.top_right_pane = TopRightPane()
         self.bottom_right_pane = BottomRightPane()
-
-        vbox = QVBoxLayout()
         split_down_middle = QSplitter(Qt.Horizontal)
         split_right_side = QSplitter(Qt.Vertical)
         split_right_side.addWidget(self.top_right_pane)
@@ -33,6 +31,7 @@ class MainUIWidget(QWidget):
         split_down_middle.addWidget(self.left_pane)
         split_down_middle.addWidget(split_right_side)
         split_down_middle.setSizes([500,500])
+        vbox = QVBoxLayout()
         vbox.addWidget(split_down_middle)
         self.setLayout(vbox)
         self.setGeometry(self.left, self.top, self.width, self.height)
@@ -53,7 +52,6 @@ class MainUIWidget(QWidget):
         palette.setColor(QtGui.QPalette.HighlightedText, Qt.black)
         return palette
     
-
     def check_ui_settings(self):
         if self.json_settings["dark_theme"] ==  True:
             self.setPalette(self.dark_theme_palette)
@@ -87,17 +85,6 @@ class MainUIWidget(QWidget):
             self.flashcards_list.setPalette(QtGui.QPalette())
             self.set_icons(False)
 
-    def add_tab(self,index, name,url):
-        self.bottom_right_pane.my_tabs[index] = QWebEngineView() 
-        self.bottom_right_pane.my_tabs[index].setUrl(QUrl(url))
-        self.bottom_right_pane.tabs.addTab(self.bottom_right_pane.my_tabs[index],name)
-
-    def start_tabs(self):
-        self.bottom_right_pane.my_tabs = {}
-        tabs = self.json_settings     
-        # print(tabs)
-        for i, tab in enumerate(tabs["tabs"]): 
-            self.add_tab(i,tab[0],tab[1].replace("WORD","").replace("SENT",""))
 
 class LeftPane(QWidget):
     def __init__(self):
@@ -205,6 +192,18 @@ class BottomRightPane(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.tabs)
         self.setLayout(layout)
+
+    def add_tab(self,index, name,url):
+        self.my_tabs[index] = QWebEngineView() 
+        self.my_tabs[index].setUrl(QUrl(url))
+        self.tabs.addTab(self.my_tabs[index],name)
+
+    def start_tabs(self,settings):
+        self.my_tabs = {}
+        tabs = settings    
+        # print(tabs)
+        for i, tab in enumerate(tabs["tabs"]): 
+            self.add_tab(i,tab[0],tab[1].replace("WORD","").replace("SENT",""))
 
  
 if __name__ == "__main__":

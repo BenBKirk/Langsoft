@@ -29,7 +29,7 @@ class MainWindow(MainUIWidget):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.json_settings = {}
         self.set_global_settings()
-        self.start_tabs() # this being called after the settings, allows time to read the json settings file
+        self.bottom_right_pane.start_tabs(self.json_settings) # this being called after the settings, allows time to read the json settings file
         # Create classes instances:
         self.audio_player = QMediaPlayer()
         self.anki_gen = AnkiDeckGenerator()
@@ -438,8 +438,8 @@ class MainWindow(MainUIWidget):
             json.dump(json_data,f)
         self.set_global_settings()
         # refresh current instance
-        self.tabs.clear()
-        self.start_tabs()
+        self.bottom_right_pane.tabs.clear()
+        self.bottom_right_pane.start_tabs(self.json_settings)
     
     def highlight_grammar_terms(self):
         index =0
