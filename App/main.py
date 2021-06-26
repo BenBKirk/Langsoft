@@ -21,7 +21,9 @@ from html2docx import html2docx
 from API.google_trans_API import GoogleTranslate
 from flashcard_list_manager import FlashcardManager
 from help_page import HelpWindow
+import time
 import datetime
+from multi_threading import Worker
 
 
 class MainWindow(MainUIWidget):
@@ -39,6 +41,7 @@ class MainWindow(MainUIWidget):
         self.flashcards_list = FlashcardManager()
         self.format_widget = FormatSelectedText()
         self.help_page = HelpWindow()
+        # self.thread_pool = QtCore.QThreadPool()
         #connections
         self.left_pane.browser.clicked.connect(self.browser_clicked)
         self.left_pane.browser.hightlight.connect(self.highlight)
@@ -92,21 +95,26 @@ class MainWindow(MainUIWidget):
         the_format.setBackground(QtGui.QBrush(QtGui.QColor("Transparent")))
         cursor.mergeCharFormat(the_format)
     
+
     def hover_over_word(self,pos):
         text_cursor = QTextCursor()
         text_cursor = self.left_pane.browser.cursorForPosition(pos)
         text_cursor.select(QTextCursor.WordUnderCursor)
         if text_cursor.hasSelection():
             sel = text_cursor.selectedText()
-            pop_up = self.left_pane.browser.createStandardContextMenu(pos)
-            self.left_pane.browser.setToolTip(f"show saved def here -- {sel}")
-        else:
-            self.left_pane.browser.setToolTip("")
+            # Need to do a lookup here and only show tooltip if there is a saved definition for that term
+            self.left_pane.browser.setToolTip(f"{sel}")
 
+    # def start_hover_thread(self,pos):
+    #     worker = Worker(self.hover_over_word,pos)
+    #     self.thread_pool.start(worker)
+    # def show_tool_tip(self):
+    #     pass
 
-
-
-        # pop_up.exec_(self.left_pane.browser.mapToGlobal(pos))
+    def loop_in_thread(self):
+        while True:
+            self.left_pane.browser.mouse_pos
+            
 
     
     def change_font_type(self):
@@ -522,6 +530,7 @@ class MainWindow(MainUIWidget):
             i = f"\\b{i}\\b"
             new_list.append(i)
         return new_list
+
 
 
 if __name__ == "__main__":
