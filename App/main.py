@@ -192,7 +192,7 @@ class MainWindow(MainUIWidget):
         return context
     
     def autofill_searchbar(self,search_term):
-        self.top_right_pane.searchbar_lineedit.setText(search_term)
+        self.left_pane.searchbar_lineedit.setText(search_term)
 
     def autofill_flashcard(self,context):
         self.top_right_pane.flash_front.clear()
