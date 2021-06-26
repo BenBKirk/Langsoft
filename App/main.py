@@ -54,7 +54,7 @@ class MainWindow(MainUIWidget):
         self.audio_player.positionChanged.connect(self.update_slider_position)
         self.left_pane.audio_slider.valueChanged.connect(self.audio_player.setPosition)
         self.settings.save_button.clicked.connect(self.save_settings_to_json)
-        self.settings.dark_theme_checkbox.stateChanged.connect(self.toggle_theme)
+        self.settings.other_tab.dark_theme_checkbox.stateChanged.connect(self.toggle_theme)
         self.format_widget.font_options.currentTextChanged.connect(self.change_font_type)
         # self.format_widget.font_size_box.valueChanged.connect(self.change_font_size)
         self.format_widget.clear_formating_btn.clicked.connect(self.clear_formating)
@@ -94,7 +94,6 @@ class MainWindow(MainUIWidget):
         # the_format.setBackground(None)
         the_format.setBackground(QtGui.QBrush(QtGui.QColor("Transparent")))
         cursor.mergeCharFormat(the_format)
-    
 
     def hover_over_word(self,pos):
         text_cursor = QTextCursor()
@@ -231,9 +230,9 @@ class MainWindow(MainUIWidget):
         if action == 'skip_forward':
             self.skip_forward()
         if action == 'settings':
-            self.settings.dict_table_widget.blockSignals(True)
+            self.settings.dict_tab.dict_table_widget.blockSignals(True)
             self.settings.load_settings(False)
-            self.settings.dict_table_widget.blockSignals(False)
+            self.settings.dict_tab.dict_table_widget.blockSignals(False)
             self.settings.show()
         if action == 'list':
             self.flashcards_list.list_table_widget.clear()
@@ -462,20 +461,20 @@ class MainWindow(MainUIWidget):
     def save_settings_to_json(self):
         # get the data from table etc
         tab_settings = []
-        number_of_rows_dict = self.settings.dict_table_widget.rowCount() -1 
+        number_of_rows_dict = self.settings.dict_tab.dict_table_widget.rowCount() -1 
         for i in range(number_of_rows_dict):
-            tab_settings.append([self.settings.dict_table_widget.item(i,1).text(),self.settings.dict_table_widget.item(i,2).text()])
-        dark_theme = self.settings.dark_theme_checkbox.isChecked()
-        autofill_flashcards = self.settings.autofill_checkbox.isChecked()
+            tab_settings.append([self.settings.dict_tab.dict_table_widget.item(i,1).text(),self.settings.dict_tab.dict_table_widget.item(i,2).text()])
+        dark_theme = self.settings.other_tab.dark_theme_checkbox.isChecked()
+        autofill_flashcards = self.settings.other_tab.autofill_checkbox.isChecked()
         # grammar highlighter settings
         
         dis_dict = {}
-        number_of_rows_dis = self.settings.discourse_table_widget.rowCount() -1
+        number_of_rows_dis = self.settings.discourse_tab.discourse_table_widget.rowCount() -1
         for i in range(number_of_rows_dis):
             try:
-                cat_key = self.settings.discourse_table_widget.item(i,1).text()
-                cat_color = self.settings.dis_color[i].styleSheet()[23:-1]
-                cat_list = self.settings.discourse_table_widget.item(i,3).text().split(", ")
+                cat_key = self.settings.discourse_tab.discourse_table_widget.item(i,1).text()
+                cat_color = self.settings.discourse_tab.dis_color[i].styleSheet()[23:-1]
+                cat_list = self.settings.discourse_tab.discourse_table_widget.item(i,3).text().split(", ")
                 dis_dict[cat_key] = {"color": cat_color,"list": cat_list}
             except:
                 pass
