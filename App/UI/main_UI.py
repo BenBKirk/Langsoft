@@ -184,7 +184,7 @@ class TopRightPane(QWidget):
         label2 = QLabel("Translation/Definition = Back of flashcard:")
         label2.setFixedHeight(10)
         label3 = QLabel("Track word/phrase in all texts by selecting how well you know it. Note:the difinition above well be saved too.")
-        label3 = QLabel("Cllick a button below to save the selection along with your definition and the highlights will be applied.")
+        label3 = QLabel("Click a button below to save and highlight the selection along with your definition")
         label3.setFixedHeight(15)
         self.confidence_btn1 = QPushButton("1.Unknown")
         self.confidence_btn2 = QPushButton("2.Semi-Known")
