@@ -57,19 +57,19 @@ class Database(object):
         with DatabaseHelper(self.name) as db_helper:
             query = """
             CREATE TABLE IF NOT EXISTS users (
-                id Integer,
+                id Integer NOT NULL AUTO_INCREMENT,
                 name VARCHAR,
                 PRIMARY KEY (id)
             )
             CREATE TABLE IF NOT EXISTS languages (
-                id INTEGER,
+                id INTEGER NOT NULL AUTO_INCREMENT,
                 name VARCHAR,
                 user_id INTEGER,
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
             )
             CREATE TABLE IF NOT EXISTS settings (
-                id INTEGER,
+                id INTEGER NOT NULL AUTO_INCREMENT,
                 user_id INTEGER,
                 name VARCHAR,
                 value VARCHAR,
@@ -78,7 +78,7 @@ class Database(object):
                 FOREIGN KEY (user_id) REFERENCES users (id)
             )
             CREATE TABLE IF NOT EXISTS highlighters (
-                id INTEGER,
+                id INTEGER NOT NULL AUTO_INCREMENT,
                 user_id INTEGER,
                 color VARCHAR,
                 style VARCHAR,
@@ -87,7 +87,7 @@ class Database(object):
                 FOREIGN KEY (user_id) REFERENCES users (id)
             )
             CREATE TABLE IF NOT EXISTS online_tools (
-                id INTEGER,
+                id INTEGER NOT NULL AUTO_INCREMENT,
                 title VARCHAR,
                 url VARCHAR,
                 user_id,
@@ -95,7 +95,7 @@ class Database(object):
                 FOREIGN KEY (user_id) REFERENCES users (id)
             )
             CREATE TABLE IF NOT EXISTS flashcards (
-                id INTEGER,
+                id INTEGER NOT NULL AUTO_INCREMENT,
                 user_id INTEGER,
                 front VARCHAR,
                 back VARCHAR,
@@ -104,29 +104,34 @@ class Database(object):
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
                 FOREIGN KEY (language_id) REFERENCES languages (id)
-                
             )
             CREATE TABLE IF NOT EXISTS vocabulary (
-                id INTEGER,
+                id INTEGER NOT NULL AUTO_INCREMENT,
                 user_id INTEGER,
                 term VARCHAR,
                 language_id INTEGER,
                 definition VARCHAR,
                 highlighter_id INTEGER,
                 is_regex BOOLEAN,
+                created_at DATE,
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
                 FOREIGN KEY (language_id) REFERENCES languages (id)
                 FOREIGN KEY (highlighter_id) REFERENCES highlighters (id)
+            )
+            CREATE TABLE IF NOT EXISTS recent_files (
+                id INTEGER NOT NULL AUTO_INCREMENT,
+                filepath VARCHAR,
+                created_at DATE,
+                user_id INTEGER,
+                PRIMARY KEY (id)
+                FOREIGN KEY user_id REFERENCES users (id)
             )
             """
             db_helper.query(query)
     
     def set_up_defaults(self):
         pass
-
-            
-
 
 
 class SettingsData(object):
