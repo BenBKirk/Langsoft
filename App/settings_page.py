@@ -88,16 +88,39 @@ class UsersTab(QWidget):
     def __init__(self):
         super(UsersTab, self).__init__()
         self.table = QTableWidget()
+        self.user_combobox = QComboBox()
+        self.user_delete = QPushButton("Del")
+        self.user_delete.setIcon(QtGui.QIcon(os.path.join(os.getcwd(),"App","img","user.png")))
+        self.language_combobox = QComboBox()
+        self.add_language_btn = QPushButton("Add New Language")
+        self.add_language_name = QLineEdit()
+        self.add_user_name = QLineEdit()
+        self.add_user_btn = QPushButton("Add New User")
+        self.user_combobox.addItems(["bob","fred","jim","john"])
+        self.language_combobox.addItems(["english","indonesian","japanese",])
+        user_layout = QHBoxLayout()
+        user_layout.addWidget(self.user_combobox)
+        user_layout.addWidget(self.user_delete)
+        layout = QFormLayout()
+        layout.addRow(QLabel(""),QLabel("Note: Selecting a user or language will update settings in other tabs"))
+        layout.addRow(QLabel("Users:"),user_layout)
+        layout.addRow(self.add_user_btn,self.add_user_name)
+        layout.addRow(QLabel(""))
+        layout.addRow(QLabel("Language:"),self.language_combobox)
+        layout.addRow(self.add_language_btn,self.add_language_name)
+        layout.addRow(QLabel(""),QLabel("Note: New languages will be added to the selected user above"))
+        self.setLayout(layout)
+
         
 class OtherTab(QWidget):
     def __init__(self):
         super(OtherTab, self).__init__()
         self.dark_theme_checkbox = QCheckBox("Dark Theme")
         self.autofill_checkbox = QCheckBox("Autofill Back Of Flashcard")
-        layoutV = QVBoxLayout()
-        layoutV.addWidget(self.dark_theme_checkbox)
-        layoutV.addWidget(self.autofill_checkbox)
-        self.setLayout(layoutV)
+        layout = QVBoxLayout()
+        layout.addWidget(self.dark_theme_checkbox)
+        layout.addWidget(self.autofill_checkbox)
+        self.setLayout(layout)
 class DictTab(QWidget):
     dictList = {}
     dict_btn = {}
