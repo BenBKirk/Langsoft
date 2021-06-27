@@ -28,23 +28,27 @@ class DatabaseHelper(object):
     def __exit__(self,exc_type,exc_value,traceback):
         self.close() 
 
-    def get(self,table,columns,limit=None):
-        query = "SELECT {0} from {1};".format(columns,table)
-        self.cursor.execute(query)
-        # fetch data
-        rows = self.cursor.fetchall()
-        return rows[len(rows)-limit if limit else 0:]
+    # def get(self,table,columns,limit=None):
+    #     query = "SELECT {0} from {1};".format(columns,table)
+    #     self.cursor.execute(query)
+    #     # fetch data
+    #     rows = self.cursor.fetchall()
+    #     return rows[len(rows)-limit if limit else 0:]
     
     def get_sql(self,sql):
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
-    def write(self,table,columns,data):
-        query = "INSERT INTO {0} ({1}) VALUES ({2});".format(table,columns,data)
-        self.cursor.execute(query)
+    # def write(self,table,columns,data):
+    #     query = "INSERT INTO {0} ({1}) VALUES ({2});".format(table,columns,data)
+    #     self.cursor.execute(query)
 
-    def query(self,sql):
-        self.cursor.execute(sql)
+    def query(self,query,param=None):
+        if param is None:
+            self.cursor.execute(query)
+        else:
+            self.cursor.execute(query,param)
+
     
 
 class Database(object):
@@ -54,7 +58,7 @@ class Database(object):
         self.create_tables()
     
     def create_tables(self):
-        with DatabaseHelper(self.name) as db_helper:
+        with DatabaseHelper(self.name) as db:
             query = """
             CREATE TABLE IF NOT EXISTS users (
                 id Integer NOT NULL AUTO_INCREMENT,
@@ -90,9 +94,11 @@ class Database(object):
                 id INTEGER NOT NULL AUTO_INCREMENT,
                 title VARCHAR,
                 url VARCHAR,
-                user_id,
+                user_id INTEGER,
+                lang_id INTEGER,
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
+                FOREIGN KEY (lang_id) REFERENCES languages (id)
             )
             CREATE TABLE IF NOT EXISTS flashcards (
                 id INTEGER NOT NULL AUTO_INCREMENT,
@@ -128,10 +134,30 @@ class Database(object):
                 FOREIGN KEY user_id REFERENCES users (id)
             )
             """
-            db_helper.query(query)
+            db.query(query)
     
     def set_up_defaults(self):
-        pass
+        query_user = """
+        INSERT INTO users(id,name) VALUES (:id,:name)
+        """
+        default_user_param = (1,"Default_User")
+
+        default_lang = """
+        INSERT INTO languages(id,name,user_id) VALUES (:id,:name,:user_id)
+        """
+        default_lang_param = (1,"Indonesian",1)
+
+
+
+
+
+
+        with DatabaseHelper(self.name) as db:
+            db.query(query_user, default_user_param)
+            db.query(default_lang, default_lang_param)
+
+
+
 
 
 class SettingsData(object):
