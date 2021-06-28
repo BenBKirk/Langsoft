@@ -7,7 +7,7 @@ class DatabaseHelper(object):
         self.cursor = None
         if name:
             self.open(name)
-    
+        
     def open(self,name):
         try:
             self.conn = sqlite3.connect(name)
@@ -43,55 +43,55 @@ class DatabaseHelper(object):
     #     query = "INSERT INTO {0} ({1}) VALUES ({2});".format(table,columns,data)
     #     self.cursor.execute(query)
 
-    def query(self,query,param=None):
+    def execute_single(self,query,param=None):
         if param is None:
             self.cursor.execute(query)
         else:
             self.cursor.execute(query,param)
-
     
+    def execute_script(self,query):
+        self.cursor.executescript(query)
 
 class Database(object):
     def __init__(self,db_name="database.db"):
         self.name = db_name
-        # self.helper = DatabaseHelper(self.name)
         self.create_tables()
+        self.set_up_defaults()
     
     def create_tables(self):
         with DatabaseHelper(self.name) as db:
             query = """
             CREATE TABLE IF NOT EXISTS users (
-                id Integer NOT NULL AUTO_INCREMENT,
+                id INTEGER AUTO_INCREMENT,
                 name VARCHAR,
                 PRIMARY KEY (id)
-            )
+            );
             CREATE TABLE IF NOT EXISTS languages (
-                id INTEGER NOT NULL AUTO_INCREMENT,
+                id INTEGER AUTO_INCREMENT,
                 name VARCHAR,
                 user_id INTEGER,
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
-            )
+            );
             CREATE TABLE IF NOT EXISTS settings (
-                id INTEGER NOT NULL AUTO_INCREMENT,
+                id INTEGER AUTO_INCREMENT,
                 user_id INTEGER,
                 name VARCHAR,
                 value VARCHAR,
-                default VARCHAR,
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
-            )
+            );
             CREATE TABLE IF NOT EXISTS highlighters (
-                id INTEGER NOT NULL AUTO_INCREMENT,
+                id INTEGER AUTO_INCREMENT,
                 user_id INTEGER,
                 color VARCHAR,
                 style VARCHAR,
                 name VARCHAR,
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
-            )
+            );
             CREATE TABLE IF NOT EXISTS online_tools (
-                id INTEGER NOT NULL AUTO_INCREMENT,
+                id INTEGER AUTO_INCREMENT,
                 title VARCHAR,
                 url VARCHAR,
                 user_id INTEGER,
@@ -99,9 +99,9 @@ class Database(object):
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
                 FOREIGN KEY (lang_id) REFERENCES languages (id)
-            )
+            );
             CREATE TABLE IF NOT EXISTS flashcards (
-                id INTEGER NOT NULL AUTO_INCREMENT,
+                id INTEGER AUTO_INCREMENT,
                 user_id INTEGER,
                 front VARCHAR,
                 back VARCHAR,
@@ -110,9 +110,9 @@ class Database(object):
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
                 FOREIGN KEY (language_id) REFERENCES languages (id)
-            )
+            );
             CREATE TABLE IF NOT EXISTS vocabulary (
-                id INTEGER NOT NULL AUTO_INCREMENT,
+                id INTEGER AUTO_INCREMENT,
                 user_id INTEGER,
                 term VARCHAR,
                 language_id INTEGER,
@@ -124,40 +124,33 @@ class Database(object):
                 FOREIGN KEY (user_id) REFERENCES users (id)
                 FOREIGN KEY (language_id) REFERENCES languages (id)
                 FOREIGN KEY (highlighter_id) REFERENCES highlighters (id)
-            )
+            );
             CREATE TABLE IF NOT EXISTS recent_files (
-                id INTEGER NOT NULL AUTO_INCREMENT,
+                id INTEGER AUTO_INCREMENT,
                 filepath VARCHAR,
                 created_at DATE,
                 user_id INTEGER,
                 PRIMARY KEY (id)
-                FOREIGN KEY user_id REFERENCES users (id)
-            )
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            );
             """
-            db.query(query)
+            db.execute_script(query)
     
     def set_up_defaults(self):
-        query_user = """
-        INSERT INTO users(id,name) VALUES (:id,:name)
+        default_user = """
+        INSERT OR REPLACE INTO users(id,name) VALUES (:id,:name)
         """
-        default_user_param = (1,"Default_User")
+        default_user_param = (1,"default_user")
 
         default_lang = """
-        INSERT INTO languages(id,name,user_id) VALUES (:id,:name,:user_id)
+        INSERT OR REPLACE INTO languages(id,name,user_id) VALUES (:id,:name,:user_id)
         """
         default_lang_param = (1,"Indonesian",1)
 
-
-
-
-
-
         with DatabaseHelper(self.name) as db:
-            db.query(query_user, default_user_param)
-            db.query(default_lang, default_lang_param)
-
-
-
+            db.execute_single(default_user, default_user_param)
+            db.execute_single(default_lang, default_lang_param)
+        
 
 
 class SettingsData(object):

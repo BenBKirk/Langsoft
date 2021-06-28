@@ -24,6 +24,7 @@ from help_page import HelpWindow
 import time
 import datetime
 from multi_threading import Worker
+from database_helper import Database
 
 
 class MainWindow(MainUIWidget):
@@ -41,6 +42,7 @@ class MainWindow(MainUIWidget):
         self.flashcards_list = FlashcardManager()
         self.format_widget = FormatSelectedText()
         self.help_page = HelpWindow()
+        self.db = Database()
         # self.thread_pool = QtCore.QThreadPool()
         #connections
         self.left_pane.browser.clicked.connect(self.browser_clicked)
@@ -91,7 +93,6 @@ class MainWindow(MainUIWidget):
     def clear_highlighting(self):
         cursor = self.left_pane.browser.textCursor()
         the_format = QTextCharFormat()
-        # the_format.setBackground(None)
         the_format.setBackground(QtGui.QBrush(QtGui.QColor("Transparent")))
         cursor.mergeCharFormat(the_format)
 
@@ -103,17 +104,6 @@ class MainWindow(MainUIWidget):
             sel = text_cursor.selectedText()
             # Need to do a lookup here and only show tooltip if there is a saved definition for that term
             self.left_pane.browser.setToolTip(f"{sel}")
-
-    # def start_hover_thread(self,pos):
-    #     worker = Worker(self.hover_over_word,pos)
-    #     self.thread_pool.start(worker)
-    # def show_tool_tip(self):
-    #     pass
-
-    def loop_in_thread(self):
-        while True:
-            self.left_pane.browser.mouse_pos
-            
 
     
     def change_font_type(self):
@@ -534,8 +524,6 @@ class MainWindow(MainUIWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-
-
     app.setStyle("fusion")
     mainApp = MainWindow()
     mainApp.setWindowTitle("Linguini")
