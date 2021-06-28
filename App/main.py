@@ -237,25 +237,26 @@ class MainWindow(MainUIWidget):
             self.format_widget.show()
 
     def save_file(self):
-        file_path = QFileDialog.getSaveFileName(self, 'Save File','',"HTML Files (*.html);; TXT Files (*.txt) ;; DOCX Files (*.docx)")[0]
-        if file_path:
-            file_type = self.get_file_extension_from_path(file_path)
-            filename = self.get_filename_from_path(file_path)
+        filepath = QFileDialog.getSaveFileName(self, 'Save File','',"HTML Files (*.html);; TXT Files (*.txt) ;; DOCX Files (*.docx)")[0]
+        if filepath:
+            file_type = self.get_file_extension_from_path(filepath)
+            filename = self.get_filename_from_path(filepath)
             if file_type == '.txt':
                 file_data = self.left_pane.browser.toPlainText()
-                with open(file_path, 'w', encoding='utf8', errors='ignore') as f:
+                with open(filepath, 'w', encoding='utf8', errors='ignore') as f:
                         f.write(file_data)
             elif file_type == '.html':
                 file_data = self.left_pane.browser.toHtml()
-                with open(file_path, 'w', encoding='utf8', errors='ignore') as f:
+                with open(filepath, 'w', encoding='utf8', errors='ignore') as f:
                         f.write(file_data)
             elif file_type == '.docx':
                 file_data = self.left_pane.browser.toHtml()
                 file_data = html2docx(file_data,title=filename).getvalue()
-                with open(file_path, 'wb') as f:
+                with open(filepath, 'wb') as f:
                         f.write(file_data)
             else:
                 self.display_msg("Error", f'Only ".txt", ".html", and ".docx" file extensions are supported.')
+            self.db.add_recent_file(filepath)
     
     def open_file(self):
         filepath = QFileDialog.getOpenFileName(self,'select a text document')[0]
@@ -264,44 +265,42 @@ class MainWindow(MainUIWidget):
         resources_path = self.get_folder_from_path(filepath)
         filetype = self.get_file_extension_from_path(filepath)
         self.left_pane.browser.document().setMetaInformation(QTextDocument.DocumentUrl, QtCore.QUrl.fromLocalFile(resources_path).toString())
-        self.db.add_recent_file(filepath)
+        is_html = True
         if filetype == ".txt":
             with open(filepath,'r') as f:
                 data = f.read()
-                self.left_pane.browser.clear()
-                self.left_pane.browser.insertPlainText(data)
-            self.load_audio(filepath)
-            return
-        if filetype == ".html" or filetype == ".htm" or filetype == ".mhtml" or filetype == ".mht":
+                is_html = False
+        elif filetype == ".html" or filetype == ".htm" or filetype == ".mhtml" or filetype == ".mht":
             with open(filepath,'r',encoding='utf8', errors='ignore') as f:
                 data = f.read()
-                # print(data)
-                self.left_pane.browser.clear()
-                self.left_pane.browser.insertHtml(data)
-            self.load_audio(filepath)
-            return
-        if filetype == ".pdf":
+        elif filetype == ".docx":
+            with open(filepath,'rb') as f:
+                # data = f.read()
+                data = mammoth.convert_to_html(f).value
+        elif filetype == ".pdf":
             with fitz.open(filepath) as doc:
                 pages = []
                 for i in range(doc.page_count):
-                    pages.append(doc.load_page(i)) #TODO: should load all pages
+                    pages.append(doc.load_page(i))
                 for page in pages:
-                    justHtml = page.get_text("html")
+                    data = page.get_text("html")
                     self.left_pane.browser.clear()
-                    self.left_pane.browser.insertHtml(justHtml)
-                self.load_audio(filepath)
-                return
-
-        if filetype == ".docx":
-            with open(filepath,'rb') as f:
-                # data = f.read()
-                justHtml = mammoth.convert_to_html(f)
-                self.left_pane.browser.clear()
-                self.left_pane.browser.insertHtml(justHtml.value)
+                    self.left_pane.browser.insertHtml(data)
             self.load_audio(filepath)
+            self.db.add_recent_file(filepath)
+        else:
+            self.display_msg("Error",f'Could not recognize file: "{filetype}"')
             return
-        # if not returned before
-        self.display_msg("Error",f'Could not recognize file: "{filetype}"')
+        if is_html:
+            self.left_pane.browser.clear()
+            self.left_pane.browser.insertHtml(data)
+            self.db.add_recent_file(filepath)
+        else:
+            self.left_pane.browser.clear()
+            self.left_pane.browser.insertPlainText(data)
+        self.load_audio(filepath)
+
+    
         
 
     def add_flashcard(self): # this appends card to json file
