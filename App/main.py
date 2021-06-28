@@ -275,7 +275,6 @@ class MainWindow(MainUIWidget):
                 data = f.read()
         elif filetype == ".docx":
             with open(filepath,'rb') as f:
-                # data = f.read()
                 data = mammoth.convert_to_html(f).value
         elif filetype == ".pdf":
             with fitz.open(filepath) as doc:
@@ -291,12 +290,11 @@ class MainWindow(MainUIWidget):
         else:
             self.display_msg("Error",f'Could not recognize file: "{filetype}"')
             return
+        self.left_pane.browser.clear()
         if is_html:
-            self.left_pane.browser.clear()
             self.left_pane.browser.insertHtml(data)
             self.db.add_recent_file(filepath)
         else:
-            self.left_pane.browser.clear()
             self.left_pane.browser.insertPlainText(data)
         self.load_audio(filepath)
 
