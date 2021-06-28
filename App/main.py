@@ -258,29 +258,30 @@ class MainWindow(MainUIWidget):
                 self.display_msg("Error", f'Only ".txt", ".html", and ".docx" file extensions are supported.')
     
     def open_file(self):
-        file_path = QFileDialog.getOpenFileName(self,'select a text document')[0]
-        if not file_path:
+        filepath = QFileDialog.getOpenFileName(self,'select a text document')[0]
+        if not filepath:
             return
-        resources_path = self.get_folder_from_path(file_path)
-        filetype = self.get_file_extension_from_path(file_path)
+        resources_path = self.get_folder_from_path(filepath)
+        filetype = self.get_file_extension_from_path(filepath)
         self.left_pane.browser.document().setMetaInformation(QTextDocument.DocumentUrl, QtCore.QUrl.fromLocalFile(resources_path).toString())
+        self.db.add_recent_file(filepath)
         if filetype == ".txt":
-            with open(file_path,'r') as f:
+            with open(filepath,'r') as f:
                 data = f.read()
                 self.left_pane.browser.clear()
                 self.left_pane.browser.insertPlainText(data)
-            self.load_audio(file_path)
+            self.load_audio(filepath)
             return
         if filetype == ".html" or filetype == ".htm" or filetype == ".mhtml" or filetype == ".mht":
-            with open(file_path,'r',encoding='utf8', errors='ignore') as f:
+            with open(filepath,'r',encoding='utf8', errors='ignore') as f:
                 data = f.read()
                 # print(data)
                 self.left_pane.browser.clear()
                 self.left_pane.browser.insertHtml(data)
-            self.load_audio(file_path)
+            self.load_audio(filepath)
             return
         if filetype == ".pdf":
-            with fitz.open(file_path) as doc:
+            with fitz.open(filepath) as doc:
                 pages = []
                 for i in range(doc.page_count):
                     pages.append(doc.load_page(i)) #TODO: should load all pages
@@ -288,16 +289,16 @@ class MainWindow(MainUIWidget):
                     justHtml = page.get_text("html")
                     self.left_pane.browser.clear()
                     self.left_pane.browser.insertHtml(justHtml)
-                self.load_audio(file_path)
+                self.load_audio(filepath)
                 return
 
         if filetype == ".docx":
-            with open(file_path,'rb') as f:
+            with open(filepath,'rb') as f:
                 # data = f.read()
                 justHtml = mammoth.convert_to_html(f)
                 self.left_pane.browser.clear()
                 self.left_pane.browser.insertHtml(justHtml.value)
-            self.load_audio(file_path)
+            self.load_audio(filepath)
             return
         # if not returned before
         self.display_msg("Error",f'Could not recognize file: "{filetype}"')

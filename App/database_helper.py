@@ -1,5 +1,8 @@
 import sqlite3
 
+from PyQt5.QtCore import QDateTime
+
+from datetime import datetime
 
 class DatabaseHelper(object):
     def __init__(self, name=None):
@@ -57,6 +60,7 @@ class Database(object):
         self.name = db_name
         self.create_tables()
         self.set_up_defaults()
+        self.check_active_user()
     
     def create_tables(self):
         with DatabaseHelper(self.name) as db:
@@ -64,6 +68,7 @@ class Database(object):
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER AUTO_INCREMENT,
                 name VARCHAR,
+                is_active BOOLEAN,
                 PRIMARY KEY (id)
             );
             CREATE TABLE IF NOT EXISTS languages (
@@ -126,9 +131,9 @@ class Database(object):
                 FOREIGN KEY (highlighter_id) REFERENCES highlighters (id)
             );
             CREATE TABLE IF NOT EXISTS recent_files (
-                id INTEGER AUTO_INCREMENT,
+                id INTEGER,
                 filepath VARCHAR,
-                created_at DATE,
+                created_at SMALLDATETIME,
                 user_id INTEGER,
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
@@ -151,7 +156,51 @@ class Database(object):
             db.execute_single(default_user, default_user_param)
             db.execute_single(default_lang, default_lang_param)
         
+        
+    def check_active_user(self):
+        with DatabaseHelper(self.name) as db:
+            active_user = db.get_sql("SELECT * FROM users WHERE is_active = true")
+            # active_user = db.get_sql("SELECT * FROM users ")
+            if active_user == []: #the program is probably being run for the first time
+                default_user = """
+                INSERT OR REPLACE INTO users(id,name,is_active) VALUES (:id,:name,:is_active)
+                """
+                default_user_param = (1,"default_user",True)
+                db.execute_single(default_user, default_user_param)
+    
+    def get_active_user(self):
+        with DatabaseHelper(self.name) as db:
+            return db.get_sql("SELECT * FROM users WHERE is_active=1")
 
+    def add_recent_file(self,filepath):
+        active_user_id = self.get_active_user()[0][0]
+        date_time = datetime.now()
+        # delete older instances of same file
+        with DatabaseHelper(self.name) as db:
+            check = db.get_sql(f"SELECT * FROM recent_files WHERE filepath ='{filepath}'")
+            if check == []:
+                with DatabaseHelper(self.name) as db:
+                    sql = "INSERT INTO recent_files (filepath,created_at,user_id) VALUES (:filepath,:created_at,:user_id)"
+                    params = (filepath,date_time,active_user_id)
+                    db.execute_single(sql, params)
+
+            elif len(check[0]) > 0: #check if there is already an entry
+                with DatabaseHelper(self.name) as db:
+                    old_id = check[0][0]
+                    sql = "REPLACE INTO recent_files (id,filepath,created_at,user_id) VALUES (:id,:filepath,:created_at,:user_id)"
+                    params = (old_id,filepath,date_time,active_user_id)
+                    db.execute_single(sql, params)
+
+
+
+
+        
+        print(self.latest_recent_files())
+    
+    def latest_recent_files(self):
+        with DatabaseHelper(self.name) as db:
+            return db.get_sql("SELECT * FROM recent_files ORDER BY created_at DESC LIMIT 10")
+            
 
 class SettingsData(object):
     """data model for settings"""
