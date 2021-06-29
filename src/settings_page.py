@@ -41,6 +41,21 @@ class SettingsPage(QWidget):
         self.setWindowIcon(QtGui.QIcon(os.path.join("src", "img", "settings.png")))
         self.dict_tab.restore_defaults.clicked.connect(lambda: self.load_settings(True))
     
+    def load_settings2(self,online_tools):
+        if online_tools != []:
+            self.dict_tab.dict_table_widget.clearContents()
+            self.dict_tab.dict_table_widget.setRowCount(len(online_tools)+1)
+            self.dict_tab.dict_table_widget.setColumnCount(3)
+        self.dict_tab.dict_table_widget.setHorizontalHeaderLabels(["Del","Tab Name", "URL"])
+        for i,val in enumerate(online_tools):
+            dict_btn = self.dict_tab.make_dict_btn(i)
+            self.dict_tab.dict_table_widget.setCellWidget(i,0, dict_btn)
+            self.dict_tab.dict_table_widget.setItem(i,1,QTableWidgetItem(val[1]))
+            self.dict_tab.dict_table_widget.setItem(i,2,QTableWidgetItem(val[2]))
+        self.dict_tab.dict_table_widget.resizeColumnsToContents()
+
+
+    
     def load_settings(self,default):
         data = self.get_json_data()
         if default:

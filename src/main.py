@@ -196,7 +196,8 @@ class MainWindow(MainUIWidget):
             self.skip_forward()
         if action == 'settings':
             self.settings.dict_tab.dict_table_widget.blockSignals(True)
-            self.settings.load_settings(False)
+            self.settings.load_settings2(self.db.get_settings())
+            # self.settings.load_settings(False)
             self.settings.dict_tab.dict_table_widget.blockSignals(False)
             self.settings.show()
         if action == 'list':
@@ -403,7 +404,6 @@ class MainWindow(MainUIWidget):
         else:
             return dur
 
-
     def get_filename_from_path(self, path):
         filename = os.path.basename(path)
         name = filename.split('.')[0]
@@ -491,6 +491,7 @@ class MainWindow(MainUIWidget):
             i = f"\\b{i}\\b"
             new_list.append(i)
         return new_list
+
 
 
 

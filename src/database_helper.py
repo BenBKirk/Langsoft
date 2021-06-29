@@ -58,7 +58,7 @@ class Database(object):
         self.name = db_name
         self.create_tables()
         self.set_up_defaults()
-        self.check_active_user()
+        self.check_active_user_and_lang()
     
     def create_tables(self):
         with DatabaseHelper(self.name) as db:
@@ -73,6 +73,7 @@ class Database(object):
                 id INTEGER,
                 name VARCHAR,
                 user_id INTEGER,
+                is_active BOOLEAN,
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
             );
@@ -167,7 +168,7 @@ class Database(object):
             db.execute_single(default_online_tools5, default_online_tools_param5)
         
         
-    def check_active_user(self):
+    def check_active_user_and_lang(self):
         with DatabaseHelper(self.name) as db:
             active_user = db.get_sql("SELECT * FROM users WHERE is_active = true")
             # active_user = db.get_sql("SELECT * FROM users ")
@@ -177,33 +178,60 @@ class Database(object):
                 """
                 default_user_param = (1,"default_user",True)
                 db.execute_single(default_user, default_user_param)
+                self.active_user = 1
+            else:
+                self.active_user = active_user[0][0]
+            
+            active_lang = db.get_sql(f"SELECT * FROM languages WHERE user_id = {self.active_user} and is_active = 1")
+            if active_lang == []:
+                default_lang = "INSERT OR REPLACE INTO languages(id,name,user_id,is_active) VALUES (:id,:name,:user_id,:is_active)"
+                default_lang_param = (1,"Indonesian",1,True)
+                db.execute_single(default_lang,default_lang_param)
+                self.active_lang = 1
+            else:
+                self.active_lang = active_lang[0][0]
+
     
-    def get_active_user(self):
-        with DatabaseHelper(self.name) as db:
-            return db.get_sql("SELECT * FROM users WHERE is_active=1")
+    def change_active_user(self):
+        pass
+    
+    # def set_active_user(self):
+    #     with DatabaseHelper(self.name) as db:
+    #         active_user_id = db.get_sql("SELECT * FROM users WHERE is_active=1 LIMIT 1")
+    #         self.active_user = active_user_id
+    #         print(active_user_id)
 
     def add_recent_file(self,filepath):
-        active_user_id = self.get_active_user()[0][0]
         date_time = datetime.now()
         with DatabaseHelper(self.name) as db:
             check = db.get_sql(f"SELECT * FROM recent_files WHERE filepath ='{filepath}'")
             if check == []: #it must be a new file
                 with DatabaseHelper(self.name) as db:
                     sql = "INSERT INTO recent_files (filepath,created_at,user_id) VALUES (:filepath,:created_at,:user_id)"
-                    params = (filepath,date_time,active_user_id)
+                    params = (filepath,date_time,self.active_user)
                     db.execute_single(sql, params)
 
             elif len(check[0]) > 0: # replace the old entry
                 with DatabaseHelper(self.name) as db:
                     old_id = check[0][0]
                     sql = "REPLACE INTO recent_files (id,filepath,created_at,user_id) VALUES (:id,:filepath,:created_at,:user_id)"
-                    params = (old_id,filepath,date_time,active_user_id)
+                    params = (old_id,filepath,date_time,self.active_user)
                     db.execute_single(sql, params)
     
     def get_latest_recent_files(self):
         with DatabaseHelper(self.name) as db:
             return db.get_sql("SELECT * FROM recent_files ORDER BY created_at DESC LIMIT 10")
+    
             
+    def get_settings(self):
+        with DatabaseHelper(self.name) as db:
+            data = db.get_sql(f"SELECT * FROM online_tools WHERE user_id = {self.active_user} AND lang_id = {self.active_lang}")
+            return data
+            print(self.active_user)
+            print(self.active_lang)
+            print(data)
+        
+
 
 class SettingsData(object):
     """
