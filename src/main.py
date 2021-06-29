@@ -40,14 +40,14 @@ class MainWindow(MainUIWidget):
         self.settings = SettingsPage()
         self.translator = GoogleTranslate()
         self.flashcards_list = FlashcardManager()
-        self.format_widget = FormatSelectedText()
+        self.format_widget = FormatSelectedText(self.left_pane.browser)
         self.help_page = HelpWindow()
         self.db = Database()
         # self.thread_pool = QtCore.QThreadPool()
         #connections
         self.left_pane.browser.clicked.connect(self.browser_clicked)
         self.left_pane.browser.hightlight.connect(self.highlight)
-        self.left_pane.browser.clear_highlighting.connect(self.clear_highlighting)
+        self.left_pane.browser.clear_highlighting.connect(self.format_widget.clear_highlighting)
         self.left_pane.browser.hover.connect(self.hover_over_word)
         self.left_pane.toolbar.actionTriggered[QAction].connect(self.handle_toolbar_click)
         self.top_right_pane.toolbar.actionTriggered[QAction].connect(self.handle_toolbar_click)
@@ -57,10 +57,10 @@ class MainWindow(MainUIWidget):
         self.left_pane.audio_slider.valueChanged.connect(self.audio_player.setPosition)
         self.settings.save_button.clicked.connect(self.save_settings_to_json)
         self.settings.other_tab.dark_theme_checkbox.stateChanged.connect(self.toggle_theme)
-        self.format_widget.font_options.currentTextChanged.connect(self.change_font_type)
-        # self.format_widget.font_size_box.valueChanged.connect(self.change_font_size)
-        self.format_widget.clear_formating_btn.clicked.connect(self.clear_formating)
-        self.format_widget.clear_highlighting_btn.clicked.connect(self.clear_highlighting)
+        # self.format_widget.font_options.currentTextChanged.connect(self.change_font_type)
+        # #self.format_widget.font_size_box.valueChanged.connect(self.change_font_size)
+        # self.format_widget.clear_formating_btn.clicked.connect(self.clear_formating)
+        # self.format_widget.clear_highlighting_btn.clicked.connect(self.clear_highlighting)
         # other
         self.dark_theme_palette = self.setup_dark_theme()
         self.check_ui_settings()
@@ -76,24 +76,10 @@ class MainWindow(MainUIWidget):
         self.skip_forward_shortcut = QShortcut(QtGui.QKeySequence("Alt+Right"),self)
         self.skip_forward_shortcut.activated.connect(self.skip_forward)
 
-    def clear_formating(self):
-        cursor = self.left_pane.browser.textCursor()
-        the_format = QTextCharFormat()
-        the_format.setFontPointSize(14)
-        the_format.setFontWeight(0)
-        the_format.setBackground(QtGui.QBrush(QtGui.QColor("Transparent")))
-        cursor.setCharFormat(the_format)
-
     def highlight(self,color):
         cursor = self.left_pane.browser.textCursor()
         the_format = QTextCharFormat()
         the_format.setBackground(QtGui.QBrush(QtGui.QColor(color)))
-        cursor.mergeCharFormat(the_format)
-    
-    def clear_highlighting(self):
-        cursor = self.left_pane.browser.textCursor()
-        the_format = QTextCharFormat()
-        the_format.setBackground(QtGui.QBrush(QtGui.QColor("Transparent")))
         cursor.mergeCharFormat(the_format)
 
     def hover_over_word(self,pos):
@@ -104,17 +90,6 @@ class MainWindow(MainUIWidget):
             sel = text_cursor.selectedText()
             # Need to do a lookup here and only show tooltip if there is a saved definition for that term
             self.left_pane.browser.setToolTip(f"{sel}")
-
-    
-    def change_font_type(self):
-        if self.left_pane.browser.textCursor().hasSelection():
-            font = self.format_widget.font_options.currentText()
-            cursor = self.left_pane.browser.textCursor()
-            the_format = QTextCharFormat()
-            weight = cursor.charFormat().fontWeight()
-            the_format.setFont(QtGui.QFont(font))
-            the_format.setFontWeight(weight)
-            cursor.mergeCharFormat(the_format)
 
     def set_global_settings(self):
         with open(os.path.join(os.getcwd(),"src","settings.json"),"r+") as f:
@@ -298,7 +273,6 @@ class MainWindow(MainUIWidget):
             self.left_pane.browser.insertPlainText(data)
         self.load_audio(filepath)
 
-    
         
 
     def add_flashcard(self): # this appends card to json file
