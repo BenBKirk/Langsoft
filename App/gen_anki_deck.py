@@ -25,7 +25,7 @@ class AnkiDeckGenerator:
     """
     self.my_model = genanki.Model(
       1607392328,
-      'Linguini',
+      'Langsoft',
       fields=[
         {'name': 'Question'},
         {'name': 'Answer'},
