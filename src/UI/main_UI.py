@@ -64,12 +64,12 @@ class MainUIWidget(QWidget):
         if dark:
             for x in self.left_pane.toolbar.actions() + self.top_right_pane.toolbar.actions():
                 name = x.text()
-                path = os.path.join(os.getcwd(),"App","img",name + "_dark.png")
+                path = os.path.join(os.getcwd(),"src","img",name + "_dark.png")
                 x.setIcon(QIcon(path))
         else:
             for x in self.left_pane.toolbar.actions() + self.top_right_pane.toolbar.actions():
                 name = x.text()
-                path = os.path.join(os.getcwd(),"App","img",name + ".png")
+                path = os.path.join(os.getcwd(),"src","img",name + ".png")
                 x.setIcon(QIcon(path))
 
     def toggle_theme(self,state):

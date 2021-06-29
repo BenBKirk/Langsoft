@@ -117,7 +117,7 @@ class MainWindow(MainUIWidget):
             cursor.mergeCharFormat(the_format)
 
     def set_global_settings(self):
-        with open(os.path.join(os.getcwd(),"App","settings.json"),"r+") as f:
+        with open(os.path.join(os.getcwd(),"src","settings.json"),"r+") as f:
             data = json.load(f)
             self.json_settings = data
 
@@ -329,7 +329,7 @@ class MainWindow(MainUIWidget):
             self.display_msg("Oops!","No text or images were found for back of the Flashcard.")
             return 0
         flash_dict = {"front":str(front), "back":str(back),"img":source,"audio":[start_time,end_time]}
-        cards_path = os.path.join("App", "flashcards.json")
+        cards_path = os.path.join("src", "flashcards.json")
         self.top_right_pane.flash_front.clear()
         self.top_right_pane.flash_back.clear()
         if not os.path.exists(cards_path):
@@ -346,7 +346,7 @@ class MainWindow(MainUIWidget):
             return 0
         deck_name = self.get_filename_from_path(filepath)
 
-        with open(os.path.join("App", "flashcards.json"),"r+") as f:
+        with open(os.path.join("src", "flashcards.json"),"r+") as f:
             data = json.load(f)
         if data["cards"] == []:
             self.display_msg("Oops!", "There are no cards to make an anki deck with.\nUse the flashcard generator in the top right corner to make some.")
@@ -356,7 +356,7 @@ class MainWindow(MainUIWidget):
 
     def reset_flashcard_json(self):
         # create/clear flashcards.json
-        cards_path = os.path.join("App", "flashcards.json")
+        cards_path = os.path.join("src", "flashcards.json")
         blank = {"cards":[]}
         if os.path.exists(cards_path):
             os.remove(cards_path)
@@ -379,15 +379,15 @@ class MainWindow(MainUIWidget):
         if state == 1:
             self.audio_player.pause()
             if self.json_settings["dark_theme"]:
-                self.left_pane.play_action.setIcon(QIcon(os.path.join("App", "img", "play_dark.png")))
+                self.left_pane.play_action.setIcon(QIcon(os.path.join("src", "img", "play_dark.png")))
             else:
-                self.left_pane.play_action.setIcon(QIcon(os.path.join("App", "img", "play.png")))
+                self.left_pane.play_action.setIcon(QIcon(os.path.join("src", "img", "play.png")))
         if state == 0 or state == 2:
             self.audio_player.play()
             if self.json_settings["dark_theme"]:
-                self.left_pane.play_action.setIcon(QIcon(os.path.join("App", "img", "pause_dark.png")))
+                self.left_pane.play_action.setIcon(QIcon(os.path.join("src", "img", "pause_dark.png")))
             else:
-                self.left_pane.play_action.setIcon(QIcon(os.path.join("App", "img", "pause.png")))
+                self.left_pane.play_action.setIcon(QIcon(os.path.join("src", "img", "pause.png")))
         
     def skip_forward(self):
         skip_amount = 3000
@@ -474,8 +474,8 @@ class MainWindow(MainUIWidget):
         json_data["autofill_flashcards"] = autofill_flashcards
         json_data["discourse_highlighter"] = dis_dict
         self.settings.close()
-        os.remove(os.path.join(os.getcwd(),"App","settings.json"))
-        with open(os.path.join(os.getcwd(),"App","settings.json"),"w") as f:
+        os.remove(os.path.join(os.getcwd(),"src","settings.json"))
+        with open(os.path.join(os.getcwd(),"src","settings.json"),"w") as f:
             json.dump(json_data,f)
         self.set_global_settings()
         # refresh current instance
@@ -525,6 +525,6 @@ if __name__ == "__main__":
     app.setStyle("fusion")
     mainApp = MainWindow()
     mainApp.setWindowTitle("Langsoft")
-    mainApp.setWindowIcon(QtGui.QIcon(os.path.join(os.getcwd(),"App","img","langsoft.png")))
+    mainApp.setWindowIcon(QtGui.QIcon(os.path.join(os.getcwd(),"src","img","langsoft.png")))
     mainApp.showMaximized()
     sys.exit(app.exec_())

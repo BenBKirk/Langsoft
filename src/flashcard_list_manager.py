@@ -40,10 +40,10 @@ class FlashcardManager(QWidget):
         layout.addWidget(widget_for_buttons)
         self.setLayout(layout)
         self.setWindowTitle("Flashcard Manager")
-        self.setWindowIcon(QtGui.QIcon(os.path.join("App","img","list.png")))
+        self.setWindowIcon(QtGui.QIcon(os.path.join("src","img","list.png")))
     
     def get_flashcard_data_from_json(self):
-        path = os.path.join(os.getcwd(),"App","flashcards.json")
+        path = os.path.join(os.getcwd(),"src","flashcards.json")
         with open(path,"r+") as f:
             data = json.load(f)
         return data
@@ -78,7 +78,7 @@ class FlashcardManager(QWidget):
                     print(f"THERE WAS AN ERROR WHEN SAVING FLASHCARDS --- {e}")
 
         #delete old json and save new one
-        path = os.path.join(os.getcwd(),"App","flashcards.json")
+        path = os.path.join(os.getcwd(),"src","flashcards.json")
         if os.path.exists(path):
             os.remove(path)
         with open(path,"w") as f:
@@ -131,7 +131,7 @@ class FlashcardManager(QWidget):
         # label.setText(str(timestamp[0]) + "--" + str(timestamp[1]))
         name = "play"
         play_button = QPushButton()
-        play_button.setIcon(QIcon(os.path.join(os.getcwd(),"App","img",name + ".png")))
+        play_button.setIcon(QIcon(os.path.join(os.getcwd(),"src","img",name + ".png")))
         return play_button
 
     def make_btn(self,i):

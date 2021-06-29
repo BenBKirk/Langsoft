@@ -37,7 +37,7 @@ class SettingsPage(QWidget):
         vbox.addWidget(widget_for_buttons)
         self.setLayout(vbox)
         self.setWindowTitle("Settings")
-        self.setWindowIcon(QtGui.QIcon(os.path.join("App", "img", "settings.png")))
+        self.setWindowIcon(QtGui.QIcon(os.path.join("src", "img", "settings.png")))
         self.dict_tab.restore_defaults.clicked.connect(lambda: self.load_settings(True))
     
     def load_settings(self,default):
@@ -80,7 +80,7 @@ class SettingsPage(QWidget):
         self.discourse_tab.discourse_table_widget.resizeColumnsToContents()
 
     def get_json_data(self):
-        with open(os.path.join(os.getcwd(),"App","settings.json"),"r+") as f:
+        with open(os.path.join(os.getcwd(),"src","settings.json"),"r+") as f:
             data = json.load(f)
             return data
 
@@ -90,7 +90,7 @@ class UsersTab(QWidget):
         self.table = QTableWidget()
         self.user_combobox = QComboBox()
         self.user_delete = QPushButton("Del")
-        self.user_delete.setIcon(QtGui.QIcon(os.path.join(os.getcwd(),"App","img","user.png")))
+        self.user_delete.setIcon(QtGui.QIcon(os.path.join(os.getcwd(),"src","img","user.png")))
         self.language_combobox = QComboBox()
         self.add_language_btn = QPushButton("Add New Language")
         self.add_language_name = QLineEdit()
@@ -215,7 +215,7 @@ class DiscourseTab(QWidget):
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    app = Qsrclication(sys.argv)
     window = SettingsPage()
     window.show()
     sys.exit(app.exec())
