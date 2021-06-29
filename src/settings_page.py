@@ -9,6 +9,7 @@ import os
 class SettingsPage(QWidget):
     def __init__(self):
         super(SettingsPage, self).__init__()
+        self.user_tab = UsersTab()
         self.dict_tab = DictTab()
         self.other_tab = OtherTab()
         self.discourse_tab = DiscourseTab()
@@ -17,7 +18,7 @@ class SettingsPage(QWidget):
         self.resize(800,700)
         vbox = QVBoxLayout()
         self.tabs = QTabWidget()
-        self.tabs.addTab(UsersTab(),"Users")
+        self.tabs.addTab(self.user_tab,"Users")
         self.tabs.addTab(self.dict_tab,"Online Tools (URLs)")
         self.tabs.addTab(self.discourse_tab,"Discourse Highlighter")
         self.tabs.addTab(self.other_tab,"Other")

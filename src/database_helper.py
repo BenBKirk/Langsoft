@@ -148,13 +148,13 @@ class Database(object):
 
         default_online_tools1 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id,lang_id) VALUES (:id,:title,:url,:user_id,:lang_id);"
         default_online_tools_param1 = (1,"Google Translate WORD","https://translate.google.com/?sl=id&tl=en&text=WORD&op=translate",1,1)
-        default_online_tools2 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id) VALUES (:id,:title,:url,:user_id);"
+        default_online_tools2 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id,lang_id) VALUES (:id,:title,:url,:user_id,:lang_id);"
         default_online_tools_param2 = (2,"Google Translate SENT","https://translate.google.com/?sl=id&tl=en&text=SENT&op=translate",1,1)
-        default_online_tools3 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id) VALUES (:id,:title,:url,:user_id);"
+        default_online_tools3 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id,lang_id) VALUES (:id,:title,:url,:user_id,:lang_id);"
         default_online_tools_param3 = (3,"Google Images","https://www.google.com/search?site=&tbm=isch&source=hp&biw=1873&bih=990&q=WORD",1,1)
-        default_online_tools4 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id) VALUES (:id,:title,:url,:user_id);"
+        default_online_tools4 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id,lang_id) VALUES (:id,:title,:url,:user_id,:lang_id);"
         default_online_tools_param4 = (4,"Globse","https://glosbe.com/id/en/WORD",1,1)
-        default_online_tools5 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id) VALUES (:id,:title,:url,:user_id);"
+        default_online_tools5 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id,lang_id) VALUES (:id,:title,:url,:user_id,:lang_id);"
         default_online_tools_param5 = (5,"KBBI","https://kbbi.web.id/WORD",1,1)
 
         with DatabaseHelper(self.name) as db:
@@ -206,25 +206,17 @@ class Database(object):
             
 
 class SettingsData(object):
-    """data model for settings"""
-    _darktheme = False
-    _autofill_flashcard = True
-    _current_language = ""
+    """
+    This stores the data temporarily, so that we don't have to query the database for everything.
+    """
+    def __init__(self,user_id=None):
+        if user_id:
+            self.load_user_data()
+    
+    def load_user_data(self):
+        pass
+    
 
-    def set_darktheme(self,val):
-        self._darktheme = val
     
-    def set_autofill_flashcard(self,val):
-        self._autofill_flashcard = val
-    
-    def set_current_language(self,lang):
-        self._current_language = lang
 
-    def get_darktheme(self):
-        return self._darktheme
-    
-    def get_autofill_flashcard(self):
-        return self._autofill_flashcard
-    
-    def get_current_language(self):
-        return self._current_language
+

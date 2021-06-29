@@ -17,6 +17,7 @@ class FormatSelectedText(QWidget):
         self.font_size_box.setFixedWidth(50)
         self.clear_formating_btn = QPushButton("Clear Formating")
         self.clear_highlighting_btn = QPushButton("Clear Hightlighting")
+        self.clear_formating_btn.clicked.connect(self.test)
 
         layout = QGridLayout()
         layout.addWidget(self.clear_formating_btn,0,0)
@@ -24,6 +25,9 @@ class FormatSelectedText(QWidget):
         layout.addWidget(self.font_options,1,0)
         # layout.addWidget(self.font_size_box,1,1)
         self.setLayout(layout)
+    
+    def test(self):
+        print("ran")
     
     def change_font_ftn(self):
         if self.browser.textCursor().hasSelection():
