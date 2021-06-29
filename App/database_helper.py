@@ -66,20 +66,20 @@ class Database(object):
         with DatabaseHelper(self.name) as db:
             query = """
             CREATE TABLE IF NOT EXISTS users (
-                id INTEGER AUTO_INCREMENT,
+                id INTEGER,
                 name VARCHAR,
                 is_active BOOLEAN,
                 PRIMARY KEY (id)
             );
             CREATE TABLE IF NOT EXISTS languages (
-                id INTEGER AUTO_INCREMENT,
+                id INTEGER,
                 name VARCHAR,
                 user_id INTEGER,
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
             );
             CREATE TABLE IF NOT EXISTS settings (
-                id INTEGER AUTO_INCREMENT,
+                id INTEGER,
                 user_id INTEGER,
                 name VARCHAR,
                 value VARCHAR,
@@ -87,7 +87,7 @@ class Database(object):
                 FOREIGN KEY (user_id) REFERENCES users (id)
             );
             CREATE TABLE IF NOT EXISTS highlighters (
-                id INTEGER AUTO_INCREMENT,
+                id INTEGER,
                 user_id INTEGER,
                 color VARCHAR,
                 style VARCHAR,
@@ -96,7 +96,7 @@ class Database(object):
                 FOREIGN KEY (user_id) REFERENCES users (id)
             );
             CREATE TABLE IF NOT EXISTS online_tools (
-                id INTEGER AUTO_INCREMENT,
+                id INTEGER,
                 title VARCHAR,
                 url VARCHAR,
                 user_id INTEGER,
@@ -106,7 +106,7 @@ class Database(object):
                 FOREIGN KEY (lang_id) REFERENCES languages (id)
             );
             CREATE TABLE IF NOT EXISTS flashcards (
-                id INTEGER AUTO_INCREMENT,
+                id INTEGER,
                 user_id INTEGER,
                 front VARCHAR,
                 back VARCHAR,
@@ -117,7 +117,7 @@ class Database(object):
                 FOREIGN KEY (language_id) REFERENCES languages (id)
             );
             CREATE TABLE IF NOT EXISTS vocabulary (
-                id INTEGER AUTO_INCREMENT,
+                id INTEGER,
                 user_id INTEGER,
                 term VARCHAR,
                 language_id INTEGER,
@@ -175,29 +175,22 @@ class Database(object):
     def add_recent_file(self,filepath):
         active_user_id = self.get_active_user()[0][0]
         date_time = datetime.now()
-        # delete older instances of same file
         with DatabaseHelper(self.name) as db:
             check = db.get_sql(f"SELECT * FROM recent_files WHERE filepath ='{filepath}'")
-            if check == []:
+            if check == []: #it must be a new file
                 with DatabaseHelper(self.name) as db:
                     sql = "INSERT INTO recent_files (filepath,created_at,user_id) VALUES (:filepath,:created_at,:user_id)"
                     params = (filepath,date_time,active_user_id)
                     db.execute_single(sql, params)
 
-            elif len(check[0]) > 0: #check if there is already an entry
+            elif len(check[0]) > 0: # replace the old entry
                 with DatabaseHelper(self.name) as db:
                     old_id = check[0][0]
                     sql = "REPLACE INTO recent_files (id,filepath,created_at,user_id) VALUES (:id,:filepath,:created_at,:user_id)"
                     params = (old_id,filepath,date_time,active_user_id)
                     db.execute_single(sql, params)
-
-
-
-
-        
-        print(self.latest_recent_files())
     
-    def latest_recent_files(self):
+    def get_latest_recent_files(self):
         with DatabaseHelper(self.name) as db:
             return db.get_sql("SELECT * FROM recent_files ORDER BY created_at DESC LIMIT 10")
             
