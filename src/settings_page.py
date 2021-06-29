@@ -215,7 +215,7 @@ class DiscourseTab(QWidget):
 
 
 if __name__ == "__main__":
-    app = Qsrclication(sys.argv)
+    app = QApplication(sys.argv)
     window = SettingsPage()
     window.show()
     sys.exit(app.exec())

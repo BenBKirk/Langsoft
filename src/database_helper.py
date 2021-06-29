@@ -1,7 +1,5 @@
 import sqlite3
-
 from PyQt5.QtCore import QDateTime
-
 from datetime import datetime
 
 class DatabaseHelper(object):
@@ -31,20 +29,20 @@ class DatabaseHelper(object):
     def __exit__(self,exc_type,exc_value,traceback):
         self.close() 
 
-    # def get(self,table,columns,limit=None):
-    #     query = "SELECT {0} from {1};".format(columns,table)
-    #     self.cursor.execute(query)
-    #     # fetch data
-    #     rows = self.cursor.fetchall()
-    #     return rows[len(rows)-limit if limit else 0:]
+    def get(self,table,columns,limit=None):
+        query = "SELECT {0} from {1};".format(columns,table)
+        self.cursor.execute(query)
+        # fetch data
+        rows = self.cursor.fetchall()
+        return rows[len(rows)-limit if limit else 0:]
     
     def get_sql(self,sql):
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
-    # def write(self,table,columns,data):
-    #     query = "INSERT INTO {0} ({1}) VALUES ({2});".format(table,columns,data)
-    #     self.cursor.execute(query)
+    def write(self,table,columns,data):
+        query = "INSERT INTO {0} ({1}) VALUES ({2});".format(table,columns,data)
+        self.cursor.execute(query)
 
     def execute_single(self,query,param=None):
         if param is None:
@@ -142,19 +140,31 @@ class Database(object):
             db.execute_script(query)
     
     def set_up_defaults(self):
-        default_user = """
-        INSERT OR REPLACE INTO users(id,name) VALUES (:id,:name)
-        """
+        default_user = "INSERT OR REPLACE INTO users(id,name) VALUES (:id,:name)"
         default_user_param = (1,"default_user")
 
-        default_lang = """
-        INSERT OR REPLACE INTO languages(id,name,user_id) VALUES (:id,:name,:user_id)
-        """
+        default_lang = "INSERT OR REPLACE INTO languages(id,name,user_id) VALUES (:id,:name,:user_id)"
         default_lang_param = (1,"Indonesian",1)
+
+        default_online_tools1 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id,lang_id) VALUES (:id,:title,:url,:user_id,:lang_id);"
+        default_online_tools_param1 = (1,"Google Translate WORD","https://translate.google.com/?sl=id&tl=en&text=WORD&op=translate",1,1)
+        default_online_tools2 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id) VALUES (:id,:title,:url,:user_id);"
+        default_online_tools_param2 = (2,"Google Translate SENT","https://translate.google.com/?sl=id&tl=en&text=SENT&op=translate",1,1)
+        default_online_tools3 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id) VALUES (:id,:title,:url,:user_id);"
+        default_online_tools_param3 = (3,"Google Images","https://www.google.com/search?site=&tbm=isch&source=hp&biw=1873&bih=990&q=WORD",1,1)
+        default_online_tools4 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id) VALUES (:id,:title,:url,:user_id);"
+        default_online_tools_param4 = (4,"Globse","https://glosbe.com/id/en/WORD",1,1)
+        default_online_tools5 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id) VALUES (:id,:title,:url,:user_id);"
+        default_online_tools_param5 = (5,"KBBI","https://kbbi.web.id/WORD",1,1)
 
         with DatabaseHelper(self.name) as db:
             db.execute_single(default_user, default_user_param)
             db.execute_single(default_lang, default_lang_param)
+            db.execute_single(default_online_tools1, default_online_tools_param1)
+            db.execute_single(default_online_tools2, default_online_tools_param2)
+            db.execute_single(default_online_tools3, default_online_tools_param3)
+            db.execute_single(default_online_tools4, default_online_tools_param4)
+            db.execute_single(default_online_tools5, default_online_tools_param5)
         
         
     def check_active_user(self):
