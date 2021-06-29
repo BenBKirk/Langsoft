@@ -1,6 +1,6 @@
-# Linguini
+# Langsoft
 
-A language learning program that makes looking up words,
+Language learning software that makes looking up words,
 making flashcards and highlighting grammar easy.
 
 ## Development
@@ -13,8 +13,8 @@ Requirements:
 
 Clone and enter the project:
 ```shell
-git clone https://github.com/BenBKirk/Linguini.git Linguini
-cd Linguini
+git clone https://github.com/BenBKirk/Langsoft.git Langsoft
+cd Langsoft
 ```
 
 Create and activate a virtual environment. This will add a `venv` folder
@@ -38,5 +38,5 @@ python3 -m pip install -r requirements.txt
 
 Run the application.
 ```shell
-python3 App/main.py
+python3 src/main.py
 ```
