@@ -57,10 +57,6 @@ class MainWindow(MainUIWidget):
         self.left_pane.audio_slider.valueChanged.connect(self.audio_player.setPosition)
         self.settings.save_button.clicked.connect(self.save_settings_to_json)
         self.settings.other_tab.dark_theme_checkbox.stateChanged.connect(self.toggle_theme)
-        # self.format_widget.font_options.currentTextChanged.connect(self.change_font_type)
-        # #self.format_widget.font_size_box.valueChanged.connect(self.change_font_size)
-        # self.format_widget.clear_formating_btn.clicked.connect(self.clear_formating)
-        # self.format_widget.clear_highlighting_btn.clicked.connect(self.clear_highlighting)
         # other
         self.dark_theme_palette = self.setup_dark_theme()
         self.check_ui_settings()
@@ -196,8 +192,7 @@ class MainWindow(MainUIWidget):
             self.skip_forward()
         if action == 'settings':
             self.settings.dict_tab.dict_table_widget.blockSignals(True)
-            self.settings.load_settings2(self.db.get_settings())
-            # self.settings.load_settings(False)
+            self.settings.load_all_settings()
             self.settings.dict_tab.dict_table_widget.blockSignals(False)
             self.settings.show()
         if action == 'list':
@@ -206,7 +201,6 @@ class MainWindow(MainUIWidget):
             self.flashcards_list.show()
         if action == 'help':
             self.help_page.show()
-
         if action == 'highlight':
             self.highlight_grammar_terms()
         if action == 'format':

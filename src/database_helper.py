@@ -158,6 +158,8 @@ class Database(object):
         default_online_tools5 = "INSERT OR REPLACE INTO online_tools(id,title,url,user_id,lang_id) VALUES (:id,:title,:url,:user_id,:lang_id);"
         default_online_tools_param5 = (5,"KBBI","https://kbbi.web.id/WORD",1,1)
 
+        default_highlighter1 = "INSERT OR REPLACE INTO highlighters(id,user_id,)"
+
         with DatabaseHelper(self.name) as db:
             db.execute_single(default_user, default_user_param)
             db.execute_single(default_lang, default_lang_param)
@@ -223,13 +225,41 @@ class Database(object):
             return db.get_sql("SELECT * FROM recent_files ORDER BY created_at DESC LIMIT 10")
     
             
-    def get_settings(self):
+    def get_dict_settings(self):
         with DatabaseHelper(self.name) as db:
-            data = db.get_sql(f"SELECT * FROM online_tools WHERE user_id = {self.active_user} AND lang_id = {self.active_lang}")
+            return db.get_sql(f"SELECT * FROM online_tools WHERE user_id = {self.active_user} AND lang_id = {self.active_lang}")
+    
+    def get_languages_by_active_user(self):
+        with DatabaseHelper(self.name) as db:
+            return db.get_sql(f"SELECT * FROM languages WHERE user_id = {self.active_user} ORDER BY is_active")
+    
+    def get_all_users_sorted_by_active(self):
+        with DatabaseHelper(self.name) as db:
+            data = db.get_sql(f"SELECT * FROM users ORDER BY is_active DESC")
             return data
-            print(self.active_user)
-            print(self.active_lang)
-            print(data)
+
+    def add_new_user(self, user):
+        new_user_name = user
+        # check if user already exists
+        with DatabaseHelper(self.name) as db:
+            result = db.get_sql(f"SELECT * FROM users WHERE name = '{new_user_name}'")
+        if result != []: 
+            #send error message to user TODO:
+            pass
+        else:# new user can be added
+            with DatabaseHelper(self.name) as db:
+                sql = "INSERT INTO users(name) VALUES (:name)"
+                params = (new_user_name,)
+                db.execute_single(sql, params)
+            self.change_active_user()# TODO:
+
+
+
+    # def get_discourse_settings(self):
+    #     with DatabaseHelper(self.name) as db:
+    #         data = db.get_sql(f"SELECT * FROM highlighters WHERE user_id = {self.active_user} AND lang_id ={self.active_lang}")
+    #         return data
+
         
 
 
