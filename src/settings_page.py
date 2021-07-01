@@ -41,19 +41,25 @@ class SettingsPage(QWidget):
         self.setLayout(vbox)
         self.setWindowTitle("Settings")
         self.setWindowIcon(QtGui.QIcon(os.path.join("src", "img", "settings.png")))
+        self.load_all_settings()
+        #connections
         self.dict_tab.restore_defaults.clicked.connect(lambda: self.load_settings(True))
         self.user_tab.add_user_btn.clicked.connect(self.add_new_user)
+        self.user_tab.user_combobox.currentTextChanged.connect(self.update_user)
     
     def load_all_settings(self):
-        self.load_dict_settings()
+        self.user_tab.user_combobox.blockSignals(True)
         self.load_user_settings()
         self.load_languages()
+        self.load_dict_settings()
+        self.db.check_active_user_and_lang()
+        self.user_tab.user_combobox.blockSignals(False)
 
 
     def load_dict_settings(self):
+        self.dict_tab.dict_table_widget.clearContents()
         dict_settings = self.db.get_dict_settings()
         if dict_settings != []:
-            self.dict_tab.dict_table_widget.clearContents()
             self.dict_tab.dict_table_widget.setRowCount(len(dict_settings)+1)
             self.dict_tab.dict_table_widget.setColumnCount(3)
             self.dict_tab.dict_table_widget.setHorizontalHeaderLabels(["Del","Tab Name", "URL"])
@@ -72,27 +78,40 @@ class SettingsPage(QWidget):
         if all_users != []:
             self.user_tab.user_combobox.clear()
             for user in all_users:
-                print(user)
                 self.user_tab.user_combobox.addItem(user[1])
-            self.user_tab.user_combobox.setCurrentIndex(0)
+            self.user_tab.user_combobox.setCurrentIndex(0) # should make the active user go to the top
+        else: print("No active users!")
     
     def load_languages(self):
+        self.user_tab.language_combobox.clear()
         languages = self.db.get_languages_by_active_user()
+        print(f"language:{languages}")
         if languages != []:
-            self.user_tab.language_combobox.clear()
             for i in languages:
                 self.user_tab.language_combobox.addItem(i[1])
             self.user_tab.language_combobox.setCurrentIndex(0)
+        else: print("no languages found ")
 
 
-    def add_new_user(self,db):
+    def add_new_user(self):
         user_name = self.user_tab.add_user_name.text()
         if user_name != "":
             self.user_tab.add_user_name.clear()
             self.db.add_new_user(user_name)
+
+            self.db.check_active_user_and_lang()
             self.load_all_settings()
         else:
             pass
+    
+    def update_user(self):
+        new_user_selected = self.user_tab.user_combobox.currentText()
+        self.user_tab.language_combobox.clear()
+        self.user_tab.user_combobox.clear()
+        self.db.change_active_user(new_user_selected)
+        self.load_all_settings()
+    
+
 
     
     # def load_settings(self,default):
@@ -134,10 +153,10 @@ class SettingsPage(QWidget):
     #         index += 1
     #     self.discourse_tab.discourse_table_widget.resizeColumnsToContents()
 
-    def get_json_data(self):
-        with open(os.path.join(os.getcwd(),"src","settings.json"),"r+") as f:
-            data = json.load(f)
-            return data
+    # def get_json_data(self):
+    #     with open(os.path.join(os.getcwd(),"src","settings.json"),"r+") as f:
+    #         data = json.load(f)
+    #         return data
 
 class UsersTab(QWidget):
     def __init__(self):

@@ -191,9 +191,7 @@ class MainWindow(MainUIWidget):
         if action == 'skip_forward':
             self.skip_forward()
         if action == 'settings':
-            self.settings.dict_tab.dict_table_widget.blockSignals(True)
-            self.settings.load_all_settings()
-            self.settings.dict_tab.dict_table_widget.blockSignals(False)
+            # self.settings.load_all_settings()
             self.settings.show()
         if action == 'list':
             self.flashcards_list.list_table_widget.clear()
@@ -338,7 +336,7 @@ class MainWindow(MainUIWidget):
         expected_filepath_mp3 = str(self.get_folder_from_path(filePath)) + str(self.get_filename_from_path(filePath)) + ".mp3"
         if os.path.exists(expected_filepath_wav):
             self.audio_player.setMedia(QMediaContent(QUrl.fromLocalFile(expected_filepath_wav)))
-        if os.path.exists(expected_filepath_mp3):
+        elif os.path.exists(expected_filepath_mp3):
             self.audio_player.setMedia(QMediaContent(QUrl.fromLocalFile(expected_filepath_mp3)))
         else:
             self.audio_player.setMedia(QMediaContent(None))
