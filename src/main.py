@@ -166,9 +166,10 @@ class MainWindow(MainUIWidget):
         self.top_right_pane.flash_front.setHtml(context)
 
     def handle_lookup(self, selection, context):
+        self.db.check_active_user()
         if selection != "":
-            for i, tab in enumerate(self.json_settings["tabs"]):
-                self.bottom_right_pane.my_tabs[i].setUrl(QUrl(tab[1].replace("WORD",selection).replace("SENT",context)))
+            for i, row in enumerate(self.db.get_online_tools()):
+                self.bottom_right_pane.my_tabs[i].setUrl(QUrl(row[2].replace("WORD",selection).replace("SENT",context)))
         if self.json_settings["autofill_flashcards"] == True:
             self.top_right_pane.flash_back.clear()
             try:

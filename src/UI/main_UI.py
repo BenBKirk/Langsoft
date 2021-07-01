@@ -11,7 +11,6 @@ from .custom_text_browser import CustomTextBrowser
 import os
 
 class MainUIWidget(QWidget):
-    myTabs = {}
     def __init__(self):
         super().__init__()
         self.top = 1000
