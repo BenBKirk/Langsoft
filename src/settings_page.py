@@ -50,9 +50,8 @@ class SettingsPage(QWidget):
     def load_all_settings(self):
         self.user_tab.user_combobox.blockSignals(True)
         self.load_user_settings()
-        self.load_languages()
         self.load_dict_settings()
-        self.db.check_active_user_and_lang()
+        self.db.check_active_user()
         self.user_tab.user_combobox.blockSignals(False)
 
 
@@ -81,16 +80,6 @@ class SettingsPage(QWidget):
                 self.user_tab.user_combobox.addItem(user[1])
             self.user_tab.user_combobox.setCurrentIndex(0) # should make the active user go to the top
         else: print("No active users!")
-    
-    def load_languages(self):
-        self.user_tab.language_combobox.clear()
-        languages = self.db.get_languages_by_active_user()
-        print(f"language:{languages}")
-        if languages != []:
-            for i in languages:
-                self.user_tab.language_combobox.addItem(i[1])
-            self.user_tab.language_combobox.setCurrentIndex(0)
-        else: print("no languages found ")
 
 
     def add_new_user(self):
@@ -98,15 +87,14 @@ class SettingsPage(QWidget):
         if user_name != "":
             self.user_tab.add_user_name.clear()
             self.db.add_new_user(user_name)
-
-            self.db.check_active_user_and_lang()
+            self.db.change_active_user(user_name)
+            self.db.check_active_user()
             self.load_all_settings()
         else:
             pass
     
     def update_user(self):
         new_user_selected = self.user_tab.user_combobox.currentText()
-        self.user_tab.language_combobox.clear()
         self.user_tab.user_combobox.clear()
         self.db.change_active_user(new_user_selected)
         self.load_all_settings()
@@ -165,22 +153,16 @@ class UsersTab(QWidget):
         self.user_combobox = QComboBox()
         self.user_delete = QPushButton("Delete")
         self.user_delete.setIcon(QtGui.QIcon(os.path.join(os.getcwd(),"src","img","user.png")))
-        self.language_combobox = QComboBox()
-        self.add_language_btn = QPushButton("Add New Language")
-        self.add_language_name = QLineEdit()
         self.add_user_name = QLineEdit()
         self.add_user_btn = QPushButton("Add New User")
         user_layout = QHBoxLayout()
         user_layout.addWidget(self.user_combobox)
         user_layout.addWidget(self.user_delete)
         layout = QFormLayout()
-        layout.addRow(QLabel(""),QLabel("Note: Selecting a user or language will update settings in other tabs"))
+        layout.addRow(QLabel(""),QLabel("Note: Selecting a user will update settings in other tabs"))
         layout.addRow(QLabel("Users:"),user_layout)
         layout.addRow(self.add_user_btn,self.add_user_name)
         layout.addRow(QLabel(""))
-        layout.addRow(QLabel("Language:"),self.language_combobox)
-        layout.addRow(self.add_language_btn,self.add_language_name)
-        layout.addRow(QLabel(""),QLabel("Note: New languages will be added to the selected user above"))
         self.setLayout(layout)
 
         
