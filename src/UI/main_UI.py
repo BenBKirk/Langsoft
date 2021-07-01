@@ -51,6 +51,8 @@ class MainUIWidget(QWidget):
         palette.setColor(QtGui.QPalette.HighlightedText, Qt.black)
         return palette
     
+
+    
     def check_ui_settings(self):
         if self.json_settings["dark_theme"] ==  True:
             self.setPalette(self.dark_theme_palette)
@@ -233,12 +235,12 @@ class BottomRightPane(QWidget):
         self.my_tabs[index].setUrl(QUrl(url))
         self.tabs.addTab(self.my_tabs[index],name)
 
-    def start_tabs(self,settings):
+    def start_tabs(self,online_tools):
+        print(online_tools)
+        self.tabs.clear()
         self.my_tabs = {}
-        tabs = settings    
-        # print(tabs)
-        for i, tab in enumerate(tabs["tabs"]): 
-            self.add_tab(i,tab[0],tab[1].replace("WORD","").replace("SENT",""))
+        for i, row in enumerate(online_tools): 
+            self.add_tab(i,row[1],row[2].replace("WORD","").replace("SENT","")) #replacing with empty so that the web pages start with a search term.
 
  
 if __name__ == "__main__":

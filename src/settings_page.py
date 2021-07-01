@@ -31,7 +31,6 @@ class SettingsPage(QWidget):
         self.cancel_button = QPushButton("Cancel")
         self.cancel_button.setFont(self.font_L)
         self.cancel_button.setMaximumWidth(100)
-        self.cancel_button.clicked.connect(self.close)
         hbox = QHBoxLayout()
         hbox.addWidget(self.cancel_button)
         hbox.addWidget(self.save_button)
@@ -43,9 +42,11 @@ class SettingsPage(QWidget):
         self.setWindowIcon(QtGui.QIcon(os.path.join("src", "img", "settings.png")))
         self.load_all_settings()
         #connections
-        self.dict_tab.restore_defaults.clicked.connect(lambda: self.load_settings(True))
+        # self.dict_tab.restore_defaults.clicked.connect(lambda: self.load_settings(True))
         self.user_tab.add_user_btn.clicked.connect(self.add_new_user)
         self.user_tab.user_combobox.currentTextChanged.connect(self.update_user)
+        # self.save_button.clicked.connect(self.save_settings_to_db)
+        self.cancel_button.clicked.connect(self.close)
     
     def load_all_settings(self):
         self.user_tab.user_combobox.blockSignals(True)
@@ -57,7 +58,7 @@ class SettingsPage(QWidget):
 
     def load_dict_settings(self):
         self.dict_tab.dict_table_widget.clearContents()
-        dict_settings = self.db.get_dict_settings()
+        dict_settings = self.db.get_online_tools()
         if dict_settings != []:
             self.dict_tab.dict_table_widget.setRowCount(len(dict_settings)+1)
             self.dict_tab.dict_table_widget.setColumnCount(3)
@@ -89,6 +90,8 @@ class SettingsPage(QWidget):
             self.db.add_new_user(user_name)
             self.db.change_active_user(user_name)
             self.db.check_active_user()
+            self.db.set_up_default_online_tools(self.db.active_user_id)
+            self.db.set_up_default_settings(self.db.active_user_id)
             self.load_all_settings()
         else:
             pass
@@ -99,7 +102,21 @@ class SettingsPage(QWidget):
         self.db.change_active_user(new_user_selected)
         self.load_all_settings()
     
+    def save_settings_to_db(self):
+        online_tools_list = []
+        row_count = self.dict_tab.dict_table_widget.rowCount() -1
+        for row in range(row_count):
+            online_tools_list.append([self.dict_tab.dict_table_widget.item(row,1).text(),self.dict_tab.dict_table_widget.item(row,2).text()])
+        self.db.save_online_tools(online_tools_list)
 
+        
+
+    #     tab_settings = []
+    #     number_of_rows_dict = self.settings.dict_tab.dict_table_widget.rowCount() -1 
+    #     for i in range(number_of_rows_dict):
+    #         tab_settings.append([self.settings.dict_tab.dict_table_widget.item(i,1).text(),self.settings.dict_tab.dict_table_widget.item(i,2).text()])
+    #     dark_theme = self.settings.other_tab.dark_theme_checkbox.isChecked()
+    #     autofill_flashcards = self.settings.other_tab.autofill_checkbox.isChecked()
 
     
     # def load_settings(self,default):
@@ -159,9 +176,10 @@ class UsersTab(QWidget):
         user_layout.addWidget(self.user_combobox)
         user_layout.addWidget(self.user_delete)
         layout = QFormLayout()
-        layout.addRow(QLabel(""),QLabel("Note: Selecting a user will update settings in other tabs"))
+        layout.addRow(QLabel(""),QLabel("Having more than one users allows you to have different settings for different people or different languages."))
         layout.addRow(QLabel("Users:"),user_layout)
         layout.addRow(self.add_user_btn,self.add_user_name)
+        layout.addRow(QLabel("Note: Default settings will be copied to new users as a starting point but can be customised."))
         layout.addRow(QLabel(""))
         self.setLayout(layout)
 

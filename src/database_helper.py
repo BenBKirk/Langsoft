@@ -62,6 +62,7 @@ class Database(object):
             self.create_tables()
             self.set_up_default_user()
             self.set_up_default_online_tools()
+            self.set_up_default_settings()
         self.check_active_user()
     
     def create_tables(self):
@@ -75,9 +76,9 @@ class Database(object):
             );
             CREATE TABLE IF NOT EXISTS settings (
                 id INTEGER,
-                user_id INTEGER,
                 name VARCHAR,
                 value VARCHAR,
+                user_id INTEGER,
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
             );
@@ -154,6 +155,14 @@ class Database(object):
             db.execute_single(default_online_tools4, default_online_tools_param4)
             db.execute_single(default_online_tools5, default_online_tools_param5)
 
+    def set_up_default_settings(self,user_id=1):
+        default_settings1 = "INSERT OR REPLACE INTO settings(name,value,user_id) VALUES (:name,:value,:user_id)"
+        default_settings_param1 = ("dark_theme","False",user_id)
+        default_settings2 = "INSERT OR REPLACE INTO settings(name,value,user_id ) VALUES (:name,:value,:user_id)"
+        default_settings_param2 = ("autofill_back_of_flashcard","True",user_id)
+        with DatabaseHelper(self.name) as db:
+            db.execute_single(default_settings1,default_settings_param1)
+            db.execute_single(default_settings2,default_settings_param2)
         
     def check_active_user(self):
         with DatabaseHelper(self.name) as db:
@@ -181,7 +190,7 @@ class Database(object):
             db.execute_single(sql_to_make_user_active )
         # find the selected user and set them to active
         print("active user updated")
-        self.check_active_user() # so that self.active_user is updated
+        self.check_active_user() # so that self.active_user_id is updated
     
     # def set_active_user(self):
     #     with DatabaseHelper(self.name) as db:
@@ -211,7 +220,8 @@ class Database(object):
             return db.get_sql("SELECT * FROM recent_files ORDER BY created_at DESC LIMIT 10")
     
             
-    def get_dict_settings(self):
+    def get_online_tools(self):
+        print(self.active_user_id)
         with DatabaseHelper(self.name) as db:
             print(f"trying to get dict settings for - user:{self.active_user_id}")
             return db.get_sql(f"SELECT * FROM online_tools WHERE user_id = {self.active_user_id}")
@@ -233,6 +243,17 @@ class Database(object):
                 sql = "INSERT INTO users(name,is_active) VALUES (:name,:is_active)"
                 params = (new_user_name,False)
                 db.execute_single(sql, params)
+    
+    def save_online_tools(self,online_tools):
+        with DatabaseHelper(self.name) as db:
+            db.execute_single(f"DELETE FROM online_tools WHERE user_id = {self.active_user_id}")
+        with DatabaseHelper(self.name) as db:
+            for row in online_tools:
+                row_sql = ("INSERT INTO online_tools(title,url,user_id) VALUES (:title,:url,:user_id)")
+                row_params = (row[0],row[1],self.active_user_id)
+                db.execute_single(row_sql,row_params)
+
+
 
 
 
