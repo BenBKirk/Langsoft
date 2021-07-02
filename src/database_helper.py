@@ -65,9 +65,8 @@ class DatabaseHelper(object):
 class Database(object):
     def __init__(self,db_name="database.db"):
         self.name = db_name
-        self.create_tables()
         if not os.path.exists(os.path.join(os.getcwd(),db_name)):
-            print("creating new database")
+            self.create_tables()
             self.set_up_default_user()
             self.set_up_default_online_tools()
             self.set_up_default_settings()
@@ -78,7 +77,6 @@ class Database(object):
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER,
                 name VARCHAR,
-                is_active BOOLEAN,
                 PRIMARY KEY (id)
             );
             CREATE TABLE IF NOT EXISTS settings (
@@ -183,19 +181,33 @@ class Database(object):
     def get_last_user(self):
         with DatabaseHelper(self.name) as db:
             dict_to_return = {}
-            the_list = db.execute_single("SELECT * FROM last_user")
-            if the_list == None:
+            the_list = db.get_sql("SELECT * FROM last_user")
+            print(the_list)
+
+            if the_list == None or the_list == []:
                 # use defaults
                 dict_to_return["id"] = 1
-                dict_to_return["user_id"] = 1
+                dict_to_return["name"] = "default_user"
                 return dict_to_return
             else:
                 print(the_list)
-                dict_to_return["id"] = the_list[0][0]
-                dict_to_return["user_id"] = the_list[0][1]
+                user_name = db.get_sql(f"SELECT * FROM users WHERE id = {the_list[0][1]}")[0][1]
+                dict_to_return["name"] = user_name
+                dict_to_return["id"] = the_list[0][1]
                 return dict_to_return
             
-
+    def set_last_user(self,new_user_name):
+        #get id from name
+        with DatabaseHelper(self.name) as db:
+            print(new_user_name)
+            new_user_id = db.get_sql(f"SELECT * FROM users WHERE name = '{new_user_name}'")[0][0]
+        with DatabaseHelper(self.name) as db:
+            #replace last user values
+            # db.execute_single(f"UPDATE last_user SET user_id={new_user_id} WHERE id=1")
+            sql = f"INSERT OR REPLACE INTO last_user (id,user_id) VALUES (:id, :user_id)"
+            params = (1,new_user_id)
+            db.execute_single(sql, params)
+        
     def get_online_tools(self,active_user):
         with DatabaseHelper(self.name) as db:
             return db.get_sql(f"SELECT * FROM online_tools WHERE user_id = {active_user}")
@@ -217,12 +229,38 @@ class Database(object):
                 dict_to_return["autofill_back_of_flashcard"] = False
             return dict_to_return
 
-    def get_recent_files(self,active_user):
+    def get_recent_files(self,current_user):
         with DatabaseHelper(self.name) as db:
-            return db.get_sql(f"SELECT * FROM recent_files WHERE user_id = {active_user} ORDER BY created_at DESC LIMIT 10")
+            return db.get_sql(f"SELECT * FROM recent_files WHERE user_id = {current_user} ORDER BY created_at DESC LIMIT 10")
 
+    def get_all_users(self):
+        with DatabaseHelper(self.name) as db:
+            users = db.get_sql(f"SELECT * FROM users")
+            list_to_return = []
+            for user in users:
+                list_to_return.append(user[1])
+            return list_to_return
 
+    def add_new_user(self, new_user_name):
+        # check if user already exists
+        with DatabaseHelper(self.name) as db:
+            result = db.get_sql(f"SELECT * FROM users WHERE name = '{new_user_name}'")
+        if result != []: 
+            print("user name already exists!")
+            return True
+        else:# new user can be added
+            with DatabaseHelper(self.name) as db:
+                sql = "INSERT INTO users(name) VALUES (:name)"
+                params = (new_user_name,)
+                db.execute_single(sql, params)
+            new_id = self.get_id_from_name(new_user_name)
+            self.set_up_default_online_tools(new_id)
+            self.set_up_default_settings(new_id)
 
+    def get_id_from_name(self, name):
+        with DatabaseHelper(self.name) as db:
+            id = db.get_sql(f"SELECT * FROM users WHERE name='{name}'")[0][0]
+            return id
 
 
 
@@ -284,23 +322,7 @@ class Database(object):
     
             
     
-    def get_all_users_sorted_by_active(self):
-        with DatabaseHelper(self.name) as db:
-            data = db.get_sql(f"SELECT * FROM users ORDER BY is_active DESC")
-            return data
 
-    def add_new_user(self, user):
-        new_user_name = user
-        # check if user already exists
-        with DatabaseHelper(self.name) as db:
-            result = db.get_sql(f"SELECT * FROM users WHERE name = '{new_user_name}'")
-        if result != []: 
-            print("user name already exists!")
-        else:# new user can be added
-            with DatabaseHelper(self.name) as db:
-                sql = "INSERT INTO users(name,is_active) VALUES (:name,:is_active)"
-                params = (new_user_name,False)
-                db.execute_single(sql, params)
     
     def save_online_tools(self,online_tools):
         with DatabaseHelper(self.name) as db:

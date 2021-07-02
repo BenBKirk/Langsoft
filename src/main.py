@@ -57,6 +57,8 @@ class MainWindow(MainUIWidget):
         self.left_pane.audio_slider.valueChanged.connect(self.audio_player.setPosition)
         self.settings.save_button.clicked.connect(self.save_button_clicked)
         self.settings.other_tab.dark_theme_checkbox.stateChanged.connect(self.toggle_theme)
+        self.settings.user_tab.user_combobox.currentTextChanged.connect(self.change_current_user)
+        self.settings.user_tab.add_user_btn.clicked.connect(self.add_new_user)
         self.top_right_pane.unknown_btn.clicked.connect(self.save_word_as_unknown)
         self.top_right_pane.semi_known_btn.clicked.connect(self.save_word_as_semi_known)
         self.top_right_pane.known_btn.clicked.connect(self.save_word_as_known)
@@ -78,6 +80,7 @@ class MainWindow(MainUIWidget):
     # startup settings - last user, darktheme...
     def run_start_up_settings(self):
         self.current_user = self.db.get_last_user()
+        self.all_users_names = self.db.get_all_users()
         self.current_online_tools = self.db.get_online_tools(self.current_user["id"])
         self.current_discourse_settings = self.db.get_discourse_settings(self.current_user["id"])
         self.current__other_settings = self.db.get_other_settings(self.current_user["id"])
@@ -92,11 +95,31 @@ class MainWindow(MainUIWidget):
         # online tools
         self.bottom_right_pane.start_tabs(self.current_online_tools)
 
-    # change settings
+
     def load_settings_to_settings_page(self):
         self.settings.load_online_tool_settings(self.current_online_tools)
         self.settings.load_other_settings(self.current__other_settings)
+        self.settings.load_user(self.all_users_names,self.current_user)
         self.settings.show()
+    
+    def change_current_user(self):
+        new_user_name = self.settings.user_tab.user_combobox.currentText()
+        self.db.set_last_user(new_user_name)
+        self.run_start_up_settings()
+    
+    def add_new_user(self):
+        new_user_name = self.settings.user_tab.add_user_name.text()
+        if self.db.add_new_user(new_user_name):
+            self.display_msg("Oops!","That user name already exists")
+        else:
+            self.db.set_last_user(new_user_name)
+            self.run_start_up_settings()
+            self.settings.user_tab.add_user_name.clear()
+            self.settings.close()
+            self.load_settings_to_settings_page()
+    
+
+
 
     
     def save_word_as_unknown(self):

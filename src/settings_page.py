@@ -7,12 +7,10 @@ from PyQt5 import QtGui
 from PyQt5 import QtCore
 import json
 import os 
-from database_helper import Database
 
 class SettingsPage(QWidget):
     def __init__(self):
         super(SettingsPage, self).__init__()
-        self.db = Database()
         self.user_tab = UsersTab()
         self.dict_tab = DictTab()
         self.other_tab = OtherTab()
@@ -57,6 +55,16 @@ class SettingsPage(QWidget):
     def load_other_settings(self,other_settings):
         self.other_tab.dark_theme_checkbox.setChecked(other_settings["dark_theme"])
         self.other_tab.autofill_checkbox.setChecked(other_settings["autofill_back_of_flashcard"])
+    
+    def load_user(self,all_users,current_user):
+        self.user_tab.user_combobox.blockSignals(True)
+        self.user_tab.user_combobox.clear()
+        self.user_tab.user_combobox.addItems(all_users)
+        self.user_tab.user_combobox.setCurrentText(current_user["name"])
+        self.user_tab.user_combobox.blockSignals(False)
+
+
+
 
 class UsersTab(QWidget):
     def __init__(self):
