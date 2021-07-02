@@ -42,6 +42,21 @@ class SettingsPage(QWidget):
         self.setLayout(vbox)
         self.setWindowTitle("Settings")
         self.setWindowIcon(QtGui.QIcon(os.path.join("src", "img", "settings.png")))
+    
+    def load_online_tool_settings(self,online_tools):
+            self.dict_tab.dict_table_widget.setRowCount(len(online_tools)+1)
+            self.dict_tab.dict_table_widget.setColumnCount(3)
+            self.dict_tab.dict_table_widget.setHorizontalHeaderLabels(["Del","Tab Name", "URL"])
+            for i,val in enumerate(online_tools):
+                dict_btn = self.dict_tab.make_dict_btn(i)
+                self.dict_tab.dict_table_widget.setCellWidget(i,0, dict_btn)
+                self.dict_tab.dict_table_widget.setItem(i,1,QTableWidgetItem(val[1]))
+                self.dict_tab.dict_table_widget.setItem(i,2,QTableWidgetItem(val[2]))
+            self.dict_tab.dict_table_widget.resizeColumnsToContents()
+    
+    def load_other_settings(self,other_settings):
+        self.other_tab.dark_theme_checkbox.setChecked(other_settings["dark_theme"])
+        self.other_tab.autofill_checkbox.setChecked(other_settings["autofill_back_of_flashcard"])
 
 class UsersTab(QWidget):
     def __init__(self):

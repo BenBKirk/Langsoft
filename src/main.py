@@ -92,11 +92,12 @@ class MainWindow(MainUIWidget):
         # online tools
         self.bottom_right_pane.start_tabs(self.current_online_tools)
 
-
-        
-
-
     # change settings
+    def load_settings_to_settings_page(self):
+        self.settings.load_online_tool_settings(self.current_online_tools)
+        self.settings.load_other_settings(self.current__other_settings)
+        self.settings.show()
+
     
     def save_word_as_unknown(self):
         word_to_save = self.current_selection
@@ -206,9 +207,8 @@ class MainWindow(MainUIWidget):
         self.top_right_pane.flash_front.setHtml(context)
 
     def handle_lookup(self, selection, context):
-        self.db.check_active_user()
         if selection != "":
-            for i, row in enumerate(self.db.get_online_tools()):
+            for i, row in enumerate(self.current_online_tools):
                 self.bottom_right_pane.my_tabs[i].setUrl(QUrl(row[2].replace("WORD",selection).replace("SENT",context)))
         if True:# self.json_settings["autofill_flashcards"] == True:
             self.top_right_pane.flash_back.clear()
@@ -239,7 +239,7 @@ class MainWindow(MainUIWidget):
         if action == 'skip_forward':
             self.skip_forward()
         if action == 'settings':
-            # self.settings.load_all_settings()
+            self.load_settings_to_settings_page()
             self.settings.show()
         if action == 'list':
             self.flashcards_list.list_table_widget.clear()
