@@ -163,7 +163,7 @@ class Database(object):
         with DatabaseHelper(self.name) as db:
             db.execute_single(default_settings1,default_settings_param1)
             db.execute_single(default_settings2,default_settings_param2)
-        
+    
     def check_active_user(self):
         with DatabaseHelper(self.name) as db:
             active_user = db.get_sql("SELECT * FROM users WHERE is_active = 1")
@@ -252,7 +252,34 @@ class Database(object):
                 row_sql = ("INSERT INTO online_tools(title,url,user_id) VALUES (:title,:url,:user_id)")
                 row_params = (row[0],row[1],self.active_user_id)
                 db.execute_single(row_sql,row_params)
+    
+    def save_word_to_vocabulary(self, term, defin, confid):
+        if confid == "unknown":
+            print("was set!")
+            highlighter_id = 1
+        elif confid == "semi-known":
+            highlighter_id = 2
+        elif confid == "known":
+            highlighter_id = 3
+        
+        date = datetime.now()
 
+
+        sql = f"INSERT INTO vocabulary(user_id,term,definition,highlighter_id,is_regex,created_at) VALUES(:user_id,:term,:definition,:highlighter_id,:is_regex,:created_at)"
+        params = (self.active_user_id,term ,defin, highlighter_id, False,date)
+
+        with DatabaseHelper(self.name) as db:
+            db.execute_single(sql, params)
+
+
+
+                # id INTEGER,
+                # user_id INTEGER,
+                # term VARCHAR,
+                # definition VARCHAR,
+                # highlighter_id INTEGER,
+                # is_regex BOOLEAN,
+                # created_at DATE,
 
 
 

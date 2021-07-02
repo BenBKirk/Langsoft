@@ -57,6 +57,9 @@ class MainWindow(MainUIWidget):
         self.left_pane.audio_slider.valueChanged.connect(self.audio_player.setPosition)
         self.settings.save_button.clicked.connect(self.save_button_clicked)
         self.settings.other_tab.dark_theme_checkbox.stateChanged.connect(self.toggle_theme)
+        self.top_right_pane.unknown_btn.clicked.connect(self.save_word_as_unknown)
+        self.top_right_pane.semi_known_btn.clicked.connect(self.save_word_as_semi_known)
+        self.top_right_pane.known_btn.clicked.connect(self.save_word_as_known)
         # other
         self.dark_theme_palette = self.setup_dark_theme()
         self.check_ui_settings()
@@ -73,6 +76,19 @@ class MainWindow(MainUIWidget):
         self.skip_forward_shortcut = QShortcut(QtGui.QKeySequence("Alt+Right"),self)
         self.skip_forward_shortcut.activated.connect(self.skip_forward)
     
+    def save_word_as_unknown(self):
+        word_to_save = self.current_selection
+        definition_to_save = self.top_right_pane.flash_back.toPlainText()
+        print(f"the word clicked was '{word_to_save}' and the definition is '{definition_to_save}' ")
+        self.db.save_word_to_vocabulary(word_to_save, definition_to_save,"unknown")
+        
+    def save_word_as_semi_known(self):
+        pass
+    
+    def save_word_as_known(self):
+        pass
+
+
     def save_button_clicked(self):
         self.settings.save_settings_to_db()
         self.db.check_active_user()
@@ -124,6 +140,7 @@ class MainWindow(MainUIWidget):
                 if w == word:
                     split_context[i] = "<b>" + split_context[i] + "</b>"
             context_bold = "".join(split_context)
+            self.current_selection = word
             self.autofill_searchbar(word)
             self.autofill_flashcard(context_bold)
             self.handle_lookup(word, context)
@@ -133,6 +150,7 @@ class MainWindow(MainUIWidget):
         selection = self.left_pane.browser.textCursor().selectedText()
         context = self.get_context(cursor)
         context_bold = context.replace(selection, "<b>" + selection + "</b>")
+        self.current_selection = selection
         self.autofill_searchbar(selection)
         self.autofill_flashcard(context_bold)
         self.handle_lookup(selection, context)
@@ -170,7 +188,7 @@ class MainWindow(MainUIWidget):
         if selection != "":
             for i, row in enumerate(self.db.get_online_tools()):
                 self.bottom_right_pane.my_tabs[i].setUrl(QUrl(row[2].replace("WORD",selection).replace("SENT",context)))
-        if self.json_settings["autofill_flashcards"] == True:
+        if True:# self.json_settings["autofill_flashcards"] == True:
             self.top_right_pane.flash_back.clear()
             try:
                 translation = self.translator.translate(selection)
