@@ -62,8 +62,7 @@ class MainWindow(MainUIWidget):
         self.top_right_pane.known_btn.clicked.connect(self.save_word_as_known)
         # other
         self.dark_theme_palette = self.setup_dark_theme()
-        self.check_ui_settings()
-        self.bottom_right_pane.start_tabs(self.db.get_online_tools())
+        self.run_start_up_settings()
         # keyboard shortcuts
         self.lookup_shortcut = QShortcut(QtGui.QKeySequence("Ctrl+Up"),self)
         self.lookup_shortcut.activated.connect(self.browser_clicked)
@@ -75,6 +74,29 @@ class MainWindow(MainUIWidget):
         self.skip_back_shortcut.activated.connect(self.skip_back)
         self.skip_forward_shortcut = QShortcut(QtGui.QKeySequence("Alt+Right"),self)
         self.skip_forward_shortcut.activated.connect(self.skip_forward)
+
+    # startup settings - last user, darktheme...
+    def run_start_up_settings(self):
+        self.current_user = self.db.get_last_user()
+        self.current_online_tools = self.db.get_online_tools(self.current_user["id"])
+        self.current_discourse_settings = self.db.get_discourse_settings(self.current_user["id"])
+        self.current__other_settings = self.db.get_other_settings(self.current_user["id"])
+        self.recent_files = self.db.get_recent_files(self.current_user["id"])
+        # UI
+        print(self.current__other_settings)
+        if self.current__other_settings["dark_theme"]:
+            self.setPalette(self.dark_theme_palette)
+            self.set_icons(True)
+        else:
+            self.set_icons(False)
+        # online tools
+        self.bottom_right_pane.start_tabs(self.current_online_tools)
+
+
+        
+
+
+    # change settings
     
     def save_word_as_unknown(self):
         word_to_save = self.current_selection
@@ -438,42 +460,6 @@ class MainWindow(MainUIWidget):
         folder = os.path.dirname(path)
         return folder + "/"
     
-    # def save_settings_to_json(self):
-    #     # get the data from table etc
-    #     tab_settings = []
-    #     number_of_rows_dict = self.settings.dict_tab.dict_table_widget.rowCount() -1 
-    #     for i in range(number_of_rows_dict):
-    #         tab_settings.append([self.settings.dict_tab.dict_table_widget.item(i,1).text(),self.settings.dict_tab.dict_table_widget.item(i,2).text()])
-    #     dark_theme = self.settings.other_tab.dark_theme_checkbox.isChecked()
-    #     autofill_flashcards = self.settings.other_tab.autofill_checkbox.isChecked()
-    #     # grammar highlighter settings
-        
-    #     dis_dict = {}
-    #     number_of_rows_dis = self.settings.discourse_tab.discourse_table_widget.rowCount() -1
-    #     for i in range(number_of_rows_dis):
-    #         try:
-    #             cat_key = self.settings.discourse_tab.discourse_table_widget.item(i,1).text()
-    #             cat_color = self.settings.discourse_tab.dis_color[i].styleSheet()[23:-1]
-    #             cat_list = self.settings.discourse_tab.discourse_table_widget.item(i,3).text().split(", ")
-    #             dis_dict[cat_key] = {"color": cat_color,"list": cat_list}
-    #         except:
-    #             pass
-
-    #     # update json file
-    #     json_data = self.json_settings
-    #     json_data["tabs"] = tab_settings
-    #     json_data["dark_theme"] = dark_theme
-    #     json_data["autofill_flashcards"] = autofill_flashcards
-    #     json_data["discourse_highlighter"] = dis_dict
-    #     self.settings.close()
-    #     os.remove(os.path.join(os.getcwd(),"src","settings.json"))
-    #     with open(os.path.join(os.getcwd(),"src","settings.json"),"w") as f:
-    #         json.dump(json_data,f)
-    #     self.set_global_settings()
-    #     # refresh current instance
-    #     self.bottom_right_pane.tabs.clear()
-    #     self.bottom_right_pane.start_tabs(self.json_settings)
-    
     def highlight_grammar_terms(self):
         for key, value in self.json_settings["discourse_highlighter"].items():
             color_list = value["color"].split(",")
@@ -509,7 +495,6 @@ class MainWindow(MainUIWidget):
             i = f"\\b{i}\\b"
             new_list.append(i)
         return new_list
-
 
 
 

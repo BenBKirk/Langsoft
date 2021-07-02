@@ -52,7 +52,7 @@ class MainUIWidget(QWidget):
     
 
     
-    def check_ui_settings(self):
+    def set_ui_to_settings(self):
         if self.json_settings["dark_theme"] ==  True:
             self.setPalette(self.dark_theme_palette)
             self.settings.setPalette(self.dark_theme_palette)
@@ -60,6 +60,7 @@ class MainUIWidget(QWidget):
             self.set_icons(True)
         else:
             self.set_icons(False)
+        
         
     def set_icons(self,dark):
         if dark:

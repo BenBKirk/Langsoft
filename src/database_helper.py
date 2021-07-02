@@ -1,5 +1,4 @@
 import sqlite3
-from PyQt5.QtCore import QDateTime
 from datetime import datetime
 import os
 
@@ -54,16 +53,24 @@ class DatabaseHelper(object):
     def execute_script(self,query):
         self.cursor.executescript(query)
 
+
+
+
+
+
+
+
+
+
 class Database(object):
     def __init__(self,db_name="database.db"):
         self.name = db_name
+        self.create_tables()
         if not os.path.exists(os.path.join(os.getcwd(),db_name)):
-            print("create new database")
-            self.create_tables()
+            print("creating new database")
             self.set_up_default_user()
             self.set_up_default_online_tools()
             self.set_up_default_settings()
-        self.check_active_user()
     
     def create_tables(self):
         with DatabaseHelper(self.name) as db:
@@ -128,6 +135,12 @@ class Database(object):
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
             );
+            CREATE TABLE IF NOT EXISTS last_user(
+                id INTEGER,
+                user_id INTEGER,
+                PRIMARY KEY (id)
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            );
             """
             db.execute_script(query)
     
@@ -164,39 +177,92 @@ class Database(object):
             db.execute_single(default_settings1,default_settings_param1)
             db.execute_single(default_settings2,default_settings_param2)
     
-    def check_active_user(self):
+
+
+
+    def get_last_user(self):
         with DatabaseHelper(self.name) as db:
-            active_user = db.get_sql("SELECT * FROM users WHERE is_active = 1")
-            print(f"the active user is {active_user}")
-            # active_user = db.get_sql("SELECT * FROM users ")
-            if active_user == []: #the program is probably being run for the first time
-                print("looks like the program is running for the first time")
-                default_user = """
-                INSERT OR REPLACE INTO users(id,name,is_active) VALUES (:id,:name,:is_active)
-                """
-                default_user_param = (1,"default_user",True)
-                db.execute_single(default_user, default_user_param)
-                self.active_user_id = 1
+            dict_to_return = {}
+            the_list = db.execute_single("SELECT * FROM last_user")
+            if the_list == None:
+                # use defaults
+                dict_to_return["id"] = 1
+                dict_to_return["user_id"] = 1
+                return dict_to_return
             else:
-                self.active_user_id = active_user[0][0]
+                print(the_list)
+                dict_to_return["id"] = the_list[0][0]
+                dict_to_return["user_id"] = the_list[0][1]
+                return dict_to_return
+            
+
+    def get_online_tools(self,active_user):
+        with DatabaseHelper(self.name) as db:
+            return db.get_sql(f"SELECT * FROM online_tools WHERE user_id = {active_user}")
+
+    def get_discourse_settings(self,active_user):
+        with DatabaseHelper(self.name) as db:
+            return db.get_sql(f"SELECT * FROM online_tools WHERE user_id = {active_user}")
+
+    def get_other_settings(self,active_user):
+        with DatabaseHelper(self.name) as db:
+            dict_to_return = {}
+            if db.get_sql(f"SELECT * FROM settings WHERE user_id = {active_user} AND name = 'dark_theme'")[0][2] == "True":
+                dict_to_return["dark_theme"] = True
+            else:
+                dict_to_return["dark_theme"] = False
+            if db.get_sql(f"SELECT * FROM settings WHERE user_id = {active_user} AND name = 'autofill_back_of_flashcard'")[0][2] == "True":
+                dict_to_return["autofill_back_of_flashcard"] = True
+            else:
+                dict_to_return["autofill_back_of_flashcard"] = False
+            return dict_to_return
+
+    def get_recent_files(self,active_user):
+        with DatabaseHelper(self.name) as db:
+            return db.get_sql(f"SELECT * FROM recent_files WHERE user_id = {active_user} ORDER BY created_at DESC LIMIT 10")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    # def check_active_user(self):
+    #     with DatabaseHelper(self.name) as db:
+    #         active_user = db.get_sql("SELECT * FROM users WHERE is_active = 1")
+    #         print(f"the active user is {active_user}")
+    #         # active_user = db.get_sql("SELECT * FROM users ")
+    #         if active_user == []: #the program is probably being run for the first time
+    #             print("looks like the program is running for the first time")
+    #             default_user = """
+    #             INSERT OR REPLACE INTO users(id,name,is_active) VALUES (:id,:name,:is_active)
+    #             """
+    #             default_user_param = (1,"default_user",True)
+    #             db.execute_single(default_user, default_user_param)
+    #             self.active_user_id = 1
+    #         else:
+    #             self.active_user_id = active_user[0][0]
             
     
-    def change_active_user(self,new_active_user):
-        # find the active user and set them to inactive
-        with DatabaseHelper(self.name) as db:
-            sql_for_setting_all_to_inactive = "UPDATE users SET is_active = false WHERE is_active = true"
-            db.execute_single(sql_for_setting_all_to_inactive)
-            sql_to_make_user_active = f"UPDATE users SET is_active = true WHERE name='{new_active_user}'"
-            db.execute_single(sql_to_make_user_active )
-        # find the selected user and set them to active
-        print("active user updated")
-        self.check_active_user() # so that self.active_user_id is updated
-    
-    # def set_active_user(self):
+    # def change_active_user(self,new_active_user):
+    #     # find the active user and set them to inactive
     #     with DatabaseHelper(self.name) as db:
-    #         active_user_id = db.get_sql("SELECT * FROM users WHERE is_active=1 LIMIT 1")
-    #         self.active_user = active_user_id
-    #         print(active_user_id)
+    #         sql_for_setting_all_to_inactive = "UPDATE users SET is_active = false WHERE is_active = true"
+    #         db.execute_single(sql_for_setting_all_to_inactive)
+    #         sql_to_make_user_active = f"UPDATE users SET is_active = true WHERE name='{new_active_user}'"
+    #         db.execute_single(sql_to_make_user_active )
+    #     # find the selected user and set them to active
+    #     print("active user updated")
+    #     self.check_active_user() # so that self.active_user_id is updated
+    
 
     def add_recent_file(self,filepath):
         date_time = datetime.now()
@@ -215,16 +281,8 @@ class Database(object):
                     params = (old_id,filepath,date_time,self.active_user_id)
                     db.execute_single(sql, params)
     
-    def get_latest_recent_files(self):
-        with DatabaseHelper(self.name) as db:
-            return db.get_sql("SELECT * FROM recent_files ORDER BY created_at DESC LIMIT 10")
     
             
-    def get_online_tools(self):
-        print(self.active_user_id)
-        with DatabaseHelper(self.name) as db:
-            print(f"trying to get dict settings for - user:{self.active_user_id}")
-            return db.get_sql(f"SELECT * FROM online_tools WHERE user_id = {self.active_user_id}")
     
     def get_all_users_sorted_by_active(self):
         with DatabaseHelper(self.name) as db:
@@ -263,48 +321,13 @@ class Database(object):
             highlighter_id = 3
         
         date = datetime.now()
-
-
         sql = f"INSERT INTO vocabulary(user_id,term,definition,highlighter_id,is_regex,created_at) VALUES(:user_id,:term,:definition,:highlighter_id,:is_regex,:created_at)"
         params = (self.active_user_id,term ,defin, highlighter_id, False,date)
-
         with DatabaseHelper(self.name) as db:
             db.execute_single(sql, params)
 
 
 
-                # id INTEGER,
-                # user_id INTEGER,
-                # term VARCHAR,
-                # definition VARCHAR,
-                # highlighter_id INTEGER,
-                # is_regex BOOLEAN,
-                # created_at DATE,
 
-
-
-
-
-    # def get_discourse_settings(self):
-    #     with DatabaseHelper(self.name) as db:
-    #         data = db.get_sql(f"SELECT * FROM highlighters WHERE user_id = {self.active_user} AND lang_id ={self.active_lang}")
-    #         return data
-
-        
-
-
-class SettingsData(object):
-    """
-    This stores the data temporarily, so that we don't have to query the database for everything.
-    """
-    def __init__(self,user_id=None):
-        if user_id:
-            self.load_user_data()
-    
-    def load_user_data(self):
-        pass
-    
-
-    
 
 

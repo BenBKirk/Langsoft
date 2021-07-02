@@ -1,4 +1,6 @@
-
+""""
+UI only
+"""
 import sys
 from PyQt5.QtWidgets import * 
 from PyQt5 import QtGui
@@ -40,128 +42,6 @@ class SettingsPage(QWidget):
         self.setLayout(vbox)
         self.setWindowTitle("Settings")
         self.setWindowIcon(QtGui.QIcon(os.path.join("src", "img", "settings.png")))
-        self.load_all_settings()
-        #connections
-        # self.dict_tab.restore_defaults.clicked.connect(lambda: self.load_settings(True))
-        self.user_tab.add_user_btn.clicked.connect(self.add_new_user)
-        self.user_tab.user_combobox.currentTextChanged.connect(self.update_user)
-        # self.save_button.clicked.connect(self.save_settings_to_db)
-        self.cancel_button.clicked.connect(self.close)
-    
-    def load_all_settings(self):
-        self.user_tab.user_combobox.blockSignals(True)
-        self.load_user_settings()
-        self.load_dict_settings()
-        self.db.check_active_user()
-        self.user_tab.user_combobox.blockSignals(False)
-
-
-    def load_dict_settings(self):
-        self.dict_tab.dict_table_widget.clearContents()
-        dict_settings = self.db.get_online_tools()
-        if dict_settings != []:
-            self.dict_tab.dict_table_widget.setRowCount(len(dict_settings)+1)
-            self.dict_tab.dict_table_widget.setColumnCount(3)
-            self.dict_tab.dict_table_widget.setHorizontalHeaderLabels(["Del","Tab Name", "URL"])
-            for i,val in enumerate(dict_settings):
-                dict_btn = self.dict_tab.make_dict_btn(i)
-                self.dict_tab.dict_table_widget.setCellWidget(i,0, dict_btn)
-                self.dict_tab.dict_table_widget.setItem(i,1,QTableWidgetItem(val[1]))
-                self.dict_tab.dict_table_widget.setItem(i,2,QTableWidgetItem(val[2]))
-            self.dict_tab.dict_table_widget.resizeColumnsToContents()
-        else:
-            print("error loading dict_settings")
-    
-    def load_user_settings(self):
-        all_users = self.db.get_all_users_sorted_by_active()
-
-        if all_users != []:
-            self.user_tab.user_combobox.clear()
-            for user in all_users:
-                self.user_tab.user_combobox.addItem(user[1])
-            self.user_tab.user_combobox.setCurrentIndex(0) # should make the active user go to the top
-        else: print("No active users!")
-
-
-    def add_new_user(self):
-        user_name = self.user_tab.add_user_name.text()
-        if user_name != "":
-            self.user_tab.add_user_name.clear()
-            self.db.add_new_user(user_name)
-            self.db.change_active_user(user_name)
-            self.db.check_active_user()
-            self.db.set_up_default_online_tools(self.db.active_user_id)
-            self.db.set_up_default_settings(self.db.active_user_id)
-            self.load_all_settings()
-        else:
-            pass
-    
-    def update_user(self):
-        new_user_selected = self.user_tab.user_combobox.currentText()
-        self.user_tab.user_combobox.clear()
-        self.db.change_active_user(new_user_selected)
-        self.load_all_settings()
-    
-    def save_settings_to_db(self):
-        online_tools_list = []
-        row_count = self.dict_tab.dict_table_widget.rowCount() -1
-        for row in range(row_count):
-            online_tools_list.append([self.dict_tab.dict_table_widget.item(row,1).text(),self.dict_tab.dict_table_widget.item(row,2).text()])
-        self.db.save_online_tools(online_tools_list)
-
-        
-
-    #     tab_settings = []
-    #     number_of_rows_dict = self.settings.dict_tab.dict_table_widget.rowCount() -1 
-    #     for i in range(number_of_rows_dict):
-    #         tab_settings.append([self.settings.dict_tab.dict_table_widget.item(i,1).text(),self.settings.dict_tab.dict_table_widget.item(i,2).text()])
-    #     dark_theme = self.settings.other_tab.dark_theme_checkbox.isChecked()
-    #     autofill_flashcards = self.settings.other_tab.autofill_checkbox.isChecked()
-
-    
-    # def load_settings(self,default):
-    #     data = self.get_json_data()
-    #     if default:
-    #         tabs = data["default_tabs"]
-    #     else:
-    #         tabs = data["tabs"]
-    #     self.dict_tab.dict_table_widget.clearContents()
-    #     self.dict_tab.dict_table_widget.setRowCount(len(tabs)+1)
-    #     self.dict_tab.dict_table_widget.setColumnCount(3)
-    #     self.dict_tab.dict_table_widget.setHorizontalHeaderLabels(["Del","Tab Name", "URL"])
-    #     for i, tab in enumerate(tabs):
-    #         dict_btn = self.dict_tab.make_dict_btn(i)
-    #         self.dict_tab.dict_table_widget.setCellWidget(i,0, dict_btn)
-    #         self.dict_tab.dict_table_widget.setItem(i,1,QTableWidgetItem(tab[0]))
-    #         self.dict_tab.dict_table_widget.setItem(i,2,QTableWidgetItem(tab[1]))
-    #     self.dict_tab.dict_table_widget.resizeColumnsToContents()
-    #     # theme settings 
-    #     if data["dark_theme"]:
-    #         self.other_tab.dark_theme_checkbox.setChecked(True)
-    #     if data["autofill_flashcards"]:
-    #         self.other_tab.autofill_checkbox.setChecked(True)
-    #     #Discourse settings
-    #     discourse_data = data["discourse_highlighter"]
-    #     self.discourse_tab.discourse_table_widget.setColumnCount(4)
-    #     self.discourse_tab.discourse_table_widget.setRowCount(len(discourse_data.items())+1)
-    #     self.discourse_tab.discourse_table_widget.setHorizontalHeaderLabels(["Del","Category","Colour", "List Of Words"])
-    #     index = 0
-    #     for key,value in discourse_data.items():
-    #         color = value["color"]
-    #         dis_btn = self.discourse_tab.make_dis_btn(index)
-    #         color_widget = self.discourse_tab.make_dis_color_widget(index,color)
-    #         # color_widget.setStyleSheet("background-color : rgb(255,0,255")
-    #         self.discourse_tab.discourse_table_widget.setCellWidget(index,0,dis_btn)
-    #         self.discourse_tab.discourse_table_widget.setItem(index,1,QTableWidgetItem(key))
-    #         self.discourse_tab.discourse_table_widget.setCellWidget(index,2,color_widget)
-    #         self.discourse_tab.discourse_table_widget.setItem(index,3,QTableWidgetItem(", ".join(value["list"])))
-    #         index += 1
-    #     self.discourse_tab.discourse_table_widget.resizeColumnsToContents()
-
-    # def get_json_data(self):
-    #     with open(os.path.join(os.getcwd(),"src","settings.json"),"r+") as f:
-    #         data = json.load(f)
-    #         return data
 
 class UsersTab(QWidget):
     def __init__(self):
