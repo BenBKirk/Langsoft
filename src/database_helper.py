@@ -82,7 +82,7 @@ class Database(object):
             CREATE TABLE IF NOT EXISTS settings (
                 id INTEGER,
                 name VARCHAR,
-                value VARCHAR,
+                value BOOLEAN,
                 user_id INTEGER,
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
@@ -168,9 +168,9 @@ class Database(object):
 
     def set_up_default_settings(self,user_id=1):
         default_settings1 = "INSERT OR REPLACE INTO settings(name,value,user_id) VALUES (:name,:value,:user_id)"
-        default_settings_param1 = ("dark_theme","False",user_id)
+        default_settings_param1 = ("dark_theme",False,user_id)
         default_settings2 = "INSERT OR REPLACE INTO settings(name,value,user_id ) VALUES (:name,:value,:user_id)"
-        default_settings_param2 = ("autofill_back_of_flashcard","True",user_id)
+        default_settings_param2 = ("autofill_back_of_flashcard",True,user_id)
         with DatabaseHelper(self.name) as db:
             db.execute_single(default_settings1,default_settings_param1)
             db.execute_single(default_settings2,default_settings_param2)
@@ -182,15 +182,12 @@ class Database(object):
         with DatabaseHelper(self.name) as db:
             dict_to_return = {}
             the_list = db.get_sql("SELECT * FROM last_user")
-            print(the_list)
-
             if the_list == None or the_list == []:
                 # use defaults
                 dict_to_return["id"] = 1
                 dict_to_return["name"] = "default_user"
                 return dict_to_return
             else:
-                print(the_list)
                 user_name = db.get_sql(f"SELECT * FROM users WHERE id = {the_list[0][1]}")[0][1]
                 dict_to_return["name"] = user_name
                 dict_to_return["id"] = the_list[0][1]
@@ -199,7 +196,6 @@ class Database(object):
     def set_last_user(self,new_user_name):
         #get id from name
         with DatabaseHelper(self.name) as db:
-            print(new_user_name)
             new_user_id = db.get_sql(f"SELECT * FROM users WHERE name = '{new_user_name}'")[0][0]
         with DatabaseHelper(self.name) as db:
             #replace last user values
@@ -216,17 +212,20 @@ class Database(object):
         with DatabaseHelper(self.name) as db:
             return db.get_sql(f"SELECT * FROM online_tools WHERE user_id = {active_user}")
 
-    def get_other_settings(self,active_user):
+    def get_other_settings(self,active_user_id):
         with DatabaseHelper(self.name) as db:
             dict_to_return = {}
-            if db.get_sql(f"SELECT * FROM settings WHERE user_id = {active_user} AND name = 'dark_theme'")[0][2] == "True":
-                dict_to_return["dark_theme"] = True
-            else:
-                dict_to_return["dark_theme"] = False
-            if db.get_sql(f"SELECT * FROM settings WHERE user_id = {active_user} AND name = 'autofill_back_of_flashcard'")[0][2] == "True":
-                dict_to_return["autofill_back_of_flashcard"] = True
-            else:
-                dict_to_return["autofill_back_of_flashcard"] = False
+            dict_to_return["dark_theme"] = bool(db.get_sql(f"SELECT value FROM settings WHERE user_id = {active_user_id} AND name = 'dark_theme'" )[0][0])
+            print(dict_to_return["dark_theme"])
+            # if db.get_sql(f"SELECT * FROM settings WHERE user_id = {active_user} AND name = 'dark_theme'")[0][2] == "True":
+            #     dict_to_return["dark_theme"] = True
+            # else:
+            #     dict_to_return["dark_theme"] = False
+            # if db.get_sql(f"SELECT * FROM settings WHERE user_id = {active_user_id} AND name = 'autofill_back_of_flashcard'")[0][2] == "True":
+            #     dict_to_return["autofill_back_of_flashcard"] = True
+            # else:
+            #     dict_to_return["autofill_back_of_flashcard"] = False
+            dict_to_return["autofill_back_of_flashcard"] = bool(db.get_sql(f"SELECT value FROM settings WHERE user_id = {active_user_id} AND name = 'autofill_back_of_flashcard'")[0][0])
             return dict_to_return
 
     def get_recent_files(self,current_user):
@@ -262,45 +261,34 @@ class Database(object):
             id = db.get_sql(f"SELECT * FROM users WHERE name='{name}'")[0][0]
             return id
 
-
-
-
-
-
-
-
-
-
-
+    def save_online_tools(self,online_tools,current_user_id):  
+        with DatabaseHelper(self.name) as db:
+            db.execute_single(f"DELETE FROM online_tools WHERE user_id = {current_user_id}")
+        with DatabaseHelper(self.name) as db:
+            for row in online_tools:
+                row_sql = ("INSERT INTO online_tools(title,url,user_id) VALUES (:title,:url,:user_id)")
+                row_params = (row[0],row[1],current_user_id)
+                db.execute_single(row_sql,row_params)
     
-    # def check_active_user(self):
-    #     with DatabaseHelper(self.name) as db:
-    #         active_user = db.get_sql("SELECT * FROM users WHERE is_active = 1")
-    #         print(f"the active user is {active_user}")
-    #         # active_user = db.get_sql("SELECT * FROM users ")
-    #         if active_user == []: #the program is probably being run for the first time
-    #             print("looks like the program is running for the first time")
-    #             default_user = """
-    #             INSERT OR REPLACE INTO users(id,name,is_active) VALUES (:id,:name,:is_active)
-    #             """
-    #             default_user_param = (1,"default_user",True)
-    #             db.execute_single(default_user, default_user_param)
-    #             self.active_user_id = 1
-    #         else:
-    #             self.active_user_id = active_user[0][0]
-            
-    
-    # def change_active_user(self,new_active_user):
-    #     # find the active user and set them to inactive
-    #     with DatabaseHelper(self.name) as db:
-    #         sql_for_setting_all_to_inactive = "UPDATE users SET is_active = false WHERE is_active = true"
-    #         db.execute_single(sql_for_setting_all_to_inactive)
-    #         sql_to_make_user_active = f"UPDATE users SET is_active = true WHERE name='{new_active_user}'"
-    #         db.execute_single(sql_to_make_user_active )
-    #     # find the selected user and set them to active
-    #     print("active user updated")
-    #     self.check_active_user() # so that self.active_user_id is updated
-    
+
+
+    def save_other_settings(self,current_user_id,other_settings):
+        with DatabaseHelper(self.name) as db:
+            db.execute_single(f"DELETE FROM settings WHERE user_id ={current_user_id} AND name ='dark_theme' OR name ='autofill_back_of_flashcard'")
+        with DatabaseHelper(self.name) as db:
+            db.execute_single(f"INSERT INTO settings(name,value,user_id) VALUES (:name,:value,:user_id)",("dark_theme",other_settings["dark_theme"],current_user_id))
+            db.execute_single(f"INSERT INTO settings(name,value,user_id) VALUES (:name,:value,:user_id)",("autofill_back_of_flashcard",other_settings["autofill_back_of_flashcard"],current_user_id))
+
+
+
+
+
+
+
+
+
+             
+     
 
     def add_recent_file(self,filepath):
         date_time = datetime.now()
@@ -324,14 +312,6 @@ class Database(object):
     
 
     
-    def save_online_tools(self,online_tools):
-        with DatabaseHelper(self.name) as db:
-            db.execute_single(f"DELETE FROM online_tools WHERE user_id = {self.active_user_id}")
-        with DatabaseHelper(self.name) as db:
-            for row in online_tools:
-                row_sql = ("INSERT INTO online_tools(title,url,user_id) VALUES (:title,:url,:user_id)")
-                row_params = (row[0],row[1],self.active_user_id)
-                db.execute_single(row_sql,row_params)
     
     def save_word_to_vocabulary(self, term, defin, confid):
         if confid == "unknown":

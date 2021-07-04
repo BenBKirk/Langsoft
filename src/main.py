@@ -55,10 +55,11 @@ class MainWindow(MainUIWidget):
         self.audio_player.durationChanged.connect(self.update_slider_duration)
         self.audio_player.positionChanged.connect(self.update_slider_position)
         self.left_pane.audio_slider.valueChanged.connect(self.audio_player.setPosition)
-        self.settings.save_button.clicked.connect(self.save_button_clicked)
+        self.settings.save_button.clicked.connect(self.save_settings_to_db)
         self.settings.other_tab.dark_theme_checkbox.stateChanged.connect(self.toggle_theme)
         self.settings.user_tab.user_combobox.currentTextChanged.connect(self.change_current_user)
         self.settings.user_tab.add_user_btn.clicked.connect(self.add_new_user)
+        self.settings.cancel_button.clicked.connect(self.settings.close)
         self.top_right_pane.unknown_btn.clicked.connect(self.save_word_as_unknown)
         self.top_right_pane.semi_known_btn.clicked.connect(self.save_word_as_semi_known)
         self.top_right_pane.known_btn.clicked.connect(self.save_word_as_known)
@@ -86,7 +87,6 @@ class MainWindow(MainUIWidget):
         self.current__other_settings = self.db.get_other_settings(self.current_user["id"])
         self.recent_files = self.db.get_recent_files(self.current_user["id"])
         # UI
-        print(self.current__other_settings)
         if self.current__other_settings["dark_theme"]:
             self.setPalette(self.dark_theme_palette)
             self.set_icons(True)
@@ -100,12 +100,12 @@ class MainWindow(MainUIWidget):
         self.settings.load_online_tool_settings(self.current_online_tools)
         self.settings.load_other_settings(self.current__other_settings)
         self.settings.load_user(self.all_users_names,self.current_user)
-        self.settings.show()
     
     def change_current_user(self):
         new_user_name = self.settings.user_tab.user_combobox.currentText()
         self.db.set_last_user(new_user_name)
         self.run_start_up_settings()
+        self.load_settings_to_settings_page()
     
     def add_new_user(self):
         new_user_name = self.settings.user_tab.add_user_name.text()
@@ -115,9 +115,26 @@ class MainWindow(MainUIWidget):
             self.db.set_last_user(new_user_name)
             self.run_start_up_settings()
             self.settings.user_tab.add_user_name.clear()
-            self.settings.close()
             self.load_settings_to_settings_page()
     
+    def save_settings_to_db(self):
+        self.settings.close()
+        # online tools
+        online_tools_list = []
+        row_count = self.settings.online_tools_tab.online_tools_table_widget.rowCount() -1
+        for row in range(row_count):
+            online_tools_list.append([self.settings.online_tools_tab.online_tools_table_widget.item(row,1).text(),self.settings.online_tools_tab.online_tools_table_widget.item(row,2).text()])
+        self.db.save_online_tools(online_tools_list,self.current_user["id"])
+        # discourse settings
+
+
+        # other settings
+        other_settings = {}
+        other_settings["dark_theme"] = self.settings.other_tab.dark_theme_checkbox.isChecked()
+        other_settings["autofill_back_of_flashcard"] = self.settings.other_tab.autofill_checkbox.isChecked()
+        self.db.save_other_settings(self.current_user["id"], other_settings)
+
+        self.run_start_up_settings()
 
 
 
@@ -133,13 +150,6 @@ class MainWindow(MainUIWidget):
     
     def save_word_as_known(self):
         pass
-
-
-    def save_button_clicked(self):
-        self.settings.save_settings_to_db()
-        self.db.check_active_user()
-        self.bottom_right_pane.start_tabs(self.db.get_online_tools())
-        self.settings.close()
 
     def highlight(self,color):
         cursor = self.left_pane.browser.textCursor()
@@ -233,7 +243,7 @@ class MainWindow(MainUIWidget):
         if selection != "":
             for i, row in enumerate(self.current_online_tools):
                 self.bottom_right_pane.my_tabs[i].setUrl(QUrl(row[2].replace("WORD",selection).replace("SENT",context)))
-        if True:# self.json_settings["autofill_flashcards"] == True:
+        if self.current__other_settings["autofill_back_of_flashcard"]:
             self.top_right_pane.flash_back.clear()
             try:
                 translation = self.translator.translate(selection)

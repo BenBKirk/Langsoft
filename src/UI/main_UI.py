@@ -236,7 +236,6 @@ class BottomRightPane(QWidget):
         self.tabs.addTab(self.my_tabs[index],name)
 
     def start_tabs(self,online_tools):
-        print(online_tools)
         self.tabs.clear()
         self.my_tabs = {}
         for i, row in enumerate(online_tools): 

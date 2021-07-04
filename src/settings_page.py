@@ -1,4 +1,4 @@
-""""
+"""
 UI only
 """
 import sys
@@ -12,7 +12,7 @@ class SettingsPage(QWidget):
     def __init__(self):
         super(SettingsPage, self).__init__()
         self.user_tab = UsersTab()
-        self.dict_tab = DictTab()
+        self.online_tools_tab = OnlineToolsTab()
         self.other_tab = OtherTab()
         self.discourse_tab = DiscourseTab()
         self.font_L = QtGui.QFont("Ubuntu",12, 200)
@@ -21,7 +21,7 @@ class SettingsPage(QWidget):
         vbox = QVBoxLayout()
         self.tabs = QTabWidget()
         self.tabs.addTab(self.user_tab,"Users")
-        self.tabs.addTab(self.dict_tab,"Online Tools (URLs)")
+        self.tabs.addTab(self.online_tools_tab,"Online Tools (URLs)")
         self.tabs.addTab(self.discourse_tab,"Discourse Highlighter")
         self.tabs.addTab(self.other_tab,"Other")
         vbox.addWidget(self.tabs)
@@ -40,17 +40,18 @@ class SettingsPage(QWidget):
         self.setLayout(vbox)
         self.setWindowTitle("Settings")
         self.setWindowIcon(QtGui.QIcon(os.path.join("src", "img", "settings.png")))
-    
+
     def load_online_tool_settings(self,online_tools):
-            self.dict_tab.dict_table_widget.setRowCount(len(online_tools)+1)
-            self.dict_tab.dict_table_widget.setColumnCount(3)
-            self.dict_tab.dict_table_widget.setHorizontalHeaderLabels(["Del","Tab Name", "URL"])
-            for i,val in enumerate(online_tools):
-                dict_btn = self.dict_tab.make_dict_btn(i)
-                self.dict_tab.dict_table_widget.setCellWidget(i,0, dict_btn)
-                self.dict_tab.dict_table_widget.setItem(i,1,QTableWidgetItem(val[1]))
-                self.dict_tab.dict_table_widget.setItem(i,2,QTableWidgetItem(val[2]))
-            self.dict_tab.dict_table_widget.resizeColumnsToContents()
+        self.online_tools_tab.online_tools_table_widget.clear()
+        self.online_tools_tab.online_tools_table_widget.setRowCount(len(online_tools)+1)
+        self.online_tools_tab.online_tools_table_widget.setColumnCount(3)
+        self.online_tools_tab.online_tools_table_widget.setHorizontalHeaderLabels(["Del","Tab Name", "URL"])
+        for i,val in enumerate(online_tools):
+            dict_btn = self.online_tools_tab.make_delete_btn(i)
+            self.online_tools_tab.online_tools_table_widget.setCellWidget(i,0, dict_btn)
+            self.online_tools_tab.online_tools_table_widget.setItem(i,1,QTableWidgetItem(val[1]))
+            self.online_tools_tab.online_tools_table_widget.setItem(i,2,QTableWidgetItem(val[2]))
+        self.online_tools_tab.online_tools_table_widget.resizeColumnsToContents()
     
     def load_other_settings(self,other_settings):
         self.other_tab.dark_theme_checkbox.setChecked(other_settings["dark_theme"])
@@ -96,47 +97,47 @@ class OtherTab(QWidget):
         layout.addWidget(self.dark_theme_checkbox)
         layout.addWidget(self.autofill_checkbox)
         self.setLayout(layout)
-class DictTab(QWidget):
-    dictList = {}
-    dict_btn = {}
+class OnlineToolsTab(QWidget):
+    online_tools_list = {}
+    online_tools_delete_btn = {}
     def __init__(self):
-        super(DictTab, self).__init__()
-        self.dict_table_widget = QTableWidget()
-        self.dict_table_widget.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.dict_table_widget.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.dict_table_widget.itemChanged.connect(self.add_new_dict_item)
+        super(OnlineToolsTab, self).__init__()
+        self.online_tools_table_widget = QTableWidget()
+        self.online_tools_table_widget.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.online_tools_table_widget.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.online_tools_table_widget.itemChanged.connect(self.add_new_dict_item)
         layout = QVBoxLayout()
         label =QLabel("Enter the full URL to an online dictionary you want to use. \nJust be sure to change the search term to WORD or SENT so that the program knows how to use the URL.\nIf you are unsure just reset to defaults for an example.")
         label.setWordWrap(True)
         layout.addWidget(label)
-        self.restore_defaults = QPushButton("Reset to Defaults")
-        self.restore_defaults.setMaximumWidth(120)
+        self.restore_defaults = QPushButton("Load Defaults/Example Settings")
+        # self.restore_defaults.setMaximumWidth(120)
         layout.addWidget(self.restore_defaults)
-        layout.addWidget(self.dict_table_widget)
+        layout.addWidget(self.online_tools_table_widget)
         self.setLayout(layout)
     
     def add_new_dict_item(self):
-        number_of_rows = self.dict_table_widget.rowCount()
-        current_index = self.dict_table_widget.currentIndex().row()+1
+        number_of_rows = self.online_tools_table_widget.rowCount()
+        current_index = self.online_tools_table_widget.currentIndex().row()+1
         if number_of_rows == current_index:
             try:
-                tab_name = self.dict_table_widget.item(current_index-1,1).text() 
+                tab_name = self.online_tools_table_widget.item(current_index-1,1).text() 
             except:
                 tab_name = None
             try:
-                URL = self.dict_table_widget.item(current_index-1,2).text() 
+                URL = self.online_tools_table_widget.item(current_index-1,2).text() 
             except:
                 URL = None
 
             if tab_name != None and URL != None:
-                self.dict_table_widget.setCellWidget(current_index -1, 0, self.make_dict_btn(current_index-1))
-                self.dict_table_widget.setRowCount(current_index+1)
+                self.online_tools_table_widget.setCellWidget(current_index -1, 0, self.make_delete_btn(current_index-1))
+                self.online_tools_table_widget.setRowCount(current_index+1)
 
-    def make_dict_btn(self,i):
-        self.dict_btn[i] = QPushButton("X")
-        self.dict_btn[i].setMaximumWidth(50)
-        self.dict_btn[i].clicked.connect(lambda: self.dict_table_widget.removeRow(self.dict_table_widget.currentIndex().row()))
-        return self.dict_btn[i]
+    def make_delete_btn(self,i):
+        self.online_tools_delete_btn[i] = QPushButton("X")
+        self.online_tools_delete_btn[i].setMaximumWidth(50)
+        self.online_tools_delete_btn[i].clicked.connect(lambda: self.online_tools_table_widget.removeRow(self.online_tools_table_widget.currentIndex().row()))
+        return self.online_tools_delete_btn[i]
 
 class DiscourseTab(QWidget):
     dis_btn = {}
