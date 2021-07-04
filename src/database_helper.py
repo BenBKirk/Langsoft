@@ -280,16 +280,6 @@ class Database(object):
             db.execute_single(f"INSERT INTO settings(name,value,user_id) VALUES (:name,:value,:user_id)",("autofill_back_of_flashcard",other_settings["autofill_back_of_flashcard"],current_user_id))
 
 
-
-
-
-
-
-
-
-             
-     
-
     def add_recent_file(self,filepath):
         date_time = datetime.now()
         with DatabaseHelper(self.name) as db:
@@ -308,25 +298,30 @@ class Database(object):
                     db.execute_single(sql, params)
     
     
-            
-    
-
-    
-    
-    def save_word_to_vocabulary(self, term, defin, confid):
+    def save_word_to_vocabulary(self,current_user_id, term, defin, confid):
         if confid == "unknown":
-            print("was set!")
             highlighter_id = 1
         elif confid == "semi-known":
             highlighter_id = 2
         elif confid == "known":
             highlighter_id = 3
+        term = term.lower()
         
         date = datetime.now()
         sql = f"INSERT INTO vocabulary(user_id,term,definition,highlighter_id,is_regex,created_at) VALUES(:user_id,:term,:definition,:highlighter_id,:is_regex,:created_at)"
-        params = (self.active_user_id,term ,defin, highlighter_id, False,date)
+        params = (current_user_id,term ,defin, highlighter_id, False,date)
         with DatabaseHelper(self.name) as db:
             db.execute_single(sql, params)
+    
+    def look_up_sel_in_db(self,sel):
+        with DatabaseHelper(self.name) as db:
+            return db.get_sql(f"SELECT * FROM vocabulary WHERE term='{sel.lower()}'")
+    
+    def get_list_of_vocab(self,current_user_id,highlighter_id):
+        with DatabaseHelper(self.name) as db:
+            return db.get_sql(f"SELECT * FROM vocabulary WHERE user_id={current_user_id} AND highlighter_id={highlighter_id}")
+
+
 
 
 

@@ -43,7 +43,7 @@ class MainWindow(MainUIWidget):
         self.format_widget = FormatSelectedText(self.left_pane.browser)
         self.help_page = HelpWindow()
         self.db = Database()
-        # self.thread_pool = QtCore.QThreadPool()
+        self.thread_pool = QtCore.QThreadPool()
         #connections
         self.left_pane.browser.clicked.connect(self.browser_clicked)
         self.left_pane.browser.hightlight.connect(self.highlight)
@@ -143,8 +143,12 @@ class MainWindow(MainUIWidget):
         word_to_save = self.current_selection
         definition_to_save = self.top_right_pane.flash_back.toPlainText()
         print(f"the word clicked was '{word_to_save}' and the definition is '{definition_to_save}' ")
-        self.db.save_word_to_vocabulary(word_to_save, definition_to_save,"unknown")
-        
+        self.db.save_word_to_vocabulary(self.current_user["id"],word_to_save, definition_to_save,"unknown")
+        # start highlighter in another thread
+        worker = Worker(self.highlight_terms(1)) 
+        self.thread_pool.start(worker)
+
+
     def save_word_as_semi_known(self):
         pass
     
@@ -163,9 +167,14 @@ class MainWindow(MainUIWidget):
         text_cursor.select(QTextCursor.WordUnderCursor)
         if text_cursor.hasSelection():
             sel = text_cursor.selectedText()
-            # Need to do a lookup here and only show tooltip if there is a saved definition for that term
-            self.left_pane.browser.setToolTip(f"{sel}")
-
+            #at the moment this seems to be ok without being in another thread, but what would it be like with 20000 times more words in database?
+            list_of_matchs = self.db.look_up_sel_in_db(sel)
+            if list_of_matchs != []:
+                defin = list_of_matchs[0][3]
+                self.left_pane.browser.setToolTip(f"{defin}")
+            else:
+                self.left_pane.browser.setToolTip("")
+    
     def set_global_settings(self):
         with open(os.path.join(os.getcwd(),"src","settings.json"),"r+") as f:
             data = json.load(f)
@@ -281,7 +290,7 @@ class MainWindow(MainUIWidget):
         if action == 'help':
             self.help_page.show()
         if action == 'highlight':
-            self.highlight_grammar_terms()
+            self.highlight_terms(1)
         if action == 'format':
             self.format_widget.show()
 
@@ -493,32 +502,56 @@ class MainWindow(MainUIWidget):
         folder = os.path.dirname(path)
         return folder + "/"
     
-    def highlight_grammar_terms(self):
-        for key, value in self.json_settings["discourse_highlighter"].items():
-            color_list = value["color"].split(",")
-            color_ints = []
-            for x in color_list:
-                color_ints.append(int(x))
-            color_ints.append(255)
-            color = QtGui.QColor()
-            color.setRgb(color_ints[0],color_ints[1],color_ints[2],color_ints[3])
-            regex_for_word_list = "|".join(self.wrap_in_b(value["list"]))
+    def highlight_terms(self,highlighter):
+        unknown_vocab_list = self.db.get_list_of_vocab(self.current_user["id"], 1)
+        if unknown_vocab_list != []:
+            # the_brush = QtGui.QBrush(QtGui.QColor("red"))
+            
             the_format = QTextCharFormat()
-            the_format.setBackground(QtGui.QBrush(color))
-            self.apply_highlight(regex_for_word_list,the_format)
+            the_format.setUnderlineColor(Qt.red)
+            the_format.setUnderlineStyle(QtGui.QTextCharFormat.SingleUnderline)
+            for term in unknown_vocab_list:
+                term = term[2]
+                term = f"\\b{term}\\b"
+                self.apply_highlight(term,the_format)
+
+        # for key, value in self.json_settings["discourse_highlighter"].items():
+        #     color_list = value["color"].split(",")
+        #     color_ints = []
+        #     for x in color_list:
+        #         color_ints.append(int(x))
+        #     color_ints.append(255)
+        #     color = QtGui.QColor()
+        #     color.setRgb(color_ints[0],color_ints[1],color_ints[2],color_ints[3])
+        #     regex_for_word_list = "|".join(self.wrap_in_b(value["list"]))
+        #     the_format = QTextCharFormat()
+        #     the_format.setBackground(QtGui.QBrush(color))
+        #     self.apply_highlight(regex_for_word_list,the_format)
 
     def apply_highlight(self,pattern,the_format):
         cursor = self.left_pane.browser.textCursor()
-        regex = QtCore.QRegExp(pattern,Qt.CaseSensitivity.CaseInsensitive)
-        # regex.setCaseSensitivity()
-        pos = 0
-        index = regex.indexIn(self.left_pane.browser.toPlainText(),pos)
-        while (index != -1):
-            cursor.setPosition(index)
-            cursor.movePosition(QTextCursor.EndOfWord,1)
+        pattern = re.compile(pattern)
+        plain_text = self.left_pane.browser.toPlainText()
+        # start = 0
+        for m in re.finditer(pattern,plain_text):
+            start, end = m.span()
+            cursor.setPosition(start)
+            length_of_selection = end - start
+            for i in range(length_of_selection):
+                cursor.movePosition(QTextCursor.NextCharacter,1)
             cursor.mergeCharFormat(the_format)
-            pos = index + regex.matchedLength()
-            index = regex.indexIn(self.left_pane.browser.toPlainText(),pos)
+            print(f"the match is {plain_text[start:end]} and the lenth is {length_of_selection}")
+        # cursor = self.left_pane.browser.textCursor()
+        # regex = QtCore.QRegExp(pattern,Qt.CaseSensitivity.CaseInsensitive)
+        # # regex.setCaseSensitivity()
+        # pos = 0
+        # index = regex.indexIn(self.left_pane.browser.toPlainText(),pos)
+        # while (index != -1):
+        #     cursor.setPosition(index)
+        #     cursor.movePosition(QTextCursor.EndOfWord,1)
+        #     cursor.mergeCharFormat(the_format)
+        #     pos = index + regex.matchedLength()
+        #     index = regex.indexIn(self.left_pane.browser.toPlainText(),pos)
 
 
     def wrap_in_b(self,the_list):
