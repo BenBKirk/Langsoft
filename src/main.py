@@ -31,8 +31,8 @@ class MainWindow(MainUIWidget):
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-        self.json_settings = {}
-        self.set_global_settings()
+        # self.json_settings = {}
+        # self.set_global_settings()
         # self.bottom_right_pane.start_tabs(self.json_settings) # this being called after the settings, allows time to read the json settings file
         # Create classes instances:
         self.audio_player = QMediaPlayer()
@@ -161,24 +161,48 @@ class MainWindow(MainUIWidget):
         the_format.setBackground(QtGui.QBrush(QtGui.QColor(color)))
         cursor.mergeCharFormat(the_format)
 
-    def hover_over_word(self,pos):
+    def hover_over_word(self,pos): # TODO: Should this be constantly running in another thread?
         text_cursor = QTextCursor()
         text_cursor = self.left_pane.browser.cursorForPosition(pos)
-        text_cursor.select(QTextCursor.WordUnderCursor)
-        if text_cursor.hasSelection():
-            sel = text_cursor.selectedText()
+        # find start of highlight
+        the_format = text_cursor.charFormat()
+        is_highlighted = the_format.fontUnderline()
+        while is_highlighted:
+            print("moving back")
+            text_cursor.movePosition(QTextCursor.PreviousCharacter,QTextCursor.MoveAnchor)
+            the_format = text_cursor.charFormat()
+            is_highlighted = the_format.fontUnderline()
+        #should be at the beginning of the highlight
+        #find end of highlight 
+        is_highlighted = True
+        while is_highlighted:
+            print("moving forward")
+            text_cursor.movePosition(QTextCursor.NextCharacter,QTextCursor.KeepAnchor)
+            the_format = text_cursor.charFormat()
+            is_highlighted = the_format.fontUnderline()
+        text_cursor.movePosition(QTextCursor.PreviousCharacter,QTextCursor.KeepAnchor)
+        #should be at end of highlight
+        sel = text_cursor.selectedText()
+        print(sel)
+        text_cursor.clearSelection()
+
+        if sel !="":
+            # sel = text_cursor.selectedText()
             #at the moment this seems to be ok without being in another thread, but what would it be like with 20000 times more words in database?
             list_of_matchs = self.db.look_up_sel_in_db(sel)
             if list_of_matchs != []:
                 defin = list_of_matchs[0][3]
+                self.left_pane.browser.setToolTipDuration(2000)
                 self.left_pane.browser.setToolTip(f"{defin}")
             else:
                 self.left_pane.browser.setToolTip("")
-    
-    def set_global_settings(self):
-        with open(os.path.join(os.getcwd(),"src","settings.json"),"r+") as f:
-            data = json.load(f)
-            self.json_settings = data
+        else:
+            self.left_pane.browser.setToolTip("")
+
+    # def set_global_settings(self):
+    #     with open(os.path.join(os.getcwd(),"src","settings.json"),"r+") as f:
+    #         data = json.load(f)
+    #         self.json_settings = data
 
     def display_msg(self,title,text):
         msgBox = QMessageBox()
@@ -507,30 +531,19 @@ class MainWindow(MainUIWidget):
         if unknown_vocab_list != []:
             # the_brush = QtGui.QBrush(QtGui.QColor("red"))
             
+            color = QtGui.QColor()
+            color.setRgbF(255,0,0,1)
             the_format = QTextCharFormat()
-            the_format.setUnderlineColor(Qt.red)
-            the_format.setUnderlineStyle(QtGui.QTextCharFormat.SingleUnderline)
+            the_format.setUnderlineColor(color) 
+            the_format.setUnderlineStyle(QtGui.QTextCharFormat .SingleUnderline)
             for term in unknown_vocab_list:
                 term = term[2]
-                term = f"\\b{term}\\b"
+                # term = f"\\b{term}\\b"
                 self.apply_highlight(term,the_format)
-
-        # for key, value in self.json_settings["discourse_highlighter"].items():
-        #     color_list = value["color"].split(",")
-        #     color_ints = []
-        #     for x in color_list:
-        #         color_ints.append(int(x))
-        #     color_ints.append(255)
-        #     color = QtGui.QColor()
-        #     color.setRgb(color_ints[0],color_ints[1],color_ints[2],color_ints[3])
-        #     regex_for_word_list = "|".join(self.wrap_in_b(value["list"]))
-        #     the_format = QTextCharFormat()
-        #     the_format.setBackground(QtGui.QBrush(color))
-        #     self.apply_highlight(regex_for_word_list,the_format)
 
     def apply_highlight(self,pattern,the_format):
         cursor = self.left_pane.browser.textCursor()
-        pattern = re.compile(pattern)
+        pattern = re.compile(pattern,re.IGNORECASE)
         plain_text = self.left_pane.browser.toPlainText()
         # start = 0
         for m in re.finditer(pattern,plain_text):
@@ -538,30 +551,9 @@ class MainWindow(MainUIWidget):
             cursor.setPosition(start)
             length_of_selection = end - start
             for i in range(length_of_selection):
-                cursor.movePosition(QTextCursor.NextCharacter,1)
+                cursor.movePosition(QTextCursor.NextCharacter,QTextCursor.KeepAnchor)
             cursor.mergeCharFormat(the_format)
             print(f"the match is {plain_text[start:end]} and the lenth is {length_of_selection}")
-        # cursor = self.left_pane.browser.textCursor()
-        # regex = QtCore.QRegExp(pattern,Qt.CaseSensitivity.CaseInsensitive)
-        # # regex.setCaseSensitivity()
-        # pos = 0
-        # index = regex.indexIn(self.left_pane.browser.toPlainText(),pos)
-        # while (index != -1):
-        #     cursor.setPosition(index)
-        #     cursor.movePosition(QTextCursor.EndOfWord,1)
-        #     cursor.mergeCharFormat(the_format)
-        #     pos = index + regex.matchedLength()
-        #     index = regex.indexIn(self.left_pane.browser.toPlainText(),pos)
-
-
-    def wrap_in_b(self,the_list):
-        # this is for the regex (\b means word border)
-        new_list = []
-        for i in the_list:
-            i = f"\\b{i}\\b"
-            new_list.append(i)
-        return new_list
-
 
 
 if __name__ == "__main__":
