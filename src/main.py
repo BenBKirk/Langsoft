@@ -60,9 +60,9 @@ class MainWindow(MainUIWidget):
         self.settings.user_tab.user_combobox.currentTextChanged.connect(self.change_current_user)
         self.settings.user_tab.add_user_btn.clicked.connect(self.add_new_user)
         self.settings.cancel_button.clicked.connect(self.settings.close)
-        self.top_right_pane.unknown_btn.clicked.connect(self.save_word_as_unknown)
-        self.top_right_pane.semi_known_btn.clicked.connect(self.save_word_as_semi_known)
-        self.top_right_pane.known_btn.clicked.connect(self.save_word_as_known)
+        self.top_right_pane.unknown_btn.clicked.connect(lambda: self.save_to_vocab("unknown"))
+        self.top_right_pane.semi_known_btn.clicked.connect(lambda: self.save_to_vocab("semi-known"))
+        self.top_right_pane.known_btn.clicked.connect(lambda: self.save_to_vocab("known"))
         # other
         self.dark_theme_palette = self.setup_dark_theme()
         self.run_start_up_settings()
@@ -85,6 +85,7 @@ class MainWindow(MainUIWidget):
         self.current_online_tools = self.db.get_online_tools(self.current_user["id"])
         self.current_discourse_settings = self.db.get_discourse_settings(self.current_user["id"])
         self.current__other_settings = self.db.get_other_settings(self.current_user["id"])
+        self.current_highlighters = self.db.get_highlighters(self.current_user["id"])
         self.recent_files = self.db.get_recent_files(self.current_user["id"])
         # UI
         if self.current__other_settings["dark_theme"]:
@@ -126,34 +127,57 @@ class MainWindow(MainUIWidget):
             online_tools_list.append([self.settings.online_tools_tab.online_tools_table_widget.item(row,1).text(),self.settings.online_tools_tab.online_tools_table_widget.item(row,2).text()])
         self.db.save_online_tools(online_tools_list,self.current_user["id"])
         # discourse settings
-
-
+        #TODO:
         # other settings
         other_settings = {}
         other_settings["dark_theme"] = self.settings.other_tab.dark_theme_checkbox.isChecked()
         other_settings["autofill_back_of_flashcard"] = self.settings.other_tab.autofill_checkbox.isChecked()
         self.db.save_other_settings(self.current_user["id"], other_settings)
-
         self.run_start_up_settings()
-
-
-
     
-    def save_word_as_unknown(self):
+    def save_to_vocab(self,confid):
         word_to_save = self.current_selection
         definition_to_save = self.top_right_pane.flash_back.toPlainText()
         print(f"the word clicked was '{word_to_save}' and the definition is '{definition_to_save}' ")
-        self.db.save_word_to_vocabulary(self.current_user["id"],word_to_save, definition_to_save,"unknown")
+        self.db.save_word_to_vocabulary(self.current_user["id"],word_to_save, definition_to_save,self.current_highlighters[confid]["id"])
         # start highlighter in another thread
-        worker = Worker(self.highlight_terms(1)) 
+        worker = Worker(self.highlight_terms(confid)) 
         self.thread_pool.start(worker)
 
 
-    def save_word_as_semi_known(self):
-        pass
-    
-    def save_word_as_known(self):
-        pass
+    def highlight_terms(self,confid):
+        highlight_color = [int(s) for s in self.current_highlighters[confid]["color"].split(",")] # converts string to list of ints
+        highlight_style = self.current_highlighters[confid]["style"]
+        print(highlight_color)
+        print(highlight_style)
+
+        unknown_vocab_list = self.db.get_list_of_vocab(self.current_user["id"], self.current_highlighters[confid]["id"])
+        if unknown_vocab_list != []:
+            # the_brush = QtGui.QBrush(QtGui.QColor("red"))
+            
+            color = QtGui.QColor()
+            color.setRgbF(highlight_color[0],highlight_color[1],highlight_color[2],highlight_color[3])
+            the_format = QTextCharFormat()
+            the_format.setUnderlineColor(color) 
+            the_format.setUnderlineStyle(QtGui.QTextCharFormat .SingleUnderline)
+            for term in unknown_vocab_list:
+                term = term[2]
+                # term = f"\\b{term}\\b"
+                self.apply_highlight(term,the_format)
+
+    def apply_highlight(self,pattern,the_format):
+        cursor = self.left_pane.browser.textCursor()
+        pattern = re.compile(pattern,re.IGNORECASE)
+        plain_text = self.left_pane.browser.toPlainText()
+        # start = 0
+        for m in re.finditer(pattern,plain_text):
+            start, end = m.span()
+            cursor.setPosition(start)
+            length_of_selection = end - start
+            for i in range(length_of_selection):
+                cursor.movePosition(QTextCursor.NextCharacter,QTextCursor.KeepAnchor)
+            cursor.mergeCharFormat(the_format)
+            print(f"the match is {plain_text[start:end]} and the lenth is {length_of_selection}")
 
     def highlight(self,color):
         cursor = self.left_pane.browser.textCursor()
@@ -192,6 +216,7 @@ class MainWindow(MainUIWidget):
             list_of_matchs = self.db.look_up_sel_in_db(sel)
             if list_of_matchs != []:
                 defin = list_of_matchs[0][3]
+                print(defin)
                 self.left_pane.browser.setToolTipDuration(2000)
                 self.left_pane.browser.setToolTip(f"{defin}")
             else:
@@ -314,7 +339,8 @@ class MainWindow(MainUIWidget):
         if action == 'help':
             self.help_page.show()
         if action == 'highlight':
-            self.highlight_terms(1)
+            pass
+            # self.highlight_terms(1)
         if action == 'format':
             self.format_widget.show()
 
@@ -526,34 +552,6 @@ class MainWindow(MainUIWidget):
         folder = os.path.dirname(path)
         return folder + "/"
     
-    def highlight_terms(self,highlighter):
-        unknown_vocab_list = self.db.get_list_of_vocab(self.current_user["id"], 1)
-        if unknown_vocab_list != []:
-            # the_brush = QtGui.QBrush(QtGui.QColor("red"))
-            
-            color = QtGui.QColor()
-            color.setRgbF(255,0,0,1)
-            the_format = QTextCharFormat()
-            the_format.setUnderlineColor(color) 
-            the_format.setUnderlineStyle(QtGui.QTextCharFormat .SingleUnderline)
-            for term in unknown_vocab_list:
-                term = term[2]
-                # term = f"\\b{term}\\b"
-                self.apply_highlight(term,the_format)
-
-    def apply_highlight(self,pattern,the_format):
-        cursor = self.left_pane.browser.textCursor()
-        pattern = re.compile(pattern,re.IGNORECASE)
-        plain_text = self.left_pane.browser.toPlainText()
-        # start = 0
-        for m in re.finditer(pattern,plain_text):
-            start, end = m.span()
-            cursor.setPosition(start)
-            length_of_selection = end - start
-            for i in range(length_of_selection):
-                cursor.movePosition(QTextCursor.NextCharacter,QTextCursor.KeepAnchor)
-            cursor.mergeCharFormat(the_format)
-            print(f"the match is {plain_text[start:end]} and the lenth is {length_of_selection}")
 
 
 if __name__ == "__main__":

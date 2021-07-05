@@ -70,6 +70,7 @@ class Database(object):
             self.set_up_default_user()
             self.set_up_default_online_tools()
             self.set_up_default_settings()
+            self.set_up_default_highlighters()
     
     def create_tables(self):
         with DatabaseHelper(self.name) as db:
@@ -175,6 +176,28 @@ class Database(object):
             db.execute_single(default_settings1,default_settings_param1)
             db.execute_single(default_settings2,default_settings_param2)
     
+    def set_up_default_highlighters(self,user_id=1):
+        default_highlighter1 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
+        default_highlighter_param1 = (user_id,"255,0,0,1","underline","unknown")
+        default_highlighter2 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
+        default_highlighter_param2 = (user_id,"255,255,0,1","underline","semi-known")
+        default_highlighter3 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
+        default_highlighter_param3 = (user_id,"0,255,0,1","underline","known")
+        with DatabaseHelper(self.name) as db:
+            db.execute_single(default_highlighter1, default_highlighter_param1)
+            db.execute_single(default_highlighter2, default_highlighter_param2)
+            db.execute_single(default_highlighter3, default_highlighter_param3)
+
+    def get_highlighters(self, user_id):
+        with DatabaseHelper(self.name) as db:
+            dict_to_return = {}
+            unknown_list = db.get_sql(f"SELECT * FROM highlighters WHERE user_id ={user_id} AND name = 'unknown'")
+            semi_known_list = db.get_sql(f"SELECT * FROM highlighters WHERE user_id ={user_id} AND name = 'semi-known'")
+            known_list = db.get_sql(f"SELECT * FROM highlighters WHERE user_id ={user_id} AND name = 'known'")
+            dict_to_return["unknown"] = {"id":unknown_list[0][0],"color": unknown_list[0][2],"style":unknown_list[0][3]}
+            dict_to_return["semi-known"] = {"id":semi_known_list[0][0],"color": semi_known_list[0][2],"style":semi_known_list[0][3]}
+            dict_to_return["known"] = {"id":known_list[0][0], "color": known_list[0][2],"style":known_list[0][3]}
+            return dict_to_return
 
 
 
@@ -255,6 +278,7 @@ class Database(object):
             new_id = self.get_id_from_name(new_user_name)
             self.set_up_default_online_tools(new_id)
             self.set_up_default_settings(new_id)
+            self.set_up_default_highlighters(new_id)
 
     def get_id_from_name(self, name):
         with DatabaseHelper(self.name) as db:
@@ -299,17 +323,16 @@ class Database(object):
     
     
     def save_word_to_vocabulary(self,current_user_id, term, defin, confid):
-        if confid == "unknown":
-            highlighter_id = 1
-        elif confid == "semi-known":
-            highlighter_id = 2
-        elif confid == "known":
-            highlighter_id = 3
-        term = term.lower()
-        
+        # if confid == "unknown":
+        #     highlighter_id = 1
+        # elif confid == "semi-known":
+        #     highlighter_id = 2
+        # elif confid == "known":
+        #     highlighter_id = 3
+        # term = term.lower()
         date = datetime.now()
         sql = f"INSERT INTO vocabulary(user_id,term,definition,highlighter_id,is_regex,created_at) VALUES(:user_id,:term,:definition,:highlighter_id,:is_regex,:created_at)"
-        params = (current_user_id,term ,defin, highlighter_id, False,date)
+        params = (current_user_id,term.lower() ,defin, confid, False,date)
         with DatabaseHelper(self.name) as db:
             db.execute_single(sql, params)
     
