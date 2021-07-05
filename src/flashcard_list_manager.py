@@ -51,7 +51,6 @@ class FlashcardManager(QWidget):
     def save_flashcards_to_json(self):
         # loop through and get html data from widgets, to make a dict ready to save as json
         tempDict = {"cards":[]}
-        print(self.text_edits_front.keys())
 
         # for i in range(self.listTableWidget.rowCount()):
         if self.list_table_widget.rowCount() != False:
@@ -157,7 +156,6 @@ class FlashcardManager(QWidget):
                 pass
         except Exception as e:
             print(f"THERE WAS AN ERROR WHEN REMOVING ITEM FROM LIST AT INDEX {current_index} --- {e}")
-        print(self.text_edits_front.keys())
         
 
 if __name__ == "__main__":

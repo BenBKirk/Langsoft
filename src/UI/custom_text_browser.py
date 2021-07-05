@@ -38,7 +38,6 @@ class CustomTextBrowser(QTextEdit):
         action = contextMenu.exec_(self.mapToGlobal(event.pos()))
         if action == hightlight_custom:
             color = QColorDialog.getColor()
-            print(color.name())
             self.hightlight.emit(color.name())
         if action == clear_highlighting:
             self.clear_highlighting.emit()

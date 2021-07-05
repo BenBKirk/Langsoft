@@ -138,7 +138,6 @@ class MainWindow(MainUIWidget):
     def save_to_vocab(self,confid):
         word_to_save = self.current_selection
         definition_to_save = self.top_right_pane.flash_back.toPlainText()
-        print(f"the word clicked was '{word_to_save}' and the definition is '{definition_to_save}' ")
         self.db.save_word_to_vocabulary(self.current_user["id"],word_to_save, definition_to_save,self.current_highlighters[confid]["id"])
         # start highlighter in another thread
         worker = Worker(self.highlight_terms(confid)) 
@@ -148,8 +147,6 @@ class MainWindow(MainUIWidget):
     def highlight_terms(self,confid):
         highlight_color = [int(s) for s in self.current_highlighters[confid]["color"].split(",")] # converts string to list of ints
         highlight_style = self.current_highlighters[confid]["style"]
-        print(highlight_color)
-        print(highlight_style)
 
         unknown_vocab_list = self.db.get_list_of_vocab(self.current_user["id"], self.current_highlighters[confid]["id"])
         if unknown_vocab_list != []:
@@ -177,7 +174,6 @@ class MainWindow(MainUIWidget):
             for i in range(length_of_selection):
                 cursor.movePosition(QTextCursor.NextCharacter,QTextCursor.KeepAnchor)
             cursor.mergeCharFormat(the_format)
-            print(f"the match is {plain_text[start:end]} and the lenth is {length_of_selection}")
 
     def highlight(self,color):
         cursor = self.left_pane.browser.textCursor()
@@ -192,7 +188,6 @@ class MainWindow(MainUIWidget):
         the_format = text_cursor.charFormat()
         is_highlighted = the_format.fontUnderline()
         while is_highlighted:
-            print("moving back")
             text_cursor.movePosition(QTextCursor.PreviousCharacter,QTextCursor.MoveAnchor)
             the_format = text_cursor.charFormat()
             is_highlighted = the_format.fontUnderline()
@@ -200,14 +195,12 @@ class MainWindow(MainUIWidget):
         #find end of highlight 
         is_highlighted = True
         while is_highlighted:
-            print("moving forward")
             text_cursor.movePosition(QTextCursor.NextCharacter,QTextCursor.KeepAnchor)
             the_format = text_cursor.charFormat()
             is_highlighted = the_format.fontUnderline()
         text_cursor.movePosition(QTextCursor.PreviousCharacter,QTextCursor.KeepAnchor)
         #should be at end of highlight
         sel = text_cursor.selectedText()
-        print(sel)
         text_cursor.clearSelection()
 
         if sel !="":
@@ -216,7 +209,6 @@ class MainWindow(MainUIWidget):
             list_of_matchs = self.db.look_up_sel_in_db(sel)
             if list_of_matchs != []:
                 defin = list_of_matchs[0][3]
-                print(defin)
                 self.left_pane.browser.setToolTipDuration(2000)
                 self.left_pane.browser.setToolTip(f"{defin}")
             else:

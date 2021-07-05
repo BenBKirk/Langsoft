@@ -239,15 +239,6 @@ class Database(object):
         with DatabaseHelper(self.name) as db:
             dict_to_return = {}
             dict_to_return["dark_theme"] = bool(db.get_sql(f"SELECT value FROM settings WHERE user_id = {active_user_id} AND name = 'dark_theme'" )[0][0])
-            print(dict_to_return["dark_theme"])
-            # if db.get_sql(f"SELECT * FROM settings WHERE user_id = {active_user} AND name = 'dark_theme'")[0][2] == "True":
-            #     dict_to_return["dark_theme"] = True
-            # else:
-            #     dict_to_return["dark_theme"] = False
-            # if db.get_sql(f"SELECT * FROM settings WHERE user_id = {active_user_id} AND name = 'autofill_back_of_flashcard'")[0][2] == "True":
-            #     dict_to_return["autofill_back_of_flashcard"] = True
-            # else:
-            #     dict_to_return["autofill_back_of_flashcard"] = False
             dict_to_return["autofill_back_of_flashcard"] = bool(db.get_sql(f"SELECT value FROM settings WHERE user_id = {active_user_id} AND name = 'autofill_back_of_flashcard'")[0][0])
             return dict_to_return
 
