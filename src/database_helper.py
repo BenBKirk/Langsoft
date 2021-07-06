@@ -190,14 +190,15 @@ class Database(object):
 
     def get_highlighters(self, user_id):
         with DatabaseHelper(self.name) as db:
-            dict_to_return = {}
-            unknown_list = db.get_sql(f"SELECT * FROM highlighters WHERE user_id ={user_id} AND name = 'unknown'")
-            semi_known_list = db.get_sql(f"SELECT * FROM highlighters WHERE user_id ={user_id} AND name = 'semi-known'")
-            known_list = db.get_sql(f"SELECT * FROM highlighters WHERE user_id ={user_id} AND name = 'known'")
-            dict_to_return["unknown"] = {"id":unknown_list[0][0],"color": unknown_list[0][2],"style":unknown_list[0][3]}
-            dict_to_return["semi-known"] = {"id":semi_known_list[0][0],"color": semi_known_list[0][2],"style":semi_known_list[0][3]}
-            dict_to_return["known"] = {"id":known_list[0][0], "color": known_list[0][2],"style":known_list[0][3]}
-            return dict_to_return
+            return db.get_sql(f"SELECT * FROM highlighters WHERE user_id = {user_id}")
+            # dict_to_return = {}
+            # unknown_list = db.get_sql(f"SELECT * FROM highlighters WHERE user_id ={user_id} AND name = 'unknown'")
+            # semi_known_list = db.get_sql(f"SELECT * FROM highlighters WHERE user_id ={user_id} AND name = 'semi-known'")
+            # known_list = db.get_sql(f"SELECT * FROM highlighters WHERE user_id ={user_id} AND name = 'known'")
+            # dict_to_return["unknown"] = {"id":unknown_list[0][0],"color": unknown_list[0][2],"style":unknown_list[0][3]}
+            # dict_to_return["semi-known"] = {"id":semi_known_list[0][0],"color": semi_known_list[0][2],"style":semi_known_list[0][3]}
+            # dict_to_return["known"] = {"id":known_list[0][0], "color": known_list[0][2],"style":known_list[0][3]}
+            # return dict_to_return
 
 
 
@@ -295,14 +296,14 @@ class Database(object):
             db.execute_single(f"INSERT INTO settings(name,value,user_id) VALUES (:name,:value,:user_id)",("autofill_back_of_flashcard",other_settings["autofill_back_of_flashcard"],current_user_id))
 
 
-    def add_recent_file(self,filepath):
+    def add_recent_file(self,filepath,current_user_id):
         date_time = datetime.now()
         with DatabaseHelper(self.name) as db:
             check = db.get_sql(f"SELECT * FROM recent_files WHERE filepath ='{filepath}'")
             if check == []: #it must be a new file
                 with DatabaseHelper(self.name) as db:
                     sql = "INSERT INTO recent_files (filepath,created_at,user_id) VALUES (:filepath,:created_at,:user_id)"
-                    params = (filepath,date_time,self.active_user_id)
+                    params = (filepath,date_time,current_user_id)
                     db.execute_single(sql, params)
 
             elif len(check[0]) > 0: # replace the old entry

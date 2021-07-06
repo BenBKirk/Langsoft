@@ -77,6 +77,11 @@ class MainWindow(MainUIWidget):
         self.skip_back_shortcut.activated.connect(self.skip_back)
         self.skip_forward_shortcut = QShortcut(QtGui.QKeySequence("Alt+Right"),self)
         self.skip_forward_shortcut.activated.connect(self.skip_forward)
+    
+    def start_highlight_in_thread(self):
+        # start highlighter in another thread
+        worker = Worker(self.highlight_terms()) 
+        self.thread_pool.start(worker)
 
     # startup settings - last user, darktheme...
     def run_start_up_settings(self):
@@ -136,31 +141,43 @@ class MainWindow(MainUIWidget):
         self.run_start_up_settings()
     
     def save_to_vocab(self,confid):
+        for item in self.current_highlighters:
+            if item[4] == confid:
+                current_confidence = item[0]
         word_to_save = self.current_selection
         definition_to_save = self.top_right_pane.flash_back.toPlainText()
-        self.db.save_word_to_vocabulary(self.current_user["id"],word_to_save, definition_to_save,self.current_highlighters[confid]["id"])
-        # start highlighter in another thread
-        worker = Worker(self.highlight_terms(confid)) 
-        self.thread_pool.start(worker)
+        self.db.save_word_to_vocabulary(self.current_user["id"],word_to_save, definition_to_save,current_confidence)
 
 
-    def highlight_terms(self,confid):
-        highlight_color = [int(s) for s in self.current_highlighters[confid]["color"].split(",")] # converts string to list of ints
-        highlight_style = self.current_highlighters[confid]["style"]
+    def highlight_terms(self):
+        #clear highlighting
+        cursor = self.left_pane.browser.textCursor()
+        cursor.select(QTextCursor.Document)
+        clear_format = QtGui.QTextCharFormat()
+        clear_format.setBackground(QtGui.QBrush(QtGui.QColor("Transparent")))
+        clear_format.setUnderlineStyle(QTextCharFormat.NoUnderline)
+        cursor.mergeCharFormat(clear_format)
+        for highlighter in self.current_highlighters:
+            hl_id = highlighter[0]
+            print(hl_id)
+            vocab_for_hl = self.db.get_list_of_vocab(self.current_user["id"], hl_id)
+            hl_color = [int(s) for s in highlighter[2].split(",")] # converts color string to list of ints
+            hl_style = highlighter[3]
 
-        unknown_vocab_list = self.db.get_list_of_vocab(self.current_user["id"], self.current_highlighters[confid]["id"])
-        if unknown_vocab_list != []:
-            # the_brush = QtGui.QBrush(QtGui.QColor("red"))
-            
-            color = QtGui.QColor()
-            color.setRgbF(highlight_color[0],highlight_color[1],highlight_color[2],highlight_color[3])
-            the_format = QTextCharFormat()
-            the_format.setUnderlineColor(color) 
-            the_format.setUnderlineStyle(QtGui.QTextCharFormat .SingleUnderline)
-            for term in unknown_vocab_list:
-                term = term[2]
-                # term = f"\\b{term}\\b"
-                self.apply_highlight(term,the_format)
+            if vocab_for_hl != []:
+                # the_brush = QtGui.QBrush(QtGui.QColor("red"))
+                color = QtGui.QColor()
+                color.setRgbF(hl_color[0],hl_color[1],hl_color[2],hl_color[3])
+                the_format = QTextCharFormat()
+                if hl_style == "underline":
+                    the_format.setUnderlineColor(color) 
+                    the_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
+                elif hl_style == "background":
+                    the_format.setBackground(QtGui.QBrush(color))
+                for term in vocab_for_hl:
+                    term = term[2]
+                    # term = f"\\b{term}\\b"
+                    self.apply_highlight(term,the_format)
 
     def apply_highlight(self,pattern,the_format):
         cursor = self.left_pane.browser.textCursor()
@@ -331,8 +348,9 @@ class MainWindow(MainUIWidget):
         if action == 'help':
             self.help_page.show()
         if action == 'highlight':
-            pass
-            # self.highlight_terms(1)
+            worker = Worker(self.highlight_terms()) 
+            self.thread_pool.start(worker)
+            # self.start_highlight_in_thread()
         if action == 'format':
             self.format_widget.show()
 
@@ -356,7 +374,7 @@ class MainWindow(MainUIWidget):
                         f.write(file_data)
             else:
                 self.display_msg("Error", f'Only ".txt", ".html", and ".docx" file extensions are supported.')
-            self.db.add_recent_file(filepath)
+            self.db.add_recent_file(filepath,self.current_user["id"])
     
     def open_file(self):
         filepath = QFileDialog.getOpenFileName(self,'select a text document')[0]
@@ -386,7 +404,7 @@ class MainWindow(MainUIWidget):
                     self.left_pane.browser.clear()
                     self.left_pane.browser.insertHtml(data)
             self.load_audio(filepath)
-            self.db.add_recent_file(filepath)
+            self.db.add_recent_file(filepath,self.current_user["id"])
         else:
             self.display_msg("Error",f'Could not recognize file: "{filetype}"')
             return
