@@ -78,10 +78,7 @@ class MainWindow(MainUIWidget):
         self.skip_forward_shortcut = QShortcut(QtGui.QKeySequence("Alt+Right"),self)
         self.skip_forward_shortcut.activated.connect(self.skip_forward)
     
-    def start_highlight_in_thread(self):
-        # start highlighter in another thread
-        worker = Worker(self.highlight_terms()) 
-        self.thread_pool.start(worker)
+
 
     # startup settings - last user, darktheme...
     def run_start_up_settings(self):
@@ -148,24 +145,27 @@ class MainWindow(MainUIWidget):
         definition_to_save = self.top_right_pane.flash_back.toPlainText()
         self.db.save_word_to_vocabulary(self.current_user["id"],word_to_save, definition_to_save,current_confidence)
 
-
-    def highlight_terms(self):
-        #clear highlighting
+    def start_highlight_in_thread(self):
+        #clear formatting
         cursor = self.left_pane.browser.textCursor()
         cursor.select(QTextCursor.Document)
         clear_format = QtGui.QTextCharFormat()
         clear_format.setBackground(QtGui.QBrush(QtGui.QColor("Transparent")))
         clear_format.setUnderlineStyle(QTextCharFormat.NoUnderline)
         cursor.mergeCharFormat(clear_format)
+        # start highlighter in another thread
+        worker = Worker(self.highlight_terms,self.left_pane.browser.toPlainText())
+        worker.signals.word_to_mark.connect(self.apply_highlight)
+        self.thread_pool.start(worker)
+    
+    def highlight_terms(self,plain_text,word_to_mark_callback):
         for highlighter in self.current_highlighters:
             hl_id = highlighter[0]
-            print(hl_id)
             vocab_for_hl = self.db.get_list_of_vocab(self.current_user["id"], hl_id)
             hl_color = [int(s) for s in highlighter[2].split(",")] # converts color string to list of ints
             hl_style = highlighter[3]
 
             if vocab_for_hl != []:
-                # the_brush = QtGui.QBrush(QtGui.QColor("red"))
                 color = QtGui.QColor()
                 color.setRgbF(hl_color[0],hl_color[1],hl_color[2],hl_color[3])
                 the_format = QTextCharFormat()
@@ -177,21 +177,21 @@ class MainWindow(MainUIWidget):
                 for term in vocab_for_hl:
                     term = term[2]
                     # term = f"\\b{term}\\b"
-                    self.apply_highlight(term,the_format)
+                    pattern = re.compile(term,re.IGNORECASE)
+                    for m in re.finditer(pattern,plain_text):
+                        start, end = m.span()
+                        length_of_selection = end - start
+                        dict_to_emit = {"pos":start, "length":length_of_selection,"format":the_format}
+                        word_to_mark_callback.emit(dict_to_emit)
+                        time.sleep(0.0000001)
 
-    def apply_highlight(self,pattern,the_format):
+    def apply_highlight(self,mark_dict):
         cursor = self.left_pane.browser.textCursor()
-        pattern = re.compile(pattern,re.IGNORECASE)
-        plain_text = self.left_pane.browser.toPlainText()
-        # start = 0
-        for m in re.finditer(pattern,plain_text):
-            start, end = m.span()
-            cursor.setPosition(start)
-            length_of_selection = end - start
-            for i in range(length_of_selection):
-                cursor.movePosition(QTextCursor.NextCharacter,QTextCursor.KeepAnchor)
-            cursor.mergeCharFormat(the_format)
-
+        cursor.setPosition(mark_dict["pos"])
+        for i in range(mark_dict["length"]):
+            cursor.movePosition(QTextCursor.NextCharacter,QTextCursor.KeepAnchor)
+        cursor.mergeCharFormat(mark_dict["format"])
+        
     def highlight(self,color):
         cursor = self.left_pane.browser.textCursor()
         the_format = QTextCharFormat()
@@ -348,9 +348,7 @@ class MainWindow(MainUIWidget):
         if action == 'help':
             self.help_page.show()
         if action == 'highlight':
-            worker = Worker(self.highlight_terms()) 
-            self.thread_pool.start(worker)
-            # self.start_highlight_in_thread()
+            self.start_highlight_in_thread()
         if action == 'format':
             self.format_widget.show()
 

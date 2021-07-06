@@ -35,6 +35,7 @@ class FormatSelectedText(QWidget):
         if cursor.hasSelection():
             the_format = QtGui.QTextCharFormat()
             the_format.setBackground(QtGui.QBrush(QtGui.QColor("Transparent")))
+            the_format.setUnderlineStyle(QtGui.QTextCharFormat.NoUnderline)
             cursor.mergeCharFormat(the_format)
 
     def clear_formating(self):

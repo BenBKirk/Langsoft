@@ -9,7 +9,6 @@ from PyQt5.QtCore import *
 import time
 import traceback, sys
 
-
 class WorkerSignals(QObject):
     '''
     Defines the signals available from a running worker thread.
@@ -32,7 +31,7 @@ class WorkerSignals(QObject):
     finished = pyqtSignal()
     error = pyqtSignal(tuple)
     result = pyqtSignal(object)
-    progress = pyqtSignal(int)
+    word_to_mark = pyqtSignal(dict)
 
 
 class Worker(QRunnable):
@@ -59,7 +58,7 @@ class Worker(QRunnable):
         self.signals = WorkerSignals()
 
         # Add the callback to our kwargs
-        self.kwargs['progress_callback'] = self.signals.progress
+        self.kwargs['word_to_mark_callback'] = self.signals.word_to_mark
 
     @pyqtSlot()
     def run(self):
@@ -79,8 +78,9 @@ class Worker(QRunnable):
         finally:
             self.signals.finished.emit()  # Done
 
-
-## EXAMPLE OF HOW ITS USED:
+"""
+EXAMPLE OF HOW ITS USED:
+"""
 # class MainWindow(QMainWindow):
 
 #     def __init__(self, *args, **kwargs):
