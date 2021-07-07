@@ -12,7 +12,6 @@ class SyntaxHighlighter(QSyntaxHighlighter):
     def set_state(self, dict):
         print("state updated")
         self.state = dict
-        self.rehighlight()
 
     def highlightBlock(self,text):
         if self.state != []:

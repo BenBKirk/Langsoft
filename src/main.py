@@ -49,6 +49,8 @@ class MainWindow(MainUIWidget):
         self.left_pane.browser.clicked.connect(self.browser_clicked)
         self.left_pane.browser.hightlight.connect(self.highlight)
         self.left_pane.browser.clear_highlighting.connect(self.format_widget.clear_highlighting)
+        self.left_pane.browser.hover.connect(self.refresh_block_highlight)
+        # self.left_pane.browser.got_focus.connect(self.refresh_highlights)
         self.left_pane.toolbar.actionTriggered[QAction].connect(self.handle_toolbar_click)
         self.top_right_pane.toolbar.actionTriggered[QAction].connect(self.handle_toolbar_click)
         self.top_right_pane.make_flash_btn.clicked.connect(self.add_flashcard)
@@ -79,6 +81,8 @@ class MainWindow(MainUIWidget):
         self.skip_forward_shortcut.activated.connect(self.skip_forward)
     
 
+    # def refresh_highlights(self):
+    #     self.highlighter.rehighlight()
 
     # startup settings - last user, darktheme...
     def run_start_up_settings(self):
@@ -97,7 +101,6 @@ class MainWindow(MainUIWidget):
             self.set_icons(False)
         # online tools
         self.bottom_right_pane.start_tabs(self.current_online_tools)
-
 
     def load_settings_to_settings_page(self):
         self.settings.load_online_tool_settings(self.current_online_tools)
@@ -136,6 +139,7 @@ class MainWindow(MainUIWidget):
         other_settings["autofill_back_of_flashcard"] = self.settings.other_tab.autofill_checkbox.isChecked()
         self.db.save_other_settings(self.current_user["id"], other_settings)
         self.run_start_up_settings()
+        self.start_update_highlight_words()
     
     def save_to_vocab(self,confid):
         for item in self.current_highlighters:
@@ -149,7 +153,37 @@ class MainWindow(MainUIWidget):
     def start_update_highlight_words(self):
         # start highlighter in another thread
         worker = Worker(self.update_highlight_words)
+        worker.signals.finished.connect(self.finished_updating_highlight_words)
         self.thread_pool.start(worker)
+
+    def finished_updating_highlight_words(self):
+        start_pos = self.left_pane.browser.cursorForPosition(QtCore.QPoint(0, 0)).position()
+        bottom_right= QtCore.QPoint(self.left_pane.browser.viewport().width() -1,self.left_pane.browser.viewport().height()-1)
+        end_pos = self.left_pane.browser.cursorForPosition(bottom_right).position()
+
+        cursor = self.left_pane.browser.textCursor()
+        cursor.setPosition(start_pos)
+        while cursor.position() <= end_pos:
+            block = cursor.block()
+            self.highlighter.rehighlightBlock(block)
+            cursor.movePosition(QTextCursor.NextBlock)
+
+            start_pos = self.left_pane.browser.cursorForPosition(QtCore.QPoint(0, 0)).position()
+            bottom_right= QtCore.QPoint(self.left_pane.browser.viewport().width() -1,self.left_pane.browser.viewport().height()-1)
+            end_pos = self.left_pane.browser.cursorForPosition(bottom_right).position()
+            # cursor.setPosition(end_pos,QTextCursor.KeepAnchor)
+            # print(cursor.selectedText())
+
+        # self.highlighter.rehighlightBlock(start_block)
+        # self.highlighter.rehighlightBlock(end_block)
+    
+    def refresh_block_highlight(self,point):
+        print("detected hover")
+        cursor  = self.left_pane.browser.cursorForPosition(point)
+        block = cursor.block()
+        self.highlighter.rehighlightBlock(block)
+
+
     
     def update_highlight_words(self):
         all_dicts = []
@@ -208,6 +242,8 @@ class MainWindow(MainUIWidget):
             self.autofill_searchbar(word)
             self.autofill_flashcard(context_bold)
             self.handle_lookup(word, context)
+            # block = cursor.block()
+            # self.highlighter.rehighlightBlock(block)
 
     def get_sel_in_context(self):
         cursor = self.left_pane.browser.textCursor()
@@ -218,6 +254,8 @@ class MainWindow(MainUIWidget):
         self.autofill_searchbar(selection)
         self.autofill_flashcard(context_bold)
         self.handle_lookup(selection, context)
+        # block = cursor.block()
+        # self.highlighter.rehighlightBlock(block)
 
     def get_context(self,cursor):
         steps_to_move = 15 # <--- this could be changed in the settings
@@ -354,6 +392,7 @@ class MainWindow(MainUIWidget):
         else:
             self.left_pane.browser.insertPlainText(data)
         self.load_audio(filepath)
+        self.start_update_highlight_words()
 
         
 
