@@ -7,44 +7,27 @@ from PyQt5.QtGui import *#QColor, QRegExpValidator, QSyntaxHighlighter, QTextCha
 class SyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self, parent):
         super().__init__(parent)
-        self.state = {"vocab":[(0,0,"ini")],"fmt":QTextCharFormat()}
+        self.state = []
 
-
-    def set_dict(self, dict):
+    def set_state(self, dict):
+        print("state updated")
         self.state = dict
-
+        self.rehighlight()
 
     def highlightBlock(self,text):
-        # fmt = QTextCharFormat()
-        # fmt.setUnderlineColor(Qt.red)
-        # fmt.setUnderlineStyle(QTextCharFormat.SingleUnderline)
-
-
-        print("running")
-
-        for item in self.state["vocab"]:
-            regex_string = "\\b" + str(item[2]) + "\\b"
-            expression = QRegularExpression(regex_string,QRegularExpression.CaseInsensitiveOption)
-            i = QRegularExpressionMatchIterator(expression.globalMatch(text))
-            while i.hasNext():
-                match = QRegularExpressionMatch(i.next())
-                QSyntaxHighlighter.setFormat(self,match.capturedStart(),match.capturedLength(),self.state["fmt"])
+        if self.state != []:
+            for dict in self.state:
+                for item in dict["vocab"]:
+                    regex_string = "\\b" + str(item[2]) + "\\b"
+                    expression = QRegularExpression(regex_string,QRegularExpression.CaseInsensitiveOption)
+                    i = QRegularExpressionMatchIterator(expression.globalMatch(text))
+                    while i.hasNext():
+                        match = QRegularExpressionMatch(i.next())
+                        self.setFormat(match.capturedStart(),match.capturedLength(),dict["fmt"])
 
 
 
 
-
-
-        # new_list = []
-        # for item in self.list:
-        #     new_list.append("\\b" + item + "\\b")
-        # regex_string = "|".join(new_list)
-
-        # expression = QRegularExpression(regex_string)
-        # i = QRegularExpressionMatchIterator(expression.globalMatch(text))
-        # while i.hasNext():
-        #     match = QRegularExpressionMatch(i.next())
-        #     QSyntaxHighlighter.setFormat(self,match.capturedStart(),match.capturedLength(),fmt)
 
 
 

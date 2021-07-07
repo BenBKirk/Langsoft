@@ -49,7 +49,6 @@ class MainWindow(MainUIWidget):
         self.left_pane.browser.clicked.connect(self.browser_clicked)
         self.left_pane.browser.hightlight.connect(self.highlight)
         self.left_pane.browser.clear_highlighting.connect(self.format_widget.clear_highlighting)
-        self.left_pane.browser.hover.connect(self.hover_over_word)
         self.left_pane.toolbar.actionTriggered[QAction].connect(self.handle_toolbar_click)
         self.top_right_pane.toolbar.actionTriggered[QAction].connect(self.handle_toolbar_click)
         self.top_right_pane.make_flash_btn.clicked.connect(self.add_flashcard)
@@ -98,6 +97,7 @@ class MainWindow(MainUIWidget):
             self.set_icons(False)
         # online tools
         self.bottom_right_pane.start_tabs(self.current_online_tools)
+        self.start_update_highlight_words()
 
 
     def load_settings_to_settings_page(self):
@@ -145,21 +145,15 @@ class MainWindow(MainUIWidget):
         word_to_save = self.current_selection
         definition_to_save = self.top_right_pane.flash_back.toPlainText()
         self.db.save_word_to_vocabulary(self.current_user["id"],word_to_save, definition_to_save,current_confidence)
+        self.start_update_highlight_words()
 
-    def start_highlight_in_thread(self):
-        #clear formatting
-        cursor = self.left_pane.browser.textCursor()
-        cursor.select(QTextCursor.Document)
-        clear_format = QtGui.QTextCharFormat()
-        clear_format.setBackground(QtGui.QBrush(QtGui.QColor("Transparent")))
-        clear_format.setUnderlineStyle(QTextCharFormat.NoUnderline)
-        cursor.mergeCharFormat(clear_format)
+    def start_update_highlight_words(self):
         # start highlighter in another thread
-        worker = Worker(self.highlight_terms)
-        # worker.signals.word_to_mark.connect(self.apply_highlight)
+        worker = Worker(self.update_highlight_words)
         self.thread_pool.start(worker)
     
-    def highlight_terms(self):
+    def update_highlight_words(self):
+        all_dicts = []
         for highlighter in self.current_highlighters:
             hl_id = highlighter[0]
             vocab_for_hl = self.db.get_list_of_vocab(self.current_user["id"], hl_id)
@@ -176,71 +170,15 @@ class MainWindow(MainUIWidget):
                 elif hl_style == "background":
                     the_format.setBackground(QtGui.QBrush(color))
                 
-                self.highlighter.set_dict({"vocab":vocab_for_hl,"fmt":the_format})
+                all_dicts.append({"vocab":vocab_for_hl,"fmt":the_format})
+        self.highlighter.set_state(all_dicts)
 
-                # for term in vocab_for_hl:
-                #     term = term[2]
-                #     # term = f"\\b{term}\\b"
-                #     pattern = re.compile(term,re.IGNORECASE)
-                #     for m in re.finditer(pattern,plain_text):
-                #         start, end = m.span()
-                #         length_of_selection = end - start
-                #         dict_to_emit = {"pos":start, "length":length_of_selection,"format":the_format}
-                #         word_to_mark_callback.emit(dict_to_emit)
-                #         time.sleep(0.0000001)
-
-    # def apply_highlight(self,mark_dict):
-    #     cursor = self.left_pane.browser.textCursor()
-    #     cursor.setPosition(mark_dict["pos"])
-    #     for i in range(mark_dict["length"]):
-    #         cursor.movePosition(QTextCursor.NextCharacter,QTextCursor.KeepAnchor)
-    #     cursor.mergeCharFormat(mark_dict["format"])
         
     def highlight(self,color):
         cursor = self.left_pane.browser.textCursor()
         the_format = QTextCharFormat()
         the_format.setBackground(QtGui.QBrush(QtGui.QColor(color)))
         cursor.mergeCharFormat(the_format)
-
-    def hover_over_word(self,pos): # TODO: Should this be constantly running in another thread?
-        text_cursor = QTextCursor()
-        text_cursor = self.left_pane.browser.cursorForPosition(pos)
-        # find start of highlight
-        the_format = text_cursor.charFormat()
-        is_highlighted = the_format.fontUnderline()
-        while is_highlighted:
-            text_cursor.movePosition(QTextCursor.PreviousCharacter,QTextCursor.MoveAnchor)
-            the_format = text_cursor.charFormat()
-            is_highlighted = the_format.fontUnderline()
-        #should be at the beginning of the highlight
-        #find end of highlight 
-        is_highlighted = True
-        while is_highlighted:
-            text_cursor.movePosition(QTextCursor.NextCharacter,QTextCursor.KeepAnchor)
-            the_format = text_cursor.charFormat()
-            is_highlighted = the_format.fontUnderline()
-        text_cursor.movePosition(QTextCursor.PreviousCharacter,QTextCursor.KeepAnchor)
-        #should be at end of highlight
-        sel = text_cursor.selectedText()
-        text_cursor.clearSelection()
-
-        if sel !="":
-            # sel = text_cursor.selectedText()
-            #at the moment this seems to be ok without being in another thread, but what would it be like with 20000 times more words in database?
-            list_of_matchs = self.db.look_up_sel_in_db(sel)
-            if list_of_matchs != []:
-                defin = list_of_matchs[0][3]
-                self.left_pane.browser.setToolTipDuration(2000)
-                self.left_pane.browser.setToolTip(f"{defin}")
-            else:
-                self.left_pane.browser.setToolTip("")
-        else:
-            self.left_pane.browser.setToolTip("")
-
-    # def set_global_settings(self):
-    #     with open(os.path.join(os.getcwd(),"src","settings.json"),"r+") as f:
-    #         data = json.load(f)
-    #         self.json_settings = data
 
     def display_msg(self,title,text):
         msgBox = QMessageBox()
@@ -352,7 +290,7 @@ class MainWindow(MainUIWidget):
         if action == 'help':
             self.help_page.show()
         if action == 'highlight':
-            self.start_highlight_in_thread()
+            self.start_update_highlight_words()
         if action == 'format':
             self.format_widget.show()
 
