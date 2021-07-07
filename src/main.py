@@ -97,7 +97,6 @@ class MainWindow(MainUIWidget):
             self.set_icons(False)
         # online tools
         self.bottom_right_pane.start_tabs(self.current_online_tools)
-        self.start_update_highlight_words()
 
 
     def load_settings_to_settings_page(self):
@@ -157,7 +156,7 @@ class MainWindow(MainUIWidget):
         for highlighter in self.current_highlighters:
             hl_id = highlighter[0]
             vocab_for_hl = self.db.get_list_of_vocab(self.current_user["id"], hl_id)
-            hl_color = [int(s) for s in highlighter[2].split(",")] # converts color string to list of ints
+            hl_color = [float(s) for s in highlighter[2].split(",")] # converts color string to list of ints
             hl_style = highlighter[3]
 
             if vocab_for_hl != []:
@@ -168,7 +167,7 @@ class MainWindow(MainUIWidget):
                     the_format.setUnderlineColor(color) 
                     the_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
                 elif hl_style == "background":
-                    the_format.setBackground(QtGui.QBrush(color))
+                    the_format.setBackground(color)
                 
                 all_dicts.append({"vocab":vocab_for_hl,"fmt":the_format})
         self.highlighter.set_state(all_dicts)

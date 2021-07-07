@@ -178,11 +178,11 @@ class Database(object):
     
     def set_up_default_highlighters(self,user_id=1):
         default_highlighter1 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
-        default_highlighter_param1 = (user_id,"255,0,0,1","underline","unknown")
+        default_highlighter_param1 = (user_id,"255,0,0,0.2","background","unknown")
         default_highlighter2 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
-        default_highlighter_param2 = (user_id,"255,255,0,1","underline","semi-known")
+        default_highlighter_param2 = (user_id,"255,255,0,0.2","background","semi-known")
         default_highlighter3 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
-        default_highlighter_param3 = (user_id,"0,255,0,1","underline","known")
+        default_highlighter_param3 = (user_id,"0,255,0,0.2","background","known")
         with DatabaseHelper(self.name) as db:
             db.execute_single(default_highlighter1, default_highlighter_param1)
             db.execute_single(default_highlighter2, default_highlighter_param2)
@@ -290,7 +290,8 @@ class Database(object):
 
     def save_other_settings(self,current_user_id,other_settings):
         with DatabaseHelper(self.name) as db:
-            db.execute_single(f"DELETE FROM settings WHERE user_id ={current_user_id} AND name ='dark_theme' OR name ='autofill_back_of_flashcard'")
+            db.execute_single(f"DELETE FROM settings WHERE user_id ={current_user_id} AND name ='dark_theme'")
+            db.execute_single(f"DELETE FROM settings WHERE user_id ={current_user_id} AND name ='autofill_back_of_flashcard'")
         with DatabaseHelper(self.name) as db:
             db.execute_single(f"INSERT INTO settings(name,value,user_id) VALUES (:name,:value,:user_id)",("dark_theme",other_settings["dark_theme"],current_user_id))
             db.execute_single(f"INSERT INTO settings(name,value,user_id) VALUES (:name,:value,:user_id)",("autofill_back_of_flashcard",other_settings["autofill_back_of_flashcard"],current_user_id))
