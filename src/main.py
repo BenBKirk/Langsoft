@@ -44,7 +44,7 @@ class MainWindow(MainUIWidget):
         self.help_page = HelpWindow()
         self.db = Database()
         self.thread_pool = QtCore.QThreadPool()
-        self.highlighter = SyntaxHighlighter(self.left_pane.browser.document(),["\\bitu\\b","\\bsaya\\b","\\bdi\\b"],[255,0,0,1])
+        self.highlighter = SyntaxHighlighter(self.left_pane.browser.document())
         #connections
         self.left_pane.browser.clicked.connect(self.browser_clicked)
         self.left_pane.browser.hightlight.connect(self.highlight)
@@ -155,11 +155,11 @@ class MainWindow(MainUIWidget):
         clear_format.setUnderlineStyle(QTextCharFormat.NoUnderline)
         cursor.mergeCharFormat(clear_format)
         # start highlighter in another thread
-        worker = Worker(self.highlight_terms,self.left_pane.browser.toPlainText())
-        worker.signals.word_to_mark.connect(self.apply_highlight)
+        worker = Worker(self.highlight_terms)
+        # worker.signals.word_to_mark.connect(self.apply_highlight)
         self.thread_pool.start(worker)
     
-    def highlight_terms(self,plain_text,word_to_mark_callback):
+    def highlight_terms(self):
         for highlighter in self.current_highlighters:
             hl_id = highlighter[0]
             vocab_for_hl = self.db.get_list_of_vocab(self.current_user["id"], hl_id)
@@ -175,23 +175,26 @@ class MainWindow(MainUIWidget):
                     the_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
                 elif hl_style == "background":
                     the_format.setBackground(QtGui.QBrush(color))
-                for term in vocab_for_hl:
-                    term = term[2]
-                    # term = f"\\b{term}\\b"
-                    pattern = re.compile(term,re.IGNORECASE)
-                    for m in re.finditer(pattern,plain_text):
-                        start, end = m.span()
-                        length_of_selection = end - start
-                        dict_to_emit = {"pos":start, "length":length_of_selection,"format":the_format}
-                        word_to_mark_callback.emit(dict_to_emit)
-                        time.sleep(0.0000001)
+                
+                self.highlighter.set_dict({"vocab":vocab_for_hl,"fmt":the_format})
 
-    def apply_highlight(self,mark_dict):
-        cursor = self.left_pane.browser.textCursor()
-        cursor.setPosition(mark_dict["pos"])
-        for i in range(mark_dict["length"]):
-            cursor.movePosition(QTextCursor.NextCharacter,QTextCursor.KeepAnchor)
-        cursor.mergeCharFormat(mark_dict["format"])
+                # for term in vocab_for_hl:
+                #     term = term[2]
+                #     # term = f"\\b{term}\\b"
+                #     pattern = re.compile(term,re.IGNORECASE)
+                #     for m in re.finditer(pattern,plain_text):
+                #         start, end = m.span()
+                #         length_of_selection = end - start
+                #         dict_to_emit = {"pos":start, "length":length_of_selection,"format":the_format}
+                #         word_to_mark_callback.emit(dict_to_emit)
+                #         time.sleep(0.0000001)
+
+    # def apply_highlight(self,mark_dict):
+    #     cursor = self.left_pane.browser.textCursor()
+    #     cursor.setPosition(mark_dict["pos"])
+    #     for i in range(mark_dict["length"]):
+    #         cursor.movePosition(QTextCursor.NextCharacter,QTextCursor.KeepAnchor)
+    #     cursor.mergeCharFormat(mark_dict["format"])
         
     def highlight(self,color):
         cursor = self.left_pane.browser.textCursor()

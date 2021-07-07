@@ -31,7 +31,7 @@ class WorkerSignals(QObject):
     finished = pyqtSignal()
     error = pyqtSignal(tuple)
     result = pyqtSignal(object)
-    word_to_mark = pyqtSignal(dict)
+    # word_to_mark = pyqtSignal(dict)
 
 
 class Worker(QRunnable):
@@ -58,7 +58,7 @@ class Worker(QRunnable):
         self.signals = WorkerSignals()
 
         # Add the callback to our kwargs
-        self.kwargs['word_to_mark_callback'] = self.signals.word_to_mark
+        # self.kwargs['word_to_mark_callback'] = self.signals.word_to_mark
 
     @pyqtSlot()
     def run(self):
