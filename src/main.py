@@ -25,7 +25,7 @@ import time
 import datetime
 from multi_threading import Worker
 from database_helper import Database
-
+from syntax_highlighter import SyntaxHighlighter
 
 class MainWindow(MainUIWidget):
 
@@ -44,6 +44,7 @@ class MainWindow(MainUIWidget):
         self.help_page = HelpWindow()
         self.db = Database()
         self.thread_pool = QtCore.QThreadPool()
+        self.highlighter = SyntaxHighlighter(self.left_pane.browser.document(),["\\bitu\\b","\\bsaya\\b","\\bdi\\b"],[255,0,0,1])
         #connections
         self.left_pane.browser.clicked.connect(self.browser_clicked)
         self.left_pane.browser.hightlight.connect(self.highlight)
