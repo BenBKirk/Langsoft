@@ -49,7 +49,8 @@ class MainWindow(MainUIWidget):
         self.left_pane.browser.clicked.connect(self.browser_clicked)
         self.left_pane.browser.hightlight.connect(self.highlight)
         self.left_pane.browser.clear_highlighting.connect(self.format_widget.clear_highlighting)
-        self.left_pane.browser.hover.connect(self.refresh_block_highlight)
+        self.left_pane.browser.scroll.connect(self.refresh_hightlight_on_screen)
+        self.left_pane.browser.verticalScrollBar().sliderMoved.connect(self.refresh_hightlight_on_screen)
         # self.left_pane.browser.got_focus.connect(self.refresh_highlights)
         self.left_pane.toolbar.actionTriggered[QAction].connect(self.handle_toolbar_click)
         self.top_right_pane.toolbar.actionTriggered[QAction].connect(self.handle_toolbar_click)
@@ -153,37 +154,31 @@ class MainWindow(MainUIWidget):
     def start_update_highlight_words(self):
         # start highlighter in another thread
         worker = Worker(self.update_highlight_words)
-        worker.signals.finished.connect(self.finished_updating_highlight_words)
+        worker.signals.finished.connect(self.refresh_hightlight_on_screen)
         self.thread_pool.start(worker)
 
-    def finished_updating_highlight_words(self):
+    def refresh_hightlight_on_screen(self):
         start_pos = self.left_pane.browser.cursorForPosition(QtCore.QPoint(0, 0)).position()
         bottom_right= QtCore.QPoint(self.left_pane.browser.viewport().width() -1,self.left_pane.browser.viewport().height()-1)
         end_pos = self.left_pane.browser.cursorForPosition(bottom_right).position()
 
         cursor = self.left_pane.browser.textCursor()
         cursor.setPosition(start_pos)
-        while cursor.position() <= end_pos:
+        count=0
+        old_pos = cursor.position()
+        print(f"end position is {end_pos}")
+        while cursor.position() < end_pos:
             block = cursor.block()
             self.highlighter.rehighlightBlock(block)
             cursor.movePosition(QTextCursor.NextBlock)
-
-            start_pos = self.left_pane.browser.cursorForPosition(QtCore.QPoint(0, 0)).position()
-            bottom_right= QtCore.QPoint(self.left_pane.browser.viewport().width() -1,self.left_pane.browser.viewport().height()-1)
-            end_pos = self.left_pane.browser.cursorForPosition(bottom_right).position()
-            # cursor.setPosition(end_pos,QTextCursor.KeepAnchor)
-            # print(cursor.selectedText())
-
-        # self.highlighter.rehighlightBlock(start_block)
-        # self.highlighter.rehighlightBlock(end_block)
+            cursor_pos = cursor.position()
+            count+=1
+            print(f"hover = {count}",end="\r")
+            if cursor.position() == old_pos:
+                break
+            else:
+                old_pos = cursor.position()
     
-    def refresh_block_highlight(self,point):
-        print("detected hover")
-        cursor  = self.left_pane.browser.cursorForPosition(point)
-        block = cursor.block()
-        self.highlighter.rehighlightBlock(block)
-
-
     
     def update_highlight_words(self):
         all_dicts = []

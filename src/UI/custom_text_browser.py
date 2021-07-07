@@ -11,7 +11,7 @@ class CustomTextBrowser(QTextEdit):
     hightlight = pyqtSignal(str)
     clear_highlighting = pyqtSignal()
     # got_focus = pyqtSignal()
-    hover = pyqtSignal(QPoint)
+    scroll = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -19,14 +19,12 @@ class CustomTextBrowser(QTextEdit):
         self.setMouseTracking(True)  # for the tooltip
         self.installEventFilter(self)
     
-    # def focusInEvent(self, event):
-    #     self.got_focus.emit()
 
-    
     # # detect hover over word
     def eventFilter(self, obj, event):
-        if event.type() == QEvent.ToolTip:
-            self.hover.emit(event.pos())
+        if event.type() == QEvent.Wheel:#.ToolTip:
+            # self.hover.emit(event.pos())
+            self.scroll.emit()
             return False
         # Call Base Class Method to Continue Normal Event Processing
         return super(CustomTextBrowser, self).eventFilter(obj, event)
