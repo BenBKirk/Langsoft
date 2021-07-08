@@ -82,9 +82,6 @@ class MainWindow(MainUIWidget):
         self.skip_forward_shortcut.activated.connect(self.skip_forward)
     
 
-    # def refresh_highlights(self):
-    #     self.highlighter.rehighlight()
-
     # startup settings - last user, darktheme...
     def run_start_up_settings(self):
         self.current_user = self.db.get_last_user()
@@ -158,22 +155,21 @@ class MainWindow(MainUIWidget):
         self.thread_pool.start(worker)
 
     def refresh_hightlight_on_screen(self):
+        """The syntax highlighter class only highlights one block at a time this makes it more responsive,
+             this function should be called when the user scrolls. It finds how much of the screen is visible
+             and then rehighlights it """
         start_pos = self.left_pane.browser.cursorForPosition(QtCore.QPoint(0, 0)).position()
         bottom_right= QtCore.QPoint(self.left_pane.browser.viewport().width() -1,self.left_pane.browser.viewport().height()-1)
         end_pos = self.left_pane.browser.cursorForPosition(bottom_right).position()
 
         cursor = self.left_pane.browser.textCursor()
         cursor.setPosition(start_pos)
-        count=0
         old_pos = cursor.position()
-        print(f"end position is {end_pos}")
         while cursor.position() < end_pos:
             block = cursor.block()
             self.highlighter.rehighlightBlock(block)
             cursor.movePosition(QTextCursor.NextBlock)
             cursor_pos = cursor.position()
-            count+=1
-            print(f"hover = {count}",end="\r")
             if cursor.position() == old_pos:
                 break
             else:
@@ -237,8 +233,6 @@ class MainWindow(MainUIWidget):
             self.autofill_searchbar(word)
             self.autofill_flashcard(context_bold)
             self.handle_lookup(word, context)
-            # block = cursor.block()
-            # self.highlighter.rehighlightBlock(block)
 
     def get_sel_in_context(self):
         cursor = self.left_pane.browser.textCursor()
@@ -249,8 +243,6 @@ class MainWindow(MainUIWidget):
         self.autofill_searchbar(selection)
         self.autofill_flashcard(context_bold)
         self.handle_lookup(selection, context)
-        # block = cursor.block()
-        # self.highlighter.rehighlightBlock(block)
 
     def get_context(self,cursor):
         steps_to_move = 15 # <--- this could be changed in the settings
