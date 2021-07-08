@@ -21,4 +21,6 @@ class SyntaxHighlighter(QSyntaxHighlighter):
                     i = QRegularExpressionMatchIterator(expression.globalMatch(text))
                     while i.hasNext():
                         match = QRegularExpressionMatch(i.next())
-                        self.setFormat(match.capturedStart(),match.capturedLength(),dict["fmt"])
+                        new_format = self.format(match.capturedStart())
+                        new_format.merge(dict["fmt"])
+                        self.setFormat(match.capturedStart(),match.capturedLength(),new_format)

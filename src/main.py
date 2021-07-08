@@ -91,6 +91,7 @@ class MainWindow(MainUIWidget):
         self.current__other_settings = self.db.get_other_settings(self.current_user["id"])
         self.current_highlighters = self.db.get_highlighters(self.current_user["id"])
         self.recent_files = self.db.get_recent_files(self.current_user["id"])
+        self.current_selection = {"selection":"", "db_findings":[]}
         # UI
         if self.current__other_settings["dark_theme"]:
             self.setPalette(self.dark_theme_palette)
@@ -140,18 +141,27 @@ class MainWindow(MainUIWidget):
         self.start_update_highlight_words()
     
     def save_to_vocab(self,confid):
+        definition_to_save = self.top_right_pane.flash_back.toPlainText()
+        word_to_save = self.current_selection["selection"]
+        #check if it is a phrase
+        pattern = re.compile("\W")
+        if re.search(pattern, word_to_save) != None:
+            confid = confid + "-sent"
+        # get highlighter id
         for item in self.current_highlighters:
             if item[4] == confid:
                 current_confidence = item[0]
-        
-        definition_to_save = self.top_right_pane.flash_back.toPlainText()
-        word_to_save = self.current_selection["selection"]
+
         if self.current_selection["db_findings"] != []:
+            print("updated word in database")
             self.db.update_word_to_vocab(self.current_selection["db_findings"][0][0],definition_to_save,current_confidence)
             self.start_update_highlight_words()
-        else:
+        elif self.current_selection["selection"] != "":
             self.db.save_word_to_vocabulary(self.current_user["id"],word_to_save, definition_to_save,current_confidence)
             self.start_update_highlight_words()
+        else:
+            self.display_msg("sorry","No word or phrase selected")
+        self.current_selection = {"selection":"", "db_findings":[]}
 
     def start_update_highlight_words(self):
         # start highlighter in another thread
@@ -160,9 +170,9 @@ class MainWindow(MainUIWidget):
         self.thread_pool.start(worker)
 
     def refresh_hightlight_on_screen(self):
-        """The syntax highlighter class only highlights one block at a time this makes it more responsive,
+        """The syntax highlighter class only highlights one block at a time and that makes it more responsive,
              this function should be called when the user scrolls. It finds how much of the screen is visible
-             and then rehighlights it """
+             and then rehighlights all the blocks it finds"""
         start_pos = self.left_pane.browser.cursorForPosition(QtCore.QPoint(0, 0)).position()
         bottom_right= QtCore.QPoint(self.left_pane.browser.viewport().width() -1,self.left_pane.browser.viewport().height()-1)
         end_pos = self.left_pane.browser.cursorForPosition(bottom_right).position()
@@ -178,7 +188,6 @@ class MainWindow(MainUIWidget):
                 break
             else:
                 old_pos = cursor.position()
-    
     
     def update_highlight_words(self):
         all_dicts = []
@@ -200,7 +209,6 @@ class MainWindow(MainUIWidget):
                 
                 all_dicts.append({"vocab":vocab_for_hl,"fmt":the_format})
         self.highlighter.set_state(all_dicts)
-
         
     def highlight(self,color):
         cursor = self.left_pane.browser.textCursor()
@@ -223,7 +231,6 @@ class MainWindow(MainUIWidget):
 
     def get_word_in_context(self):
         cursor = self.left_pane.browser.textCursor()
-        pos_of_click = cursor.position()
         cursor.select(QTextCursor.WordUnderCursor)
         if cursor.hasSelection():
             word = cursor.selectedText()
@@ -244,7 +251,7 @@ class MainWindow(MainUIWidget):
         context_bold = context.replace(selection, "<b>" + selection + "</b>")
         self.autofill_searchbar(selection)
         self.autofill_flashcard(context_bold)
-        self.handle_lookup(selection, context)
+        self.handle_lookup(selection.strip(), context)
 
     def get_context(self,cursor):
         steps_to_move = 15 # <--- this could be changed in the settings

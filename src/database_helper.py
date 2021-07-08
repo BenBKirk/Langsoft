@@ -178,15 +178,24 @@ class Database(object):
     
     def set_up_default_highlighters(self,user_id=1):
         default_highlighter1 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
-        default_highlighter_param1 = (user_id,"255,0,0,0.2","background","unknown")
+        default_highlighter_param1 = (user_id,"255,0,0,0.8","underline","unknown-sent")
         default_highlighter2 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
-        default_highlighter_param2 = (user_id,"255,255,0,0.2","background","semi-known")
+        default_highlighter_param2 = (user_id,"255,255,0,0.8","underline","semi-known-sent")
         default_highlighter3 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
-        default_highlighter_param3 = (user_id,"0,255,0,0.2","background","known")
+        default_highlighter_param3 = (user_id,"0,255,0,0.8","underline","known-sent")
+        default_highlighter4 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
+        default_highlighter_param4 = (user_id,"255,0,0,0.2","background","unknown")
+        default_highlighter5 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
+        default_highlighter_param5 = (user_id,"255,255,0,0.2","background","semi-known")
+        default_highlighter6 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
+        default_highlighter_param6 = (user_id,"0,255,0,0.2","background","known")
         with DatabaseHelper(self.name) as db:
             db.execute_single(default_highlighter1, default_highlighter_param1)
             db.execute_single(default_highlighter2, default_highlighter_param2)
             db.execute_single(default_highlighter3, default_highlighter_param3)
+            db.execute_single(default_highlighter4, default_highlighter_param4)
+            db.execute_single(default_highlighter5, default_highlighter_param5)
+            db.execute_single(default_highlighter6, default_highlighter_param6)
 
     def get_highlighters(self, user_id):
         with DatabaseHelper(self.name) as db:
