@@ -316,24 +316,29 @@ class Database(object):
     
     
     def save_word_to_vocabulary(self,current_user_id, term, defin, confid):
-        # if confid == "unknown":
-        #     highlighter_id = 1
-        # elif confid == "semi-known":
-        #     highlighter_id = 2
-        # elif confid == "known":
-        #     highlighter_id = 3
-        # term = term.lower()
         date = datetime.now()
         sql = f"INSERT INTO vocabulary(user_id,term,definition,highlighter_id,is_regex,created_at) VALUES(:user_id,:term,:definition,:highlighter_id,:is_regex,:created_at)"
         params = (current_user_id,term.lower() ,defin, confid, False,date)
         with DatabaseHelper(self.name) as db:
             db.execute_single(sql, params)
-    
-    def look_up_sel_in_db(self,sel):
+
+    def update_word_to_vocab(self,old_id,defin,confid):
+        date = datetime.now()
+        sql = f"UPDATE vocabulary SET definition='{defin}', highlighter_id ={confid}, created_at ='{date}' WHERE id ={old_id}"
         with DatabaseHelper(self.name) as db:
-            return db.get_sql(f"SELECT * FROM vocabulary WHERE term='{sel.lower()}'")
+            db.execute_single(sql)
+
+
+
+
+
+
     
-    def get_list_of_vocab(self,current_user_id,highlighter_id):
+    def look_up_sel_in_db(self,sel,current_user_id):
+        with DatabaseHelper(self.name) as db:
+            return db.get_sql(f"SELECT * FROM vocabulary WHERE term='{sel.lower()}'AND user_id={current_user_id} LIMIT 1")
+    
+    def get_list_of_vocab_by_highlighter(self,current_user_id,highlighter_id):
         with DatabaseHelper(self.name) as db:
             return db.get_sql(f"SELECT * FROM vocabulary WHERE user_id={current_user_id} AND highlighter_id={highlighter_id}")
 

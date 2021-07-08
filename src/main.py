@@ -113,7 +113,7 @@ class MainWindow(MainUIWidget):
     
     def add_new_user(self):
         new_user_name = self.settings.user_tab.add_user_name.text()
-        if self.db.add_new_user(new_user_name):
+        if self.db.add_new_user(new_user_name):# returns true if user already exists
             self.display_msg("Oops!","That user name already exists")
         else:
             self.db.set_last_user(new_user_name)
@@ -143,10 +143,15 @@ class MainWindow(MainUIWidget):
         for item in self.current_highlighters:
             if item[4] == confid:
                 current_confidence = item[0]
-        word_to_save = self.current_selection
+        
         definition_to_save = self.top_right_pane.flash_back.toPlainText()
-        self.db.save_word_to_vocabulary(self.current_user["id"],word_to_save, definition_to_save,current_confidence)
-        self.start_update_highlight_words()
+        word_to_save = self.current_selection["selection"]
+        if self.current_selection["db_findings"] != []:
+            self.db.update_word_to_vocab(self.current_selection["db_findings"][0][0],definition_to_save,current_confidence)
+            self.start_update_highlight_words()
+        else:
+            self.db.save_word_to_vocabulary(self.current_user["id"],word_to_save, definition_to_save,current_confidence)
+            self.start_update_highlight_words()
 
     def start_update_highlight_words(self):
         # start highlighter in another thread
@@ -169,7 +174,6 @@ class MainWindow(MainUIWidget):
             block = cursor.block()
             self.highlighter.rehighlightBlock(block)
             cursor.movePosition(QTextCursor.NextBlock)
-            cursor_pos = cursor.position()
             if cursor.position() == old_pos:
                 break
             else:
@@ -180,7 +184,7 @@ class MainWindow(MainUIWidget):
         all_dicts = []
         for highlighter in self.current_highlighters:
             hl_id = highlighter[0]
-            vocab_for_hl = self.db.get_list_of_vocab(self.current_user["id"], hl_id)
+            vocab_for_hl = self.db.get_list_of_vocab_by_highlighter(self.current_user["id"], hl_id)
             hl_color = [float(s) for s in highlighter[2].split(",")] # converts color string to list of ints
             hl_style = highlighter[3]
 
@@ -229,7 +233,6 @@ class MainWindow(MainUIWidget):
                 if w == word:
                     split_context[i] = "<b>" + split_context[i] + "</b>"
             context_bold = "".join(split_context)
-            self.current_selection = word
             self.autofill_searchbar(word)
             self.autofill_flashcard(context_bold)
             self.handle_lookup(word, context)
@@ -239,7 +242,6 @@ class MainWindow(MainUIWidget):
         selection = self.left_pane.browser.textCursor().selectedText()
         context = self.get_context(cursor)
         context_bold = context.replace(selection, "<b>" + selection + "</b>")
-        self.current_selection = selection
         self.autofill_searchbar(selection)
         self.autofill_flashcard(context_bold)
         self.handle_lookup(selection, context)
@@ -273,16 +275,23 @@ class MainWindow(MainUIWidget):
         self.top_right_pane.flash_front.setHtml(context)
 
     def handle_lookup(self, selection, context):
-        if selection != "":
+        #check database first
+        db_findings = self.db.look_up_sel_in_db(selection,self.current_user["id"])
+        if db_findings != []:
+            self.top_right_pane.flash_back.clear()
+            self.top_right_pane.flash_back.insertPlainText(db_findings[0][3])
+        else:
             for i, row in enumerate(self.current_online_tools):
                 self.bottom_right_pane.my_tabs[i].setUrl(QUrl(row[2].replace("WORD",selection).replace("SENT",context)))
-        if self.current__other_settings["autofill_back_of_flashcard"]:
-            self.top_right_pane.flash_back.clear()
-            try:
-                translation = self.translator.translate(selection)
-                self.top_right_pane.flash_back.insertPlainText(translation)
-            except Exception as e:
-                print(f"there was an error with the autofill api: {e}")
+            if self.current__other_settings["autofill_back_of_flashcard"]:
+                self.top_right_pane.flash_back.clear()
+                try:
+                    translation = self.translator.translate(selection)
+                    self.top_right_pane.flash_back.insertPlainText(translation)
+                except Exception as e:
+                    print(f"there was an error with the autofill api: {e}")
+
+        self.current_selection = {"selection":selection,"db_findings":db_findings}
 
     def handle_toolbar_click(self,action):
         action = action.text()
