@@ -215,9 +215,15 @@ class Database(object):
     
     def set_up_default_grammar_rules(self,user_id=1):
         default_rule1 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
-        default_rule_param1 = (user_id,True,"Connectors","255,0,0",0.8,"highlight","dengan, juga, tetapi, dan, atau, nah")
+        default_rule_param1 = (user_id,True,"Connectors","255,0,0",0.4,"highlight","dengan, juga, tetapi, dan, atau, nah")
+        default_rule2 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
+        default_rule_param2 = (user_id,True,"passive voice :)","0,255,0",0.8,"underline","(?!\\bdian\\b|\\bdiam\\b|\\bdiam\\b|\\bdia\\b|\\bdinah\\b|\\bdiri(nya|mu|ku)?\\b)di\\w+\\b|\\b(yang|itu|ini)(?<!setelah itu)(\\s)?(tidak|enggak|tak|nggak|)?(sudah|telah|belum|akan)?\\s(saya|kami|kita|dia|ibu|bapak|mereka|pak\\s\\w+|ibu\\s\\w+|bu\\s\\w+)\\s\\w+(kan|i)?")
+        default_rule3 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
+        default_rule_param3 = (user_id,True,"Active voice","0,0,255",0.8,"underline","me(ny|n|ng)\\w+(kan)?\\b|\\bbe(r|l)\\w+")
         with DatabaseHelper(self.name) as db:
             db.execute_single(default_rule1, default_rule_param1)
+            db.execute_single(default_rule2, default_rule_param2)
+            db.execute_single(default_rule3, default_rule_param3)
                 # id INTEGER,
                 # user_id,
                 # is_enabled BOOLEAN,

@@ -7,14 +7,18 @@ from PyQt5.QtGui import *#QColor, QRegExpValidator, QSyntaxHighlighter, QTextCha
 class SyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self, parent):
         super().__init__(parent)
-        self.state = []
+        self.vocab = []
+        self.grammar = []
 
-    def set_state(self, dict):
-        self.state = dict
+    def set_state(self, vocab, grammar):
+        self.vocab = vocab
+        self.grammar = grammar
+
 
     def highlightBlock(self,text):
-        if self.state != []:
-            for dict in self.state:
+        # sorry this is very messy :(
+        if self.vocab != []:
+            for dict in self.vocab:
                 for item in dict["vocab"]:
                     regex_string = "\\b" + str(item[2]) + "\\b"
                     expression = QRegularExpression(regex_string,QRegularExpression.CaseInsensitiveOption)
@@ -24,3 +28,18 @@ class SyntaxHighlighter(QSyntaxHighlighter):
                         old_format = self.format(match.capturedStart())
                         old_format.merge(dict["fmt"])
                         self.setFormat(match.capturedStart(),match.capturedLength(),old_format)
+        elif self.grammar != []:
+            for dict in self.grammar:
+                for item in dict["words"]:
+                    regex_string = "\\b" + str(item) + "\\b"
+                    expression = QRegularExpression(regex_string,QRegularExpression.CaseInsensitiveOption)
+                    i = QRegularExpressionMatchIterator(expression.globalMatch(text))
+                    while i.hasNext():
+                        match = QRegularExpressionMatch(i.next())
+                        old_format = self.format(match.capturedStart())
+                        old_format.merge(dict["fmt"])
+                        self.setFormat(match.capturedStart(),match.capturedLength(),old_format)
+
+
+
+

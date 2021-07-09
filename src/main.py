@@ -36,7 +36,6 @@ class MainWindow(MainUIWidget):
         # self.set_global_settings()
         # self.bottom_right_pane.start_tabs(self.json_settings) # this being called after the settings, allows time to read the json settings file
         # Create classes instances:
-
         self.audio_player = QMediaPlayer()
         self.anki_gen = AnkiDeckGenerator()
         self.settings = SettingsPage()
@@ -71,6 +70,7 @@ class MainWindow(MainUIWidget):
         # other
         self.dark_theme_palette = self.setup_dark_theme()
         self.run_start_up_settings()
+        self.vocab_or_grammar = "vocab"
         # keyboard shortcuts
         self.lookup_shortcut = QShortcut(QtGui.QKeySequence("Ctrl+Up"),self)
         self.lookup_shortcut.activated.connect(self.browser_clicked)
@@ -193,25 +193,65 @@ class MainWindow(MainUIWidget):
                 old_pos = cursor.position()
     
     def update_highlight_words(self):
-        all_dicts = []
-        for highlighter in self.current_highlighters:
-            hl_id = highlighter[0]
-            vocab_for_hl = self.db.get_list_of_vocab_by_highlighter(self.current_user["id"], hl_id)
-            hl_color = [float(s) for s in highlighter[2].split(",")] # converts color string to list of ints
-            hl_style = highlighter[3]
+        if self.vocab_or_grammar == "vocab":
+            all_dicts = []
+            for highlighter in self.current_highlighters:
+                hl_id = highlighter[0]
+                vocab_for_hl = self.db.get_list_of_vocab_by_highlighter(self.current_user["id"], hl_id)
+                hl_color = [float(s) for s in highlighter[2].split(",")] # converts color string to list of floats
+                hl_style = highlighter[3]
 
-            if vocab_for_hl != []:
-                color = QtGui.QColor()
-                color.setRgbF(hl_color[0],hl_color[1],hl_color[2],hl_color[3])
+                if vocab_for_hl != []:
+                    color = QtGui.QColor()
+                    color.setRgbF(hl_color[0],hl_color[1],hl_color[2],hl_color[3])
+                    the_format = QTextCharFormat()
+                    if hl_style == "underline":
+                        the_format.setUnderlineColor(color) 
+                        the_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
+                    elif hl_style == "background":
+                        the_format.setBackground(color)
+                    
+                    all_dicts.append({"vocab":vocab_for_hl,"fmt":the_format})
+            self.highlighter.set_state(all_dicts,[])
+
+        elif self.vocab_or_grammar == "grammar":
+            all_dicts = []
+            for rule in self.current_grammar_rules:
+                regex_list = [word.strip() for word in rule[7].split(',')]
                 the_format = QTextCharFormat()
-                if hl_style == "underline":
-                    the_format.setUnderlineColor(color) 
+                color_from_str = [float(s) for s in rule[4].split(",")]
+                color = QtGui.QColor()
+                print(float(rule[5]))
+                color.setRgbF(color_from_str[0],color_from_str[1],color_from_str[2],float(rule[5]))
+                if rule[6] == "underline":
+                    the_format.setUnderlineColor(color)
                     the_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
-                elif hl_style == "background":
+                elif rule[6] == "highlight":
                     the_format.setBackground(color)
-                
-                all_dicts.append({"vocab":vocab_for_hl,"fmt":the_format})
-        self.highlighter.set_state(all_dicts)
+                all_dicts.append({"words":regex_list,"fmt":the_format})
+            self.highlighter.set_state([],all_dicts)
+
+
+    def toggle_vocab_grammar(self):
+        if self.vocab_or_grammar == "vocab":
+            self.vocab_or_grammar = "grammar"
+            self.left_pane.vocab_grammar_toggle.setText("toggle_g")
+        elif self.vocab_or_grammar =="grammar":
+            self.vocab_or_grammar = "vocab"
+            self.left_pane.vocab_grammar_toggle.setText("toggle_v")
+
+        if self.vocab_or_grammar == "vocab" and self.current__other_settings["dark_theme"]:
+            self.left_pane.vocab_grammar_toggle.setIcon(QIcon(os.path.join("src","img","toggle_v_dark.png")))
+        elif self.vocab_or_grammar == "grammar" and self.current__other_settings["dark_theme"]:
+            self.left_pane.vocab_grammar_toggle.setIcon(QIcon(os.path.join("src","img","toggle_g_dark.png")))
+        elif self.vocab_or_grammar == "vocab" and not self.current__other_settings["dark_theme"]:
+            self.left_pane.vocab_grammar_toggle.setIcon(QIcon(os.path.join("src","img","toggle_v.png")))
+        elif self.vocab_or_grammar == "grammar" and not self.current__other_settings["dark_theme"]:
+            self.left_pane.vocab_grammar_toggle.setIcon(QIcon(os.path.join("src","img","toggle_g.png")))
+        self.start_update_highlight_words()
+        
+
+
         
     def highlight(self,color):
         cursor = self.left_pane.browser.textCursor()
@@ -306,37 +346,39 @@ class MainWindow(MainUIWidget):
         action = action.text()
         if action == 'play':
             self.toggle_play_audio()
-        if action == 'open':
+        elif action == 'open':
             try:
                 self.open_file()
             except Exception as e:
                 logging.exception("when opening file")
                 self.display_msg("Error","Failed to open file.\n" + str(e))
-        if action == 'save':
+        elif action == 'save':
             try:
                 self.save_file()
             except Exception as e:
                 logging.exception("when saving file")
                 self.display_msg("Error","Failed to save file.\n" + str(e))
-        if action == 'download':
+        elif action == 'download':
             self.download_flashcards()
-        if action == 'skip_back':
+        elif action == 'skip_back':
             self.skip_back()
-        if action == 'skip_forward':
+        elif action == 'skip_forward':
             self.skip_forward()
-        if action == 'settings':
+        elif action == 'settings':
             self.load_settings_to_settings_page()
             self.settings.show()
-        if action == 'list':
+        elif action == 'list':
             self.flashcards_list.list_table_widget.clear()
             self.flashcards_list.setup_table_widget()
             self.flashcards_list.show()
-        if action == 'help':
+        elif action == 'help':
             self.help_page.show()
-        if action == 'highlight':
+        elif action == 'highlight':
             self.start_update_highlight_words()
-        if action == 'format':
+        elif action == 'format':
             self.format_widget.show()
+        elif action == 'toggle_v' or action == 'toggle_g':
+            self.toggle_vocab_grammar()
 
     def save_file(self):
         filepath = QFileDialog.getSaveFileName(self, 'Save File','',"HTML Files (*.html);; TXT Files (*.txt) ;; DOCX Files (*.docx)")[0]
