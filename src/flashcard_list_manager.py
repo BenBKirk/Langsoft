@@ -6,6 +6,8 @@ from PyQt5 import QtGui
 from PyQt5.QtGui import QIcon
 from bs4 import BeautifulSoup
 
+import logging
+logging.basicConfig(level=logging.DEBUG,filename="app.log",format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class FlashcardManager(QWidget):
@@ -74,6 +76,7 @@ class FlashcardManager(QWidget):
                         card["img"] = ""
                     tempDict["cards"].append(card)
                 except Exception as e:
+                    logging.exception("THERE WAS AN ERROR WHEN SAVING FLASHCARDS")
                     print(f"THERE WAS AN ERROR WHEN SAVING FLASHCARDS --- {e}")
 
         #delete old json and save new one
@@ -155,6 +158,7 @@ class FlashcardManager(QWidget):
             except Exception as e:
                 pass
         except Exception as e:
+            logging.exception(f"THERE WAS AN ERROR WHEN REMOVING ITEM FROM LIST AT INDEX {current_index} --- {e}")
             print(f"THERE WAS AN ERROR WHEN REMOVING ITEM FROM LIST AT INDEX {current_index} --- {e}")
         
 

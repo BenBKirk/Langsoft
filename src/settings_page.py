@@ -7,6 +7,8 @@ from PyQt5 import QtGui
 from PyQt5 import QtCore
 import json
 import os 
+import logging
+logging.basicConfig(level=logging.DEBUG,filename="app.log",format='%(asctime)s - %(levelname)s - %(message)s')
 
 class SettingsPage(QWidget):
     def __init__(self):
@@ -123,10 +125,12 @@ class OnlineToolsTab(QWidget):
             try:
                 tab_name = self.online_tools_table_widget.item(current_index-1,1).text() 
             except:
+                logging.exception("adding new online tool")
                 tab_name = None
             try:
                 URL = self.online_tools_table_widget.item(current_index-1,2).text() 
             except:
+                logging.exception("adding new online tool")
                 URL = None
 
             if tab_name != None and URL != None:
@@ -161,10 +165,12 @@ class DiscourseTab(QWidget):
             try:
                 cat_key = self.discourse_table_widget.item(current_index,1).text() 
             except:
+                logging.exception("adding discourse rule")
                 cat_key = None
             try:
                 cat_list = self.discourse_table_widget.item(current_index,3).text() 
             except:
+                logging.exception("adding discourse rule")
                 cat_list = None
 
             if cat_key != None and cat_list != None:

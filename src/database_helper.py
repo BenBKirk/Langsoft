@@ -1,6 +1,8 @@
 import sqlite3
 from datetime import datetime
 import os
+import logging
+logging.basicConfig(level=logging.DEBUG,filename="app.log",format='%(asctime)s - %(levelname)s - %(message)s')
 
 class DatabaseHelper(object):
     def __init__(self, name=None):
@@ -15,6 +17,7 @@ class DatabaseHelper(object):
             self.cursor = self.conn.cursor()
 
         except sqlite3.error as e:
+            logging.exception("sql database")
             print("error connecting to database!") 
 
     def close(self):
@@ -184,11 +187,11 @@ class Database(object):
         default_highlighter3 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
         default_highlighter_param3 = (user_id,"0,255,0,0.8","underline","known-sent")
         default_highlighter4 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
-        default_highlighter_param4 = (user_id,"255,0,0,0.2","background","unknown")
+        default_highlighter_param4 = (user_id,"255,0,0,0.4","background","unknown")
         default_highlighter5 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
-        default_highlighter_param5 = (user_id,"255,255,0,0.2","background","semi-known")
+        default_highlighter_param5 = (user_id,"255,255,0,0.4","background","semi-known")
         default_highlighter6 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
-        default_highlighter_param6 = (user_id,"0,255,0,0.2","background","known")
+        default_highlighter_param6 = (user_id,"0,255,0,0.4","background","known")
         with DatabaseHelper(self.name) as db:
             db.execute_single(default_highlighter1, default_highlighter_param1)
             db.execute_single(default_highlighter2, default_highlighter_param2)
@@ -320,7 +323,7 @@ class Database(object):
                 with DatabaseHelper(self.name) as db:
                     old_id = check[0][0]
                     sql = "REPLACE INTO recent_files (id,filepath,created_at,user_id) VALUES (:id,:filepath,:created_at,:user_id)"
-                    params = (old_id,filepath,date_time,self.active_user_id)
+                    params = (old_id,filepath,date_time,current_user_id)
                     db.execute_single(sql, params)
     
     

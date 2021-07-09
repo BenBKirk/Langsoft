@@ -26,7 +26,8 @@ import datetime
 from multi_threading import Worker
 from database_helper import Database
 from syntax_highlighter import SyntaxHighlighter
-
+import logging
+logging.basicConfig(level=logging.DEBUG,filename="app.log",format='%(asctime)s - %(levelname)s - %(message)s')
 class MainWindow(MainUIWidget):
 
     def __init__(self, *args, **kwargs):
@@ -35,6 +36,7 @@ class MainWindow(MainUIWidget):
         # self.set_global_settings()
         # self.bottom_right_pane.start_tabs(self.json_settings) # this being called after the settings, allows time to read the json settings file
         # Create classes instances:
+
         self.audio_player = QMediaPlayer()
         self.anki_gen = AnkiDeckGenerator()
         self.settings = SettingsPage()
@@ -284,20 +286,19 @@ class MainWindow(MainUIWidget):
     def handle_lookup(self, selection, context):
         #check database first
         db_findings = self.db.look_up_sel_in_db(selection,self.current_user["id"])
+        for i, row in enumerate(self.current_online_tools):
+            self.bottom_right_pane.my_tabs[i].setUrl(QUrl(row[2].replace("WORD",selection).replace("SENT",context)))
         if db_findings != []:
             self.top_right_pane.flash_back.clear()
             self.top_right_pane.flash_back.insertPlainText(db_findings[0][3])
-        else:
-            for i, row in enumerate(self.current_online_tools):
-                self.bottom_right_pane.my_tabs[i].setUrl(QUrl(row[2].replace("WORD",selection).replace("SENT",context)))
-            if self.current__other_settings["autofill_back_of_flashcard"]:
-                self.top_right_pane.flash_back.clear()
-                try:
-                    translation = self.translator.translate(selection)
-                    self.top_right_pane.flash_back.insertPlainText(translation)
-                except Exception as e:
-                    print(f"there was an error with the autofill api: {e}")
-
+        elif self.current__other_settings["autofill_back_of_flashcard"]:
+            self.top_right_pane.flash_back.clear()
+            try:
+                translation = self.translator.translate(selection)
+                self.top_right_pane.flash_back.insertPlainText(translation)
+            except Exception as e:
+                logging.exception("google translate autofill api")
+                print(f"there was an error with the autofill api: {e}")
         self.current_selection = {"selection":selection,"db_findings":db_findings}
 
     def handle_toolbar_click(self,action):
@@ -308,11 +309,13 @@ class MainWindow(MainUIWidget):
             try:
                 self.open_file()
             except Exception as e:
+                logging.exception("when opening file")
                 self.display_msg("Error","Failed to open file.\n" + str(e))
         if action == 'save':
             try:
                 self.save_file()
             except Exception as e:
+                logging.exception("when saving file")
                 self.display_msg("Error","Failed to save file.\n" + str(e))
         if action == 'download':
             self.download_flashcards()
@@ -391,7 +394,7 @@ class MainWindow(MainUIWidget):
         self.left_pane.browser.clear()
         if is_html:
             self.left_pane.browser.insertHtml(data)
-            self.db.add_recent_file(filepath)
+            self.db.add_recent_file(filepath,self.current_user["id"])
         else:
             self.left_pane.browser.insertPlainText(data)
         self.load_audio(filepath)
@@ -476,13 +479,13 @@ class MainWindow(MainUIWidget):
         state = self.audio_player.state()
         if state == 1:
             self.audio_player.pause()
-            if self.json_settings["dark_theme"]:
+            if self.current__other_settings["dark_theme"]:
                 self.left_pane.play_action.setIcon(QIcon(os.path.join("src", "img", "play_dark.png")))
             else:
                 self.left_pane.play_action.setIcon(QIcon(os.path.join("src", "img", "play.png")))
         if state == 0 or state == 2:
             self.audio_player.play()
-            if self.json_settings["dark_theme"]:
+            if self.current__other_settings["dark_theme"]:
                 self.left_pane.play_action.setIcon(QIcon(os.path.join("src", "img", "pause_dark.png")))
             else:
                 self.left_pane.play_action.setIcon(QIcon(os.path.join("src", "img", "pause.png")))
