@@ -74,6 +74,7 @@ class Database(object):
             self.set_up_default_online_tools()
             self.set_up_default_settings()
             self.set_up_default_highlighters()
+            self.set_up_default_grammar_rules()
     
     def create_tables(self):
         with DatabaseHelper(self.name) as db:
@@ -128,6 +129,18 @@ class Database(object):
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
                 FOREIGN KEY (highlighter_id) REFERENCES highlighters (id)
+            );
+            CREATE TABLE IF NOT EXISTS grammar_rules(
+                id INTEGER,
+                user_id,
+                is_enabled BOOLEAN,
+                name VARCHAR,
+                color VARCHAR,
+                opacity FLOAT,
+                style VARCHAR,
+                list VARCHAR,
+                PRIMARY KEY (id)
+                FOREIGN KEY (user_id) REFERENCES users (id)
             );
             CREATE TABLE IF NOT EXISTS recent_files (
                 id INTEGER,
@@ -199,6 +212,25 @@ class Database(object):
             db.execute_single(default_highlighter4, default_highlighter_param4)
             db.execute_single(default_highlighter5, default_highlighter_param5)
             db.execute_single(default_highlighter6, default_highlighter_param6)
+    
+    def set_up_default_grammar_rules(self,user_id=1):
+        default_rule1 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
+        default_rule_param1 = (user_id,True,"Connectors","255,0,0",0.8,"highlight","dengan, juga, tetapi, dan, atau, nah")
+        with DatabaseHelper(self.name) as db:
+            db.execute_single(default_rule1, default_rule_param1)
+                # id INTEGER,
+                # user_id,
+                # is_enabled BOOLEAN,
+                # name VARCHAR,
+                # color VARCHAR,
+                # opacity FLOAT,
+                # style VARCHAR,
+                # list VARCHAR,
+    
+    def get_grammar_rules(self,user_id):
+        with DatabaseHelper(self.name) as db:
+            return db.get_sql(f"SELECT * FROM grammar_rules WHERE user_id={user_id}")
+
 
     def get_highlighters(self, user_id):
         with DatabaseHelper(self.name) as db:
@@ -211,8 +243,6 @@ class Database(object):
             # dict_to_return["semi-known"] = {"id":semi_known_list[0][0],"color": semi_known_list[0][2],"style":semi_known_list[0][3]}
             # dict_to_return["known"] = {"id":known_list[0][0], "color": known_list[0][2],"style":known_list[0][3]}
             # return dict_to_return
-
-
 
     def get_last_user(self):
         with DatabaseHelper(self.name) as db:
@@ -241,10 +271,6 @@ class Database(object):
             db.execute_single(sql, params)
         
     def get_online_tools(self,active_user):
-        with DatabaseHelper(self.name) as db:
-            return db.get_sql(f"SELECT * FROM online_tools WHERE user_id = {active_user}")
-
-    def get_discourse_settings(self,active_user):
         with DatabaseHelper(self.name) as db:
             return db.get_sql(f"SELECT * FROM online_tools WHERE user_id = {active_user}")
 
@@ -283,6 +309,7 @@ class Database(object):
             self.set_up_default_online_tools(new_id)
             self.set_up_default_settings(new_id)
             self.set_up_default_highlighters(new_id)
+            self.set_up_default_grammar_rules(new_id)
 
     def get_id_from_name(self, name):
         with DatabaseHelper(self.name) as db:

@@ -89,7 +89,7 @@ class MainWindow(MainUIWidget):
         self.current_user = self.db.get_last_user()
         self.all_users_names = self.db.get_all_users()
         self.current_online_tools = self.db.get_online_tools(self.current_user["id"])
-        self.current_discourse_settings = self.db.get_discourse_settings(self.current_user["id"])
+        self.current_grammar_rules = self.db.get_grammar_rules(self.current_user["id"])
         self.current__other_settings = self.db.get_other_settings(self.current_user["id"])
         self.current_highlighters = self.db.get_highlighters(self.current_user["id"])
         self.recent_files = self.db.get_recent_files(self.current_user["id"])
@@ -107,6 +107,7 @@ class MainWindow(MainUIWidget):
         self.settings.load_online_tool_settings(self.current_online_tools)
         self.settings.load_other_settings(self.current__other_settings)
         self.settings.load_user(self.all_users_names,self.current_user)
+        self.settings.load_grammar_rules(self.current_grammar_rules)
     
     def change_current_user(self):
         new_user_name = self.settings.user_tab.user_combobox.currentText()
@@ -132,7 +133,7 @@ class MainWindow(MainUIWidget):
         for row in range(row_count):
             online_tools_list.append([self.settings.online_tools_tab.online_tools_table_widget.item(row,1).text(),self.settings.online_tools_tab.online_tools_table_widget.item(row,2).text()])
         self.db.save_online_tools(online_tools_list,self.current_user["id"])
-        # discourse settings
+        # grammar settings
         #TODO:
         # other settings
         other_settings = {}
