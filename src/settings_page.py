@@ -87,11 +87,6 @@ class SettingsPage(QWidget):
         self.grammar_tab.grammar_table_widget.resizeColumnsToContents()
 
 
-        # default_rule_param1 = (user_id,True,"Connectors","255,0,0",0.8,"highlight","dengan, juga, tetapi, dan, atau, nah")
-        #                     0     1      2      3           4       5         6        7
-
-
-
 
 class UsersTab(QWidget):
     def __init__(self):
@@ -99,7 +94,7 @@ class UsersTab(QWidget):
         self.table = QTableWidget()
         self.user_combobox = QComboBox()
         self.user_delete = QPushButton("Delete")
-        self.user_delete.setIcon(QtGui.QIcon(os.path.join(os.getcwd(),"src","img","user.png")))
+        # self.user_delete.setIcon(QtGui.QIcon(os.path.join(os.getcwd(),"src","img","user.png")))
         self.add_user_name = QLineEdit()
         self.add_user_btn = QPushButton("Add New User")
         user_layout = QHBoxLayout()

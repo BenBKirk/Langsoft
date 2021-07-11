@@ -41,13 +41,13 @@ class MainWindow(MainUIWidget):
         self.db = Database()
         self.thread_pool = QtCore.QThreadPool()
         self.highlighter = SyntaxHighlighter(self.left_pane.browser.document())
+        self.recent_files_widget = QListWidget()
         #connections
         self.left_pane.browser.clicked.connect(self.browser_clicked)
         self.left_pane.browser.hightlight.connect(self.highlight)
         self.left_pane.browser.clear_highlighting.connect(self.format_widget.clear_highlighting)
         self.left_pane.browser.scroll.connect(self.refresh_hightlight_on_screen)
         self.left_pane.browser.verticalScrollBar().sliderMoved.connect(self.refresh_hightlight_on_screen)
-        # self.left_pane.browser.got_focus.connect(self.refresh_highlights)
         self.left_pane.toolbar.actionTriggered[QAction].connect(self.handle_toolbar_click)
         self.top_right_pane.toolbar.actionTriggered[QAction].connect(self.handle_toolbar_click)
         self.top_right_pane.make_flash_btn.clicked.connect(self.add_flashcard_to_db)
@@ -62,6 +62,7 @@ class MainWindow(MainUIWidget):
         self.top_right_pane.unknown_btn.clicked.connect(lambda: self.save_to_vocab("unknown"))
         self.top_right_pane.semi_known_btn.clicked.connect(lambda: self.save_to_vocab("semi-known"))
         self.top_right_pane.known_btn.clicked.connect(lambda: self.save_to_vocab("known"))
+        self.format_widget.font_size_box.valueChanged.connect(lambda x: self.left_pane.browser.setFontPointSize(x))
         # other
         self.dark_theme_palette = self.setup_dark_theme()
         self.run_start_up_settings()
@@ -93,6 +94,9 @@ class MainWindow(MainUIWidget):
         # UI
         if self.current_other_settings["dark_theme"]:
             self.setPalette(self.dark_theme_palette)
+            self.settings.setPalette(self.dark_theme_palette)
+            self.flashcards_list.setPalette(self.dark_theme_palette)
+            self.recent_files_widget.setPalette(self.dark_theme_palette)
             self.set_icons(True)
         else:
             self.set_icons(False)
@@ -399,6 +403,11 @@ class MainWindow(MainUIWidget):
             self.toggle_vocab_grammar()
         elif action == 'no_sound':
             self.set_audio_for_flashcard()
+        elif action == 'blank':
+            self.new_blank_document()
+
+        elif action == 'recent_file':
+            self.open_recent_file_window()
 
 
     def save_file(self):
@@ -423,10 +432,13 @@ class MainWindow(MainUIWidget):
                 self.display_msg("Error", f'Only ".txt", ".html", and ".docx" file extensions are supported.')
             self.db.add_recent_file(filepath,self.current_user["id"])
     
-    def open_file(self):
-        filepath = QFileDialog.getOpenFileName(self,'select a text document')[0]
-        if not filepath:
-            return
+    def open_file(self,filepath_passed=None):
+        if not filepath_passed:
+            filepath = QFileDialog.getOpenFileName(self,'select a text document')[0]
+            if not filepath:
+                return
+        else:
+            filepath = filepath_passed
         resources_path = self.get_folder_from_path(filepath)
         filetype = self.get_file_extension_from_path(filepath)
         self.left_pane.browser.document().setMetaInformation(QTextDocument.DocumentUrl, QtCore.QUrl.fromLocalFile(resources_path).toString())
@@ -461,6 +473,7 @@ class MainWindow(MainUIWidget):
             self.db.add_recent_file(filepath,self.current_user["id"])
         else:
             self.left_pane.browser.insertPlainText(data)
+            self.db.add_recent_file(filepath,self.current_user["id"])
         self.load_audio(filepath)
         self.start_update_highlight_words()
     
@@ -632,6 +645,32 @@ class MainWindow(MainUIWidget):
         folder = os.path.dirname(path)
         return folder + "/"
     
+    def new_blank_document(self):
+        self.left_pane.browser.clear()
+        self.audio_player.setMedia(QMediaContent(None))
+
+    def open_recent_file_window(self):
+        self.recent_files_widget.clear()
+        self.recent_files_widget.itemClicked.connect(self.recent_file_item_clicked)
+        self.recent_files_widget.setWindowTitle("Recent Files")
+        self.recent_files_widget.resize(400,500)
+        self.recent_files = self.db.get_recent_files(self.current_user["id"])
+        if self.recent_files:
+            for filepath in self.recent_files:
+                name = self.get_filename_from_path(filepath[1])
+                date = filepath[2][:16]
+                self.recent_files_widget.addItem(f"{date} -- {name}")
+        else:
+            self.recent_files_widget.addItem("You haven't opened or saved any files recently")
+        self.recent_files_widget.move(QtGui.QCursor.pos())
+        self.recent_files_widget.show()
+    
+    def recent_file_item_clicked(self):
+        file_clicked = self.recent_files[self.recent_files_widget.currentIndex().row()][1]
+        self.open_file(file_clicked)
+        self.recent_files_widget.hide()
+
+
 
 
 if __name__ == "__main__":

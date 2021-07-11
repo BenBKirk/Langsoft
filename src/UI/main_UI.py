@@ -46,7 +46,7 @@ class MainUIWidget(QWidget):
         palette.setColor(QtGui.QPalette.Button, QtGui.QColor(53,53,53))
         palette.setColor(QtGui.QPalette.ButtonText, Qt.white)
         palette.setColor(QtGui.QPalette.BrightText, Qt.red)
-        palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor(142,45,197).lighter())
+        palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor(0,200,0))
         palette.setColor(QtGui.QPalette.HighlightedText, Qt.black)
         return palette
     
@@ -68,11 +68,13 @@ class MainUIWidget(QWidget):
             self.setPalette(self.dark_theme_palette)
             self.settings.setPalette(self.dark_theme_palette)
             self.flashcards_list.setPalette(self.dark_theme_palette)
+            self.recent_files_widget.setPalette(self.dark_theme_palette)
             self.set_icons(True)
         else:
             self.setPalette(QtGui.QPalette())
             self.settings.setPalette(QtGui.QPalette())
             self.flashcards_list.setPalette(QtGui.QPalette())
+            self.recent_files_widget.setPalette(QtGui.QPalette())
             self.set_icons(False)
 
 

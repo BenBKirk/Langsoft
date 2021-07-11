@@ -26,7 +26,7 @@ class FormatSelectedText(QWidget):
         layout.addWidget(self.clear_formating_btn,0,0)
         layout.addWidget(self.clear_highlighting_btn,0,1)
         layout.addWidget(self.font_options,1,0)
-        # layout.addWidget(self.font_size_box,1,1)
+        layout.addWidget(self.font_size_box,1,1)
         self.setLayout(layout)
     
     
