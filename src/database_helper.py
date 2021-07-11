@@ -226,14 +226,6 @@ class Database(object):
             db.execute_single(default_rule1, default_rule_param1)
             db.execute_single(default_rule2, default_rule_param2)
             db.execute_single(default_rule3, default_rule_param3)
-                # id INTEGER,
-                # user_id,
-                # is_enabled BOOLEAN,
-                # name VARCHAR,
-                # color VARCHAR,
-                # opacity FLOAT,
-                # style VARCHAR,
-                # list VARCHAR,
     
     def get_grammar_rules(self,user_id):
         with DatabaseHelper(self.name) as db:
@@ -243,14 +235,6 @@ class Database(object):
     def get_highlighters(self, user_id):
         with DatabaseHelper(self.name) as db:
             return db.get_sql(f"SELECT * FROM highlighters WHERE user_id = {user_id}")
-            # dict_to_return = {}
-            # unknown_list = db.get_sql(f"SELECT * FROM highlighters WHERE user_id ={user_id} AND name = 'unknown'")
-            # semi_known_list = db.get_sql(f"SELECT * FROM highlighters WHERE user_id ={user_id} AND name = 'semi-known'")
-            # known_list = db.get_sql(f"SELECT * FROM highlighters WHERE user_id ={user_id} AND name = 'known'")
-            # dict_to_return["unknown"] = {"id":unknown_list[0][0],"color": unknown_list[0][2],"style":unknown_list[0][3]}
-            # dict_to_return["semi-known"] = {"id":semi_known_list[0][0],"color": semi_known_list[0][2],"style":semi_known_list[0][3]}
-            # dict_to_return["known"] = {"id":known_list[0][0], "color": known_list[0][2],"style":known_list[0][3]}
-            # return dict_to_return
 
     def get_last_user(self):
         with DatabaseHelper(self.name) as db:
@@ -344,20 +328,6 @@ class Database(object):
                 params = (current_user_id,row[0],row[1],row[2],row[3],row[4],row[5])
                 db.execute_single(sql, params)
 
-                # [True, 'Connectors', '255,0,0', 0.4, 'highlight', 'dengan,]
-
-                # id INTEGER,
-                # user_id,
-                # is_enabled BOOLEAN,
-                # name VARCHAR,
-                # color VARCHAR,
-                # opacity FLOAT,
-                # style VARCHAR,
-                # list VARCHAR,
-
-
-    
-
 
     def save_other_settings(self,current_user_id,other_settings):
         with DatabaseHelper(self.name) as db:
@@ -415,6 +385,16 @@ class Database(object):
             params = (current_user_id,fc["front"],fc["back"],fc["back_image"],fc["audio_start"],fc["audio_end"])
             db.execute_single(sql, params)
 
+    def get_flashcards_from_db(self,current_user_id):
+        try:
+            with DatabaseHelper("database.db") as db:
+                return db.get_sql(f"SELECT * FROM flashcards WHERE user_id={current_user_id}")
+        except:
+            return []
+
+    def delete_all_flashcards_for_user(self,current_user_id):
+        with DatabaseHelper("database.db") as db:
+            db.execute_single(f"DELETE FROM flashcards WHERE user_id={current_user_id}")
 
 
 

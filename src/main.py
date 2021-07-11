@@ -535,22 +535,20 @@ class MainWindow(MainUIWidget):
             return 0
         deck_name = self.get_filename_from_path(filepath)
 
-        with open(os.path.join("src", "flashcards.json"),"r+") as f:
-            data = json.load(f)
-        if data["cards"] == []:
+        flashcards_list = self.db.get_flashcards_from_db(self.current_user["id"])
+
+        if flashcards_list == []:
             self.display_msg("Oops!", "There are no cards to make an anki deck with.\nUse the flashcard generator in the top right corner to make some.")
             return 0
-        self.anki_gen.start_everything(data,deck_name,filepath)
-        self.reset_flashcard_json()
+        try:
+            self.anki_gen.start_everything(flashcards_list,deck_name,filepath)
+            self.db.delete_all_flashcards_for_user(self.current_user["id"])
+            self.display_msg("Ok",f"The anki deck was successfully created and saved in this location: \n {filepath}")
+        except Exception as e:
+            self.display_msg("oh dear",f"there was an error trying to export your flashcards.\nWhy don't you try again? \n\nError Message: {e}")
+            logging.exception("while trying to export flashcards")
+        
 
-    def reset_flashcard_json(self):
-        # create/clear flashcards.json
-        cards_path = os.path.join("src", "flashcards.json")
-        blank = {"cards":[]}
-        if os.path.exists(cards_path):
-            os.remove(cards_path)
-        with open(cards_path,'w+') as f:
-            json.dump(blank,f)
     
     def load_audio(self, filePath):
         # check if audio file exists
