@@ -115,6 +115,8 @@ class Database(object):
                 front VARCHAR,
                 back VARCHAR,
                 back_image VARCHAR,
+                audio_start INTEGER,
+                audio_end INTEGER,
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
             );
@@ -130,7 +132,7 @@ class Database(object):
                 FOREIGN KEY (user_id) REFERENCES users (id)
                 FOREIGN KEY (highlighter_id) REFERENCES highlighters (id)
             );
-            CREATE TABLE IF NOT EXISTS grammar_rules(
+            CREATE TABLE IF NOT EXISTS grammar_rules (
                 id INTEGER,
                 user_id,
                 is_enabled BOOLEAN,
@@ -150,7 +152,7 @@ class Database(object):
                 PRIMARY KEY (id)
                 FOREIGN KEY (user_id) REFERENCES users (id)
             );
-            CREATE TABLE IF NOT EXISTS last_user(
+            CREATE TABLE IF NOT EXISTS last_user (
                 id INTEGER,
                 user_id INTEGER,
                 PRIMARY KEY (id)
@@ -198,13 +200,13 @@ class Database(object):
         default_highlighter2 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
         default_highlighter_param2 = (user_id,"255,255,0,0.8","underline","semi-known-sent")
         default_highlighter3 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
-        default_highlighter_param3 = (user_id,"0,255,0,0.8","underline","known-sent")
+        default_highlighter_param3 = (user_id,"0,255,0,0.5","underline","known-sent")
         default_highlighter4 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
         default_highlighter_param4 = (user_id,"255,0,0,0.4","background","unknown")
         default_highlighter5 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
         default_highlighter_param5 = (user_id,"255,255,0,0.4","background","semi-known")
         default_highlighter6 = "INSERT OR REPLACE INTO highlighters(user_id,color,style,name) VALUES (:user_id,:color,:style,:name)"
-        default_highlighter_param6 = (user_id,"0,255,0,0.4","background","known")
+        default_highlighter_param6 = (user_id,"0,255,0,0.1","background","known")
         with DatabaseHelper(self.name) as db:
             db.execute_single(default_highlighter1, default_highlighter_param1)
             db.execute_single(default_highlighter2, default_highlighter_param2)
@@ -397,20 +399,21 @@ class Database(object):
         with DatabaseHelper(self.name) as db:
             db.execute_single(sql)
 
-
-
-
-
-
-    
     def look_up_sel_in_db(self,sel,current_user_id):
         with DatabaseHelper(self.name) as db:
-            return db.get_sql(f"SELECT * FROM vocabulary WHERE term='{sel.lower()}'AND user_id={current_user_id} LIMIT 1")
+            return db.get_sql(f"SELECT * FROM vocabulary WHERE term='{str(sel).lower()}'AND user_id={current_user_id} LIMIT 1")
     
     def get_list_of_vocab_by_highlighter(self,current_user_id,highlighter_id):
         with DatabaseHelper(self.name) as db:
             return db.get_sql(f"SELECT * FROM vocabulary WHERE user_id={current_user_id} AND highlighter_id={highlighter_id}")
 
+    def add_flashcard_to_db(self,fc,current_user_id):
+        with DatabaseHelper(self.name) as db:
+            sql = """INSERT INTO flashcards (user_id,front,back,back_image,audio_start,audio_end) 
+            VALUES(:user_id,:front,:back,:back_image,:audio_start,:audio_end)
+            """
+            params = (current_user_id,fc["front"],fc["back"],fc["back_image"],fc["audio_start"],fc["audio_end"])
+            db.execute_single(sql, params)
 
 
 

@@ -12,7 +12,6 @@ import os
 import fitz
 import json
 import re
-import uuid
 from gen_anki_deck import AnkiDeckGenerator
 from settings_page import SettingsPage
 from format_selected_text import FormatSelectedText
@@ -21,7 +20,6 @@ from html2docx import html2docx
 from API.google_trans_API import GoogleTranslate
 from flashcard_list_manager import FlashcardManager
 from help_page import HelpWindow
-import time
 import datetime
 from multi_threading import Worker
 from database_helper import Database
@@ -32,9 +30,6 @@ class MainWindow(MainUIWidget):
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-        # self.json_settings = {}
-        # self.set_global_settings()
-        # self.bottom_right_pane.start_tabs(self.json_settings) # this being called after the settings, allows time to read the json settings file
         # Create classes instances:
         self.audio_player = QMediaPlayer()
         self.anki_gen = AnkiDeckGenerator()
@@ -55,7 +50,7 @@ class MainWindow(MainUIWidget):
         # self.left_pane.browser.got_focus.connect(self.refresh_highlights)
         self.left_pane.toolbar.actionTriggered[QAction].connect(self.handle_toolbar_click)
         self.top_right_pane.toolbar.actionTriggered[QAction].connect(self.handle_toolbar_click)
-        self.top_right_pane.make_flash_btn.clicked.connect(self.add_flashcard)
+        self.top_right_pane.make_flash_btn.clicked.connect(self.add_flashcard_to_db)
         self.audio_player.durationChanged.connect(self.update_slider_duration)
         self.audio_player.positionChanged.connect(self.update_slider_position)
         self.left_pane.audio_slider.valueChanged.connect(self.audio_player.setPosition)
@@ -75,7 +70,7 @@ class MainWindow(MainUIWidget):
         self.lookup_shortcut = QShortcut(QtGui.QKeySequence("Ctrl+Up"),self)
         self.lookup_shortcut.activated.connect(self.browser_clicked)
         self.make_flashcard_shortcut = QShortcut(QtGui.QKeySequence("Ctrl+Down"),self)
-        self.make_flashcard_shortcut.activated.connect(self.add_flashcard)
+        self.make_flashcard_shortcut.activated.connect(self.add_flashcard_to_db)
         self.toggle_audio_shortcut = QShortcut(QtGui.QKeySequence("Alt+Up"),self)
         self.toggle_audio_shortcut.activated.connect(self.toggle_play_audio)
         self.skip_back_shortcut = QShortcut(QtGui.QKeySequence("Alt+Left"),self)
@@ -90,12 +85,13 @@ class MainWindow(MainUIWidget):
         self.all_users_names = self.db.get_all_users()
         self.current_online_tools = self.db.get_online_tools(self.current_user["id"])
         self.current_grammar_rules = self.db.get_grammar_rules(self.current_user["id"])
-        self.current__other_settings = self.db.get_other_settings(self.current_user["id"])
+        self.current_other_settings = self.db.get_other_settings(self.current_user["id"])
         self.current_highlighters = self.db.get_highlighters(self.current_user["id"])
         self.recent_files = self.db.get_recent_files(self.current_user["id"])
         self.current_selection = {"selection":"", "db_findings":[]}
+        self.current_flashcard_audio = {"start":None,"end":None}
         # UI
-        if self.current__other_settings["dark_theme"]:
+        if self.current_other_settings["dark_theme"]:
             self.setPalette(self.dark_theme_palette)
             self.set_icons(True)
         else:
@@ -105,7 +101,7 @@ class MainWindow(MainUIWidget):
 
     def load_settings_to_settings_page(self):
         self.settings.load_online_tool_settings(self.current_online_tools)
-        self.settings.load_other_settings(self.current__other_settings)
+        self.settings.load_other_settings(self.current_other_settings)
         self.settings.load_user(self.all_users_names,self.current_user)
         self.settings.load_grammar_rules(self.current_grammar_rules)
     
@@ -259,13 +255,13 @@ class MainWindow(MainUIWidget):
             self.vocab_or_grammar = "vocab"
             self.left_pane.vocab_grammar_toggle.setText("toggle_v")
 
-        if self.vocab_or_grammar == "vocab" and self.current__other_settings["dark_theme"]:
+        if self.vocab_or_grammar == "vocab" and self.current_other_settings["dark_theme"]:
             self.left_pane.vocab_grammar_toggle.setIcon(QIcon(os.path.join("src","img","toggle_v_dark.png")))
-        elif self.vocab_or_grammar == "grammar" and self.current__other_settings["dark_theme"]:
+        elif self.vocab_or_grammar == "grammar" and self.current_other_settings["dark_theme"]:
             self.left_pane.vocab_grammar_toggle.setIcon(QIcon(os.path.join("src","img","toggle_g_dark.png")))
-        elif self.vocab_or_grammar == "vocab" and not self.current__other_settings["dark_theme"]:
+        elif self.vocab_or_grammar == "vocab" and not self.current_other_settings["dark_theme"]:
             self.left_pane.vocab_grammar_toggle.setIcon(QIcon(os.path.join("src","img","toggle_v.png")))
-        elif self.vocab_or_grammar == "grammar" and not self.current__other_settings["dark_theme"]:
+        elif self.vocab_or_grammar == "grammar" and not self.current_other_settings["dark_theme"]:
             self.left_pane.vocab_grammar_toggle.setIcon(QIcon(os.path.join("src","img","toggle_g.png")))
         self.start_update_highlight_words()
         
@@ -345,13 +341,17 @@ class MainWindow(MainUIWidget):
 
     def handle_lookup(self, selection, context):
         #check database first
-        db_findings = self.db.look_up_sel_in_db(selection,self.current_user["id"])
+        try:
+            db_findings = self.db.look_up_sel_in_db(selection,self.current_user["id"])
+        except Exception as e:
+            logging.exception("while looking for definition in db")
+
         for i, row in enumerate(self.current_online_tools):
             self.bottom_right_pane.my_tabs[i].setUrl(QUrl(row[2].replace("WORD",selection).replace("SENT",context)))
         if db_findings != []:
             self.top_right_pane.flash_back.clear()
             self.top_right_pane.flash_back.insertPlainText(db_findings[0][3])
-        elif self.current__other_settings["autofill_back_of_flashcard"]:
+        elif self.current_other_settings["autofill_back_of_flashcard"]:
             self.top_right_pane.flash_back.clear()
             try:
                 translation = self.translator.translate(selection)
@@ -398,6 +398,9 @@ class MainWindow(MainUIWidget):
             self.format_widget.show()
         elif action == 'toggle_v' or action == 'toggle_g':
             self.toggle_vocab_grammar()
+        elif action == 'no_sound':
+            self.set_audio_for_flashcard()
+
 
     def save_file(self):
         filepath = QFileDialog.getSaveFileName(self, 'Save File','',"HTML Files (*.html);; TXT Files (*.txt) ;; DOCX Files (*.docx)")[0]
@@ -461,15 +464,29 @@ class MainWindow(MainUIWidget):
             self.left_pane.browser.insertPlainText(data)
         self.load_audio(filepath)
         self.start_update_highlight_words()
+    
+    def set_audio_for_flashcard(self):
+        if self.audio_player.isAudioAvailable():
+            pos = self.audio_player.position()
+            dur = self.audio_player.duration()
+            start_time = self.get_start_time(pos,5000)
+            end_time = self.get_end_time(pos,5000,dur)
+            self.current_flashcard_audio = {"start":start_time,"end":end_time}
+            if self.current_other_settings["dark_theme"]:
+                self.top_right_pane.add_sound_action.setIcon(QIcon(os.path.join("src", "img", "sound_dark.png")))
+            else:
+                self.top_right_pane.add_sound_action.setIcon(QIcon(os.path.join("src", "img", "sound.png")))
+        else:
+            self.current_flashcard_audio = {"start":None,"end":None}
+            if self.current_other_settings["dark_theme"]:
+                self.top_right_pane.add_sound_action.setIcon(QIcon(os.path.join("src", "img", "no_sound_dark.png")))
+            else:
+                self.top_right_pane.add_sound_action.setIcon(QIcon(os.path.join("src", "img", "no_sound.png")))
+            self.display_msg("sorry","No Audio Found")
 
-        
-
-    def add_flashcard(self): # this appends card to json file
-        pos = self.audio_player.position()
-        dur = self.audio_player.duration()
-        start_time = self.get_start_time(pos,5000)
-        end_time = self.get_end_time(pos,5000,dur)
-        
+    def add_flashcard_to_db(self):
+        audio_start = self.current_flashcard_audio["start"]
+        audio_end = self.current_flashcard_audio["end"]
         front = self.top_right_pane.flash_front.toHtml()
         back = self.top_right_pane.flash_back.toHtml()
         front_html = BeautifulSoup(front,"html.parser")
@@ -480,10 +497,10 @@ class MainWindow(MainUIWidget):
         back_text = back.getText() 
         image = back_html.find('img')
         try:
-            source = image['src']
+            img_source = image['src']
             image.decompose()
         except:
-           source = ""
+           img_source = ""
 
         if front_text == "\n":
             self.display_msg("Oops!","No text was found for the Flashcard.")
@@ -491,17 +508,27 @@ class MainWindow(MainUIWidget):
         if back_text == "\n" and image is None:
             self.display_msg("Oops!","No text or images were found for back of the Flashcard.")
             return 0
-        flash_dict = {"front":str(front), "back":str(back),"img":source,"audio":[start_time,end_time]}
-        cards_path = os.path.join("src", "flashcards.json")
+
+        flashcard = {
+            "front":str(front),
+            "back":str(back),
+            "back_image":img_source,
+            "audio_start":audio_start,
+            "audio_end":audio_end
+            }
+        try:
+            self.db.add_flashcard_to_db(flashcard,self.current_user["id"])
+        except:
+            logging.exception("adding flashcard to db")
         self.top_right_pane.flash_front.clear()
         self.top_right_pane.flash_back.clear()
-        if not os.path.exists(cards_path):
-            self.reset_flashcard_json()
-        with open(cards_path,"r+") as f:
-            data = json.load(f)
-            data["cards"].append(flash_dict)
-            f.seek(0)
-            json.dump(data,f)
+        self.current_flashcard_audio = {"start":None,"end":None}
+        self.top_right_pane.add_sound_action.setIcon(QIcon(os.path.join("src","img","")))
+        if self.current_other_settings["dark_theme"]:
+            self.top_right_pane.add_sound_action.setIcon(QIcon(os.path.join("src", "img", "no_sound_dark.png")))
+        else:
+            self.top_right_pane.add_sound_action.setIcon(QIcon(os.path.join("src", "img", "no_sound.png")))
+
 
     def download_flashcards(self): #this creates anki deck
         filepath = QFileDialog.getSaveFileName(self, 'Download Anki Deck','',"Anki File (*.apkg)")[0]
@@ -541,13 +568,13 @@ class MainWindow(MainUIWidget):
         state = self.audio_player.state()
         if state == 1:
             self.audio_player.pause()
-            if self.current__other_settings["dark_theme"]:
+            if self.current_other_settings["dark_theme"]:
                 self.left_pane.play_action.setIcon(QIcon(os.path.join("src", "img", "play_dark.png")))
             else:
                 self.left_pane.play_action.setIcon(QIcon(os.path.join("src", "img", "play.png")))
         if state == 0 or state == 2:
             self.audio_player.play()
-            if self.current__other_settings["dark_theme"]:
+            if self.current_other_settings["dark_theme"]:
                 self.left_pane.play_action.setIcon(QIcon(os.path.join("src", "img", "pause_dark.png")))
             else:
                 self.left_pane.play_action.setIcon(QIcon(os.path.join("src", "img", "pause.png")))
@@ -617,4 +644,7 @@ if __name__ == "__main__":
     mainApp.setWindowTitle("Langsoft")
     mainApp.setWindowIcon(QtGui.QIcon(os.path.join(os.getcwd(),"src","img","langsoft.png")))
     mainApp.showMaximized()
-    sys.exit(app.exec_())
+    try:
+        sys.exit(app.exec_())
+    except Exception as e:
+        logging.exception("app crashed")

@@ -50,17 +50,6 @@ class MainUIWidget(QWidget):
         palette.setColor(QtGui.QPalette.HighlightedText, Qt.black)
         return palette
     
-
-    
-    def set_ui_to_settings(self):
-        if self.json_settings["dark_theme"] ==  True:
-            self.setPalette(self.dark_theme_palette)
-            self.settings.setPalette(self.dark_theme_palette)
-            self.flashcards_list.setPalette(self.dark_theme_palette)
-            self.set_icons(True)
-        else:
-            self.set_icons(False)
-        
         
     def set_icons(self,dark):
         if dark:
@@ -177,8 +166,8 @@ class TopRightPane(QWidget):
         list_of_flashcards_action.setToolTip("List of Flashcards")
         download_flashcards_action = QAction("download",self)
         download_flashcards_action.setToolTip("Download Flashcards as Anki deck")
-        add_sound_action = QAction("no_sound",self)
-        add_sound_action.setToolTip("Add audio to flashcard")
+        self.add_sound_action = QAction("no_sound",self)
+        self.add_sound_action.setToolTip("Add audio to flashcard")
         spacer_widget3 = QWidget()
         spacer_widget3.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         spacer_widget4 = QWidget()
@@ -186,7 +175,7 @@ class TopRightPane(QWidget):
         self.toolbar = QToolBar()
         self.toolbar.setFixedHeight(50)
         self.toolbar.addAction(list_of_flashcards_action)
-        self.toolbar.addAction(add_sound_action)
+        self.toolbar.addAction(self.add_sound_action)
         self.toolbar.addWidget(spacer_widget3) 
         self.toolbar.addWidget(self.make_flash_btn)
         self.toolbar.addWidget(spacer_widget4) 
