@@ -387,8 +387,7 @@ class MainWindow(MainUIWidget):
             self.load_settings_to_settings_page()
             self.settings.show()
         elif action == 'list':
-            self.flashcards_list.list_table_widget.clear()
-            self.flashcards_list.setup_table_widget()
+            self.flashcards_list.set_up(self.current_user["id"])
             self.flashcards_list.show()
         elif action == 'help':
             self.help_page.show()
