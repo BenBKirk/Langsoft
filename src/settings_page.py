@@ -192,13 +192,13 @@ class GrammarTab(QWidget):
             try:
                 rule_name = self.grammar_table_widget.item(current_index,2).text() 
             except:
-                logging.exception("adding discourse rule")
+                # logging.exception("adding discourse rule")
                 rule_name = None
-            # try:
-            #     word_list = self.grammar_table_widget.item(current_index,6).text() 
-            # except:
-            #     logging.exception("adding discourse rule")
-            #     word_list = None
+            try:
+                word_list = self.grammar_table_widget.item(current_index,6).text() 
+            except:
+                # logging.exception("adding discourse rule")
+                word_list = None
 
             if rule_name != None:# and word_list != None:
                 self.grammar_table_widget.blockSignals(True)
@@ -208,7 +208,7 @@ class GrammarTab(QWidget):
                 self.grammar_table_widget.setCellWidget(current_index, 3, self.make_gram_color_widget(current_index,"255,0,0"))
                 self.grammar_table_widget.setCellWidget(current_index, 4, self.make_opacity_widget(current_index,0.8))
                 self.grammar_table_widget.setCellWidget(current_index, 5, self.make_style_widget(current_index,"highlight"))
-                self.grammar_table_widget.setItem(current_index,6,QTableWidgetItem())
+                self.grammar_table_widget.setItem(current_index,6,QTableWidgetItem(word_list))
                 self.grammar_table_widget.setRowCount(current_index+2)
                 self.grammar_table_widget.blockSignals(False)
 

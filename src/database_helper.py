@@ -327,9 +327,33 @@ class Database(object):
             db.execute_single(f"DELETE FROM online_tools WHERE user_id = {current_user_id}")
         with DatabaseHelper(self.name) as db:
             for row in online_tools:
-                row_sql = ("INSERT INTO online_tools(title,url,user_id) VALUES (:title,:url,:user_id)")
+                row_sql = """INSERT INTO online_tools(title,url,user_id)
+                 VALUES (:title,:url,:user_id)"""
                 row_params = (row[0],row[1],current_user_id)
                 db.execute_single(row_sql,row_params)
+    
+    def save_grammar_rules(self,grammar_rules,current_user_id):
+        with DatabaseHelper(self.name) as db:
+            db.execute_single(f"DELETE FROM grammar_rules WHERE user_id ={current_user_id}")
+        with DatabaseHelper(self.name) as db:
+            for row in grammar_rules:
+                sql = """INSERT INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list)
+                VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"""
+                params = (current_user_id,row[0],row[1],row[2],row[3],row[4],row[5])
+                db.execute_single(sql, params)
+
+                # [True, 'Connectors', '255,0,0', 0.4, 'highlight', 'dengan,]
+
+                # id INTEGER,
+                # user_id,
+                # is_enabled BOOLEAN,
+                # name VARCHAR,
+                # color VARCHAR,
+                # opacity FLOAT,
+                # style VARCHAR,
+                # list VARCHAR,
+
+
     
 
 

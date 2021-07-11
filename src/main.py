@@ -129,12 +129,29 @@ class MainWindow(MainUIWidget):
         self.settings.close()
         # online tools
         online_tools_list = []
-        row_count = self.settings.online_tools_tab.online_tools_table_widget.rowCount() -1
-        for row in range(row_count):
-            online_tools_list.append([self.settings.online_tools_tab.online_tools_table_widget.item(row,1).text(),self.settings.online_tools_tab.online_tools_table_widget.item(row,2).text()])
+        tools_row_count = self.settings.online_tools_tab.online_tools_table_widget.rowCount() -1
+        for row in range(tools_row_count):
+            online_tools_list.append([
+                self.settings.online_tools_tab.online_tools_table_widget.item(row,1).text(),
+                self.settings.online_tools_tab.online_tools_table_widget.item(row,2).text()
+                ])
         self.db.save_online_tools(online_tools_list,self.current_user["id"])
+
         # grammar settings
-        #TODO:
+        grammar_rules_list = []
+        rules_row_count = self.settings.grammar_tab.grammar_table_widget.rowCount() -1
+        for row in range(rules_row_count):
+            grammar_rules_list.append([
+                self.settings.grammar_tab.on_widget[row].isChecked(),
+                self.settings.grammar_tab.grammar_table_widget.item(row,2).text(),
+                self.settings.grammar_tab.color_btn[row].styleSheet()[23:-1],
+                self.settings.grammar_tab.opacity_widget[row].value(),
+                self.settings.grammar_tab.style_widget[row].currentText(),
+                self.settings.grammar_tab.grammar_table_widget.item(row,6).text()
+            ])
+        self.db.save_grammar_rules(grammar_rules_list,self.current_user["id"])
+
+        
         # other settings
         other_settings = {}
         other_settings["dark_theme"] = self.settings.other_tab.dark_theme_checkbox.isChecked()
@@ -215,20 +232,22 @@ class MainWindow(MainUIWidget):
             self.highlighter.set_state(all_dicts,[])
 
         elif self.vocab_or_grammar == "grammar":
+            print(self.current_grammar_rules)
             all_dicts = []
             for rule in self.current_grammar_rules:
-                regex_list = [word.strip() for word in rule[7].split(',')]
-                the_format = QTextCharFormat()
-                color_from_str = [float(s) for s in rule[4].split(",")]
-                color = QtGui.QColor()
-                print(float(rule[5]))
-                color.setRgbF(color_from_str[0],color_from_str[1],color_from_str[2],float(rule[5]))
-                if rule[6] == "underline":
-                    the_format.setUnderlineColor(color)
-                    the_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
-                elif rule[6] == "highlight":
-                    the_format.setBackground(color)
-                all_dicts.append({"words":regex_list,"fmt":the_format})
+                if rule[2]:
+                    regex_list = [word.strip() for word in rule[7].split(',')]
+                    the_format = QTextCharFormat()
+                    color_from_str = [float(s) for s in rule[4].split(",")]
+                    color = QtGui.QColor()
+                    print(float(rule[5]))
+                    color.setRgbF(color_from_str[0],color_from_str[1],color_from_str[2],float(rule[5]))
+                    if rule[6] == "underline":
+                        the_format.setUnderlineColor(color)
+                        the_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
+                    elif rule[6] == "highlight":
+                        the_format.setBackground(color)
+                    all_dicts.append({"words":regex_list,"fmt":the_format})
             self.highlighter.set_state([],all_dicts)
 
 
