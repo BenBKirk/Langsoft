@@ -63,6 +63,7 @@ class MainWindow(MainUIWidget):
         self.top_right_pane.semi_known_btn.clicked.connect(lambda: self.save_to_vocab("semi-known"))
         self.top_right_pane.known_btn.clicked.connect(lambda: self.save_to_vocab("known"))
         self.format_widget.font_size_box.valueChanged.connect(lambda x: self.left_pane.browser.setFontPointSize(x))
+        self.settings.user_tab.user_delete.clicked.connect(self.delete_user)
         # other
         self.dark_theme_palette = self.setup_dark_theme()
         self.run_start_up_settings()
@@ -669,6 +670,25 @@ class MainWindow(MainUIWidget):
         file_clicked = self.recent_files[self.recent_files_widget.currentIndex().row()][1]
         self.open_file(file_clicked)
         self.recent_files_widget.hide()
+    
+    def delete_user(self):
+        name = self.current_user["name"]
+        if name == "default_user":
+            self.display_msg("hmmm","You are not allowed to delete this user.")
+            return
+        answer = QMessageBox.question(self,"Sure?",f'Are you are you want to delete "{name}"?', QMessageBox.Yes | QMessageBox.No)
+        if answer == QMessageBox.Yes:
+            try:
+                self.db.delete_user(self.current_user["id"])
+                self.settings.user_tab.user_combobox.blockSignals(True)
+                self.current_user = {"id":1,"name":"default_user"}
+                self.run_start_up_settings()
+                self.load_settings_to_settings_page()   
+                self.settings.user_tab.user_combobox.blockSignals(False)
+            except Exception as e:
+                logging.exception("while trying to delete user")
+                self.display_msg("oh crumbs..",f"error while trying to delete user.\n{e}")
+        self.settings.raise_()
 
 
 

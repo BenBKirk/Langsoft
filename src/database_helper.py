@@ -395,6 +395,28 @@ class Database(object):
     def delete_all_flashcards_for_user(self,current_user_id):
         with DatabaseHelper("database.db") as db:
             db.execute_single(f"DELETE FROM flashcards WHERE user_id={current_user_id}")
+    
+    def delete_user(self,current_user_id):
+        with DatabaseHelper("database.db") as db:
+            sql_list = [
+                f"DELETE FROM flashcards WHERE user_id={current_user_id}",
+                f"DELETE FROM last_user WHERE user_id ={current_user_id}",
+                f"DELETE FROM recent_files WHERE user_id ={current_user_id}",
+                f"DELETE FROM vocabulary WHERE user_id ={current_user_id}",
+                f"DELETE FROM grammar_rules WHERE user_id ={current_user_id}",
+                f"DELETE FROM highlighters WHERE user_id ={current_user_id}",
+                f"DELETE FROM online_tools WHERE user_id ={current_user_id}",
+                f"DELETE FROM settings WHERE user_id ={current_user_id}",
+                f"DELETE FROM users WHERE id={current_user_id}",
+            ]
+            for item in sql_list:
+                try:
+                    db.execute_single(item)
+                except Exception as e:
+                    print(e)
+
+
+
 
 
 
