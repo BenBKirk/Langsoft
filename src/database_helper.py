@@ -224,11 +224,7 @@ class Database(object):
             "0,255,0",
             0.4,
             "highlight",
-            """
-            (se)?sudah, akan, sedang, sebelum, sebelumnya, setelah, pada, waktu, saat, hari berikutnya, minggu berikutnya,
-             minggu depan, minggu lalu, lusa, kemarin, besok, yang lalu, hingga, sejak, selanjutnya, lalu, sampai,
-              kemudian, jam, detik, menit, tiba-tiba, dulu, zaman, (se)?lama, sambil
-            """
+            "(se)?sudah, akan, sedang, sebelum, sebelumnya, setelah, pada, waktu, saat, hari berikutnya, minggu berikutnya, minggu depan, minggu lalu, lusa, kemarin, besok, yang lalu, hingga, sejak, selanjutnya, lalu, sampai, kemudian, jam, detik, menit, tiba-tiba, dulu, zaman, (se)?lama, sambil"
             )
         default_rule2 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
         default_rule_param2 = (
@@ -238,10 +234,7 @@ class Database(object):
             "255,0,0",
             0.4,
             "highlight",
-            """
-            nah, untuk, oleh, karena, supaya, agar, oleh sebab, itu sebabnya, jadi, jika, kalau, namun, soalnya, muskipun,
-             sebaliknya, sedangkan, padahal, (te)?tapi
-            """
+            "nah, untuk, oleh, karena, supaya, agar, oleh sebab, itu sebabnya, jadi, jika, kalau, namun, soalnya, muskipun, sebaliknya, sedangkan, padahal, (te)?tapi"
             )
         default_rule3 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
         default_rule_param3 = (
@@ -251,10 +244,7 @@ class Database(object):
             "0,0,255",
             0.4,
             "highlight",
-            """
-            words: di, ke, dari, pada, daripada, kepada, menuju, di mana, ke mana, dari mana, arah, di antara, di tengah, sini,
-             sana, situ, dalam, depan, belakang, samping, dekat, atas, bawah, sekeliling, lewat, melewati
-            """
+            "di, ke, dari, pada, daripada, kepada, menuju, di mana, ke mana, dari mana, arah, di antara, di tengah, sini, sana, situ, dalam, luar, depan, belakang, samping, dekat, atas, bawah, sekeliling, lewat, melewati"
             )
         default_rule4 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
         default_rule_param4 = (
@@ -264,11 +254,7 @@ class Database(object):
             "148,0,211",
             0.4,
             "highlight",
-            """
-            (se)?batang, (se)?buah, (se)?butir, (se)?cangkir,  (se)?ekor, (se)?gelas, (se)?helai, (se)?ikat, (se)?lembar, (se)?mangk[ou]k,
-             (se)?orang, (se)?pasang, (se)?sendok, (se)?piring, (se)?siung, (se)?suap, (se)?tangkai, (se)?titik
-
-            """
+            "(se)?batang, (se)?buah, (se)?butir, (se)?cangkir, (se)?ekor, (se)?gelas, (se)?helai, (se)?ikat, (se)?lembar, (se)?mangk[ou]k, (se)?orang, (se)?pasang, (se)?sendok, (se)?piring, (se)?siung, (se)?suap, (se)?tangkai, (se)?titik"
             )
         default_rule5 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
         default_rule_param5 = (
