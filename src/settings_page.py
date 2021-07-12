@@ -176,7 +176,13 @@ class GrammarTab(QWidget):
         self.grammar_table_widget.setWordWrap(True)
         self.grammar_table_widget.itemChanged.connect(self.add_new_grammar_item)
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("Here you can change the grammar/discourse highlighting rules."))
+        layout.addWidget(QLabel(
+            """
+            Here you can change the grammar/discourse highlighting rules.
+            \nRegex is also supported for more complex selections, hence the some of weird symbols in the default settings.
+            \nMake sure there is a comma separating each word, phrase or regex expression.
+            """
+            ))
         layout.addWidget(self.grammar_table_widget)
         self.setLayout(layout)
 

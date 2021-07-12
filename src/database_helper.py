@@ -217,19 +217,129 @@ class Database(object):
     
     def set_up_default_grammar_rules(self,user_id=1):
         default_rule1 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
-        default_rule_param1 = (user_id,True,"Connectors","255,0,0",0.4,"highlight","dengan, juga, tetapi, dan, atau, nah")
+        default_rule_param1 = (
+            user_id,
+            True,
+            "Time words/phrases",
+            "0,255,0",
+            0.4,
+            "highlight",
+            """
+            (se)?sudah, akan, sedang, sebelum, sebelumnya, setelah, pada, waktu, saat, hari berikutnya, minggu berikutnya,
+             minggu depan, minggu lalu, lusa, kemarin, besok, yang lalu, hingga, sejak, selanjutnya, lalu, sampai,
+              kemudian, jam, detik, menit, tiba-tiba, dulu, zaman, (se)?lama, sambil
+            """
+            )
         default_rule2 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
-        default_rule_param2 = (user_id,True,"passive voice :)","0,255,0",0.8,"underline","(?!\\bdian\\b|\\bdiam\\b|\\bdiam\\b|\\bdia\\b|\\bdinah\\b|\\bdiri(nya|mu|ku)?\\b)di\\w+\\b|\\b(yang|itu|ini)(?<!setelah itu)(\\s)?(tidak|enggak|tak|nggak|)?(sudah|telah|belum|akan)?\\s(saya|kami|kita|dia|ibu|bapak|mereka|pak\\s\\w+|ibu\\s\\w+|bu\\s\\w+)\\s\\w+(kan|i)?")
+        default_rule_param2 = (
+            user_id,
+            True,
+            "Logical Connectors",
+            "255,0,0",
+            0.4,
+            "highlight",
+            """
+            nah, untuk, oleh, karena, supaya, agar, oleh sebab, itu sebabnya, jadi, jika, kalau, namun, soalnya, muskipun,
+             sebaliknya, sedangkan, padahal, (te)?tapi
+            """
+            )
         default_rule3 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
-        default_rule_param3 = (user_id,True,"Active voice","0,0,255",0.8,"underline","me(ny|n|ng)\\w+(kan)?\\b|\\bbe(r|l)\\w+")
+        default_rule_param3 = (
+            user_id,
+            True,
+            "Direction/Location words",
+            "0,0,255",
+            0.4,
+            "highlight",
+            """
+            words: di, ke, dari, pada, daripada, kepada, menuju, di mana, ke mana, dari mana, arah, di antara, di tengah, sini,
+             sana, situ, dalam, depan, belakang, samping, dekat, atas, bawah, sekeliling, lewat, melewati
+            """
+            )
+        default_rule4 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
+        default_rule_param4 = (
+            user_id,
+            True,
+            "Noun Classifiers",
+            "148,0,211",
+            0.4,
+            "highlight",
+            """
+            (se)?batang, (se)?buah, (se)?butir, (se)?cangkir,  (se)?ekor, (se)?gelas, (se)?helai, (se)?ikat, (se)?lembar, (se)?mangk[ou]k,
+             (se)?orang, (se)?pasang, (se)?sendok, (se)?piring, (se)?siung, (se)?suap, (se)?tangkai, (se)?titik
+
+            """
+            )
+        default_rule5 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
+        default_rule_param5 = (
+            user_id,
+            True,
+            "Referral",
+            "255,255,0",
+            0.4,
+            "highlight",
+            "selain, mengenai, tentang, soal, yaitu, yang, melewati, tersebut"
+            )
+        default_rule6 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
+        default_rule_param6 = (
+            user_id,
+            True,
+            "Comparison",
+            "255,127,0",
+            0.4,
+            "highlight",
+            "lebih, kurang, sebesar, sekecil, seluas, setinggi, sebagus, setebal, setipis, secepat, sepelan, seperti, mirip, serupa, sama, perbedaan, bedanya, sisi lain, sebaliknya, daripada, dibandingkan(\sdengan)?, atau, juga"
+            )
+
+        default_rule7 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
+        default_rule_param7 = (
+            user_id,
+            True,
+            "passive voice :)",
+            "0,255,0",
+            0.8,
+            "underline",
+            "(?!\\bdian\\b|\\bdiam\\b|\\bdiam\\b|\\bdia\\b|\\bdinah\\b|\\bdiri(nya|mu|ku)?\\b)di\\w+\\b|\\b(yang|itu|ini)(?<!setelah itu)(\\s)?(tidak|enggak|tak|nggak|)?(sudah|telah|belum|akan)?\\s(saya|kami|kita|dia|ibu|bapak|mereka|pak\\s\\w+|ibu\\s\\w+|bu\\s\\w+)\\s\\w+(kan|i)?"
+            )
+        default_rule8 = "INSERT OR REPLACE INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list) VALUES (:user_id,:is_enabled,:name,:color,:opacity,:style,:list)"
+        default_rule_param8 = (
+            user_id,
+            True,
+            "Active voice",
+            "0,0,255",
+            0.8,
+            "underline",
+            "me(ny|n|ng)\\w+(kan)?\\b|\\bbe(r|l)\\w+"
+            )
         with DatabaseHelper(self.name) as db:
             db.execute_single(default_rule1, default_rule_param1)
             db.execute_single(default_rule2, default_rule_param2)
             db.execute_single(default_rule3, default_rule_param3)
+            db.execute_single(default_rule4, default_rule_param4)
+            db.execute_single(default_rule5, default_rule_param5)
+            db.execute_single(default_rule6, default_rule_param6)
+            db.execute_single(default_rule7, default_rule_param7)
+            db.execute_single(default_rule8, default_rule_param8)
+            
     
+    # Tense/Time words or Phrases: (se)?sudah, akan, sedang, sebelum, sebelumnya, setelah, pada, waktu, saat, hari berikutnya, minggu berikutnya, minggu depan, minggu lalu, lusa, kemarin, besok, yang lalu, hingga, sejak, selanjutnya, lalu, sampai, kemudian, jam, detik, menit, tiba-tiba, dulu, zaman, (se)?lama, sambil
+    # Logical connectors: nah, untuk, oleh, karena, supaya, agar, oleh sebab, itu sebabnya, jadi, jika, kalau, namun, soalnya, muskipun, sebaliknya, sedangkan, padahal, (te)?tapi
+    # Direction/Location words: di, ke, dari, pada, daripada, kepada, menuju, di mana, ke mana, dari mana, arah, di antara, di tengah, sini, sana, situ, dalam, depan, belakang, samping, dekat, atas, bawah, sekeliling, lewat, melewati
+    # Noun Classifiers: (se)?batang, (se)?buah, (se)?butir, (se)?cangkir,  (se)?ekor, (se)?gelas, (se)?helai, (se)?ikat, (se)?lembar, (se)?mangk[ou]k, (se)?orang, (se)?pasang, (se)?sendok, (se)?piring, (se)?siung, (se)?suap, (se)?tangkai, (se)?titik
+    # Referral: selain, mengenai, tentang, soal, yaitu, yang, melewati, tersebut
+    # Comparison: lebih, kurang, sebesar, sekecil, seluas, setinggi, sebagus, setebal, setipis, secepat, sepelan, seperti, mirip, serupa, sama, perbedaan, bedanya, sisi lain, sebaliknya, daripada, dibandingkan(\sdengan)?, atau, juga
+
+
+
+
+
+
+
+
+
     def get_grammar_rules(self,user_id):
         with DatabaseHelper(self.name) as db:
-            return db.get_sql(f"SELECT * FROM grammar_rules WHERE user_id={user_id}")
+            return db.get_sql(f"SELECT * FROM grammar_rules WHERE user_id={user_id} ORDER BY style DESC")
 
 
     def get_highlighters(self, user_id):
