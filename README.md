@@ -3,6 +3,8 @@
 Language learning software that makes looking up words,
 making flashcards and highlighting grammar easy.
 
+![screenshot of program](Langsoft.jpg)
+
 ## Development
 
 Here are the steps to set up your development environment.
