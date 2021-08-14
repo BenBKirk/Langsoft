@@ -20,7 +20,6 @@ class CustomTextBrowser(QTextEdit):
         self.installEventFilter(self)
     
 
-    # # detect hover over word
     def eventFilter(self, obj, event):
         if event.type() == QEvent.Wheel:#.ToolTip:
             # self.hover.emit(event.pos())

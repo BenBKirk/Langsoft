@@ -665,9 +665,10 @@ class MainWindow(MainUIWidget):
         self.recent_files = self.db.get_recent_files(self.current_user["id"])
         if self.recent_files:
             for filepath in self.recent_files:
-                name = self.get_filename_from_path(filepath[1])
-                date = filepath[2][:16]
-                self.recent_files_widget.addItem(f"{date} -- {name}")
+                if os.path.isfile(filepath[1]): # the file may have been moved, renamed or deleted
+                    name = self.get_filename_from_path(filepath[1]) + self.get_file_extension_from_path(filepath[1])
+                    date = filepath[2][:16]
+                    self.recent_files_widget.addItem(f"{date} -- {name}")
         else:
             self.recent_files_widget.addItem("You haven't opened or saved any files recently")
         self.recent_files_widget.move(QtGui.QCursor.pos())
