@@ -2,7 +2,6 @@ for dist/
 .vscode
 *.docx
 venv/
-*.ico
 *_pycache_*
 unused APIs/
 .idea
@@ -10,3 +9,6 @@ unused APIs/
 *.log
 *.svg
 *.txt
+flashcard_images/
+flashcard_audio/
+
