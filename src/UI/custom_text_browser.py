@@ -16,12 +16,12 @@ class CustomTextBrowser(QTextEdit):
     def __init__(self):
         super().__init__()
         self.setFontPointSize(16)
-        self.setMouseTracking(True)  # for the tooltip
+        self.setMouseTracking(True)  
         self.installEventFilter(self)
     
 
     def eventFilter(self, obj, event):
-        if event.type() == QEvent.Wheel:#.ToolTip:
+        if event.type() == QEvent.Wheel: #.ToolTip:
             # self.hover.emit(event.pos())
             self.scroll.emit()
             return False

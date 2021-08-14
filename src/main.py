@@ -604,16 +604,19 @@ class MainWindow(MainUIWidget):
     def skip_back(self):
         skip_amount = 3000
         pos = self.audio_player.position()
+        print(pos)
         new_pos = pos - skip_amount
         self.audio_player.setPosition(new_pos)
     
     def update_slider_duration(self,duration):
         self.left_pane.audio_slider.setMaximum(duration)
+        self.left_pane.audio_dur_label.setText(self.timestamp_from_milsec(duration))
     
     def update_slider_position(self,position):
         self.left_pane.audio_slider.blockSignals(True)
         self.left_pane.audio_slider.setValue(position)
         self.left_pane.audio_slider.blockSignals(False)
+        self.left_pane.audio_pos_label.setText(self.timestamp_from_milsec(position))
         # get audio timestamp
         min_mil_sec = 5000
         current_pos_mil = position
@@ -623,6 +626,10 @@ class MainWindow(MainUIWidget):
         new_string = f"Timestamps: {datetime.timedelta(seconds=round(start_time/1000))}--{datetime.timedelta(seconds=round(end_time/1000))}"
 
         # self.flash_audio_label.setText(new_string)
+    
+    def timestamp_from_milsec(self,milsec):
+        return str(datetime.timedelta(seconds=milsec/1000))[:7]
+
     
     def get_start_time(self,pos,min_mil):
         if pos < min_mil:
