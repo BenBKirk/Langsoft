@@ -28,6 +28,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG,filename="app.log",format='%(asctime)s - %(levelname)s - %(message)s')
 class MainWindow(MainUIWidget):
 
+
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         # Create classes instances:
@@ -632,7 +633,8 @@ class MainWindow(MainUIWidget):
 
     def get_filename_from_path(self, path):
         filename = os.path.basename(path)
-        name = filename.split('.')[0]
+        extension_to_remove = self.get_file_extension_from_path(filename)
+        name = filename.replace(extension_to_remove, '')
         return name
     
     def get_file_extension_from_path(self, path):

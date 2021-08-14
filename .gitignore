@@ -8,3 +8,5 @@ unused APIs/
 .idea
 *.db
 *.log
+*.svg
+*.txt
