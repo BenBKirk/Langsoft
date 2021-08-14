@@ -10,6 +10,7 @@ import os
 class HelpWindow(QWidget):
     def __init__(self):
         super(HelpWindow, self).__init__()
+        self.setAttribute(QtCore.Qt.WA_QuitOnClose,False)
         self.resize(800,800)
         self.setWindowTitle("Help")
         self.setWindowIcon(QtGui.QIcon(os.path.join("src", "img", "help.png")))

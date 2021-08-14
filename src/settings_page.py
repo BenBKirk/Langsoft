@@ -13,6 +13,7 @@ logging.basicConfig(level=logging.DEBUG,filename="app.log",format='%(asctime)s -
 class SettingsPage(QWidget):
     def __init__(self):
         super(SettingsPage, self).__init__()
+        self.setAttribute(QtCore.Qt.WA_QuitOnClose,False)
         self.user_tab = UsersTab()
         self.online_tools_tab = OnlineToolsTab()
         self.other_tab = OtherTab()

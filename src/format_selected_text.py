@@ -8,6 +8,7 @@ class FormatSelectedText(QWidget):
     def __init__(self,browser):
         self.browser = browser
         super(FormatSelectedText, self).__init__()
+        self.setAttribute(QtCore.Qt.WA_QuitOnClose,False)
         self.resize(400,150)
         self.setWindowTitle("Format Selected Text")
         self.setWindowIcon(QtGui.QIcon(os.path.join("src", "img", "format.png")))

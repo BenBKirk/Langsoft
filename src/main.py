@@ -43,6 +43,7 @@ class MainWindow(MainUIWidget):
         self.thread_pool = QtCore.QThreadPool()
         self.highlighter = SyntaxHighlighter(self.left_pane.browser.document())
         self.recent_files_widget = QListWidget()
+        self.recent_files_widget.setAttribute(QtCore.Qt.WA_QuitOnClose,False)
         #connections
         self.left_pane.browser.clicked.connect(self.browser_clicked)
         self.left_pane.browser.hightlight.connect(self.highlight)
@@ -642,6 +643,7 @@ class MainWindow(MainUIWidget):
         if len(parts) == 2:
             return parts[1]
         else:
+            logging.debug(f"there were {len(parts)} parts when trying to get the file extension. There should be 2.")
             return None
 
     def get_folder_from_path(self, path):
@@ -691,6 +693,7 @@ class MainWindow(MainUIWidget):
                 logging.exception("while trying to delete user")
                 self.display_msg("oh crumbs..",f"error while trying to delete user.\n{e}")
         self.settings.raise_()
+    
 
 
 
