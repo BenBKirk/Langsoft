@@ -118,6 +118,7 @@ class Database(object):
                 front VARCHAR,
                 back VARCHAR,
                 back_image VARCHAR,
+                audio_file VARCHAR,
                 audio_start INTEGER,
                 audio_end INTEGER,
                 PRIMARY KEY (id)
@@ -479,10 +480,10 @@ class Database(object):
 
     def add_flashcard_to_db(self,fc,current_user_id):
         with DatabaseHelper(self.name) as db:
-            sql = """INSERT INTO flashcards (user_id,front,back,back_image,audio_start,audio_end) 
-            VALUES(:user_id,:front,:back,:back_image,:audio_start,:audio_end)
+            sql = """INSERT INTO flashcards (user_id,front,back,back_image,audio_file,audio_start,audio_end) 
+            VALUES(:user_id,:front,:back,:back_image,:audio_file,:audio_start,:audio_end)
             """
-            params = (current_user_id,fc["front"],fc["back"],fc["back_image"],fc["audio_start"],fc["audio_end"])
+            params = (current_user_id,fc["front"],fc["back"],fc["back_image"],fc["audio_file"],fc["audio_start"],fc["audio_end"])
             db.execute_single(sql, params)
 
     def get_flashcards_from_db(self,current_user_id):

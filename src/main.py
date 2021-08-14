@@ -490,6 +490,7 @@ class MainWindow(MainUIWidget):
             start_time = self.get_start_time(pos,5000)
             end_time = self.get_end_time(pos,5000,dur)
             self.current_flashcard_audio = {"start":start_time,"end":end_time}
+            
             if self.current_other_settings["dark_theme"]:
                 self.top_right_pane.add_sound_action.setIcon(QIcon(os.path.join("src", "img", "sound_dark.png")))
             else:
@@ -503,6 +504,7 @@ class MainWindow(MainUIWidget):
             self.display_msg("sorry","No Audio Found")
 
     def add_flashcard_to_db(self):
+        audio_file = self.current_audio
         audio_start = self.current_flashcard_audio["start"]
         audio_end = self.current_flashcard_audio["end"]
         front = self.top_right_pane.flash_front.toHtml()
@@ -531,12 +533,14 @@ class MainWindow(MainUIWidget):
             "front":str(front),
             "back":str(back),
             "back_image":img_source,
+            "audio_file":audio_file,
             "audio_start":audio_start,
             "audio_end":audio_end
             }
         try:
             self.db.add_flashcard_to_db(flashcard,self.current_user["id"])
-        except:
+        except Exception as e:
+            print(e)
             logging.exception("adding flashcard to db")
         self.top_right_pane.flash_front.clear()
         self.top_right_pane.flash_back.clear()
@@ -575,10 +579,13 @@ class MainWindow(MainUIWidget):
         expected_filepath_mp3 = str(self.get_folder_from_path(filePath)) + str(self.get_filename_from_path(filePath)) + ".mp3"
         if os.path.exists(expected_filepath_wav):
             self.audio_player.setMedia(QMediaContent(QUrl.fromLocalFile(expected_filepath_wav)))
+            self.current_audio = expected_filepath_wav
         elif os.path.exists(expected_filepath_mp3):
             self.audio_player.setMedia(QMediaContent(QUrl.fromLocalFile(expected_filepath_mp3)))
+            self.current_audio = expected_filepath_mp3
         else:
             self.audio_player.setMedia(QMediaContent(None))
+            self.current_audio = None
      
     def toggle_play_audio(self):
         state = self.audio_player.state()
@@ -682,7 +689,10 @@ class MainWindow(MainUIWidget):
         self.recent_files_widget.show()
     
     def recent_file_item_clicked(self):
-        file_clicked = self.recent_files[self.recent_files_widget.currentIndex().row()][1]
+        item_clicked = self.recent_files_widget.currentIndex().row()
+        if self.recent_files_widget.item(item_clicked).text() == "You haven't opened or saved any files recently":
+            return
+        file_clicked = self.recent_files[item_clicked][1]
         self.open_file(file_clicked)
         self.recent_files_widget.hide()
     

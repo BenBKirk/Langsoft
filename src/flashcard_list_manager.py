@@ -5,6 +5,8 @@ from PyQt5 import QtGui
 from PyQt5.QtGui import QIcon
 from bs4 import BeautifulSoup
 from database_helper import DatabaseHelper
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtCore import QUrl, Qt
 
 import logging
 logging.basicConfig(level=logging.DEBUG,filename="app.log",format='%(asctime)s - %(levelname)s - %(message)s')
@@ -17,9 +19,11 @@ class FlashcardManager(QWidget):
     text_edits_audio = {}
     audio_start ={}
     audio_end ={}
+    play_button = {}
     del_btn = {}
     def __init__(self):
         super(FlashcardManager, self).__init__()
+        self.setAttribute(Qt.WA_QuitOnClose,False)
         self.fontL = QtGui.QFont("Ubuntu",12, 200)
         self.resize(800,700)
         self.list_table_widget = QTableWidget()
@@ -40,6 +44,7 @@ class FlashcardManager(QWidget):
         self.setLayout(layout)
         self.setWindowTitle("Flashcard Manager")
         self.setWindowIcon(QtGui.QIcon(os.path.join("src","img","list.png")))
+        self.player = QMediaPlayer()
     
     def get_flashcards_from_db(self):
         try:
@@ -54,13 +59,13 @@ class FlashcardManager(QWidget):
         
     def load_flashcards_to_ui(self):
         self.list_table_widget.clear()
-        flashcard_list = self.get_flashcards_from_db()
-        self.list_table_widget.setRowCount(len(flashcard_list))
+        self.flashcard_list = self.get_flashcards_from_db()
+        self.list_table_widget.setRowCount(len(self.flashcard_list))
         self.list_table_widget.setColumnCount(5)
         self.list_table_widget.setHorizontalHeaderLabels(["Del","Front","Back","Image","Audio"])
         self.list_table_widget.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.list_table_widget.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
-        for i, card in enumerate(flashcard_list):
+        for i, card in enumerate(self.flashcard_list):
             self.text_edits_front[i] = self.create_text_edit_widget(card[2])
             self.text_edits_back[i] = self.create_text_edit_widget(card[3])
             if card[4] != "":
@@ -69,8 +74,8 @@ class FlashcardManager(QWidget):
             if card[5] != None and card[6] != None:
                 self.audio_start[i] = card[5]
                 self.audio_end[i] = card[6]
-                self.text_edits_audio[i] = self.create_audio_edit_widget()
-                self.list_table_widget.setCellWidget(i, 4,self.text_edits_audio[i])
+                audio_btn = self.create_audio_edit_widget(i)
+                self.list_table_widget.setCellWidget(i, 4,audio_btn)
             del_btn = self.make_del_btn(i)
             self.list_table_widget.setCellWidget(i,0,del_btn)
             self.list_table_widget.setCellWidget(i, 1, self.text_edits_front[i])
@@ -126,11 +131,31 @@ class FlashcardManager(QWidget):
         text_edit_widget.setHtml(html)
         return text_edit_widget
     
-    def create_audio_edit_widget(self):
+    def create_audio_edit_widget(self,i):
         name = "play"
-        play_button = QPushButton()
-        play_button.setIcon(QIcon(os.path.join(os.getcwd(),"src","img",name + ".png")))
-        return play_button
+        self.play_button[i] = QPushButton()
+        self.play_button[i].setIcon(QIcon(os.path.join(os.getcwd(),"src","img",name + ".png")))
+        self.play_button[i].clicked.connect(self.play_audio_clip)
+        return self.play_button[i]
+    
+    def play_audio_clip(self):
+        current_index = self.list_table_widget.currentIndex().row()
+        audio_file = self.flashcard_list[current_index][-3]
+        print(audio_file)
+        self.start = self.flashcard_list[current_index][-2]
+        self.end = self.flashcard_list[current_index][-1]
+        self.player.setMedia(QMediaContent(QUrl.fromLocalFile(audio_file)))
+        self.player.setPosition(self.start)
+        self.player.positionChanged.connect(self.check_length_of_audio)
+        self.player.play()
+
+
+    def check_length_of_audio(self,pos):
+        if pos >= self.end:
+            self.player.stop()
+
+
+        
 
     def make_del_btn(self,i):
         self.del_btn[i] = QPushButton("X")
