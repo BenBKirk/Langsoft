@@ -446,39 +446,42 @@ class MainWindow(MainUIWidget):
         filetype = self.get_file_extension_from_path(filepath)
         self.left_pane.browser.document().setMetaInformation(QTextDocument.DocumentUrl, QtCore.QUrl.fromLocalFile(resources_path).toString())
         is_html = True
-        if filetype == ".txt":
-            with open(filepath,'r') as f:
-                data = f.read()
-                is_html = False
-        elif filetype == ".html" or filetype == ".htm" or filetype == ".mhtml" or filetype == ".mht":
-            with open(filepath,'r',encoding='utf8', errors='ignore') as f:
-                data = f.read()
-        elif filetype == ".docx":
-            with open(filepath,'rb') as f:
-                data = mammoth.convert_to_html(f).value
-        elif filetype == ".pdf":
-            with fitz.open(filepath) as doc:
-                pages = []
-                for i in range(doc.page_count):
-                    pages.append(doc.load_page(i))
-                for page in pages:
-                    data = page.get_text("html")
-                    self.left_pane.browser.clear()
-                    self.left_pane.browser.insertHtml(data)
+        try:
+            if filetype == ".txt":
+                with open(filepath,'r') as f:
+                    data = f.read()
+                    is_html = False
+            elif filetype == ".html" or filetype == ".htm" or filetype == ".mhtml" or filetype == ".mht":
+                with open(filepath,'r',encoding='utf8', errors='ignore') as f:
+                    data = f.read()
+            elif filetype == ".docx":
+                with open(filepath,'rb') as f:
+                    data = mammoth.convert_to_html(f).value
+            elif filetype == ".pdf":
+                with fitz.open(filepath) as doc:
+                    pages = []
+                    for i in range(doc.page_count):
+                        pages.append(doc.load_page(i))
+                    for page in pages:
+                        data = page.get_text("html")
+                        self.left_pane.browser.clear()
+                        self.left_pane.browser.insertHtml(data)
+                self.load_audio(filepath)
+                self.db.add_recent_file(filepath,self.current_user["id"])
+            else:
+                self.display_msg("Error",f'Could not recognize file: "{filetype}"')
+                return
+            self.left_pane.browser.clear()
+            if is_html:
+                self.left_pane.browser.insertHtml(data)
+                self.db.add_recent_file(filepath,self.current_user["id"])
+            else:
+                self.left_pane.browser.insertPlainText(data)
+                self.db.add_recent_file(filepath,self.current_user["id"])
             self.load_audio(filepath)
-            self.db.add_recent_file(filepath,self.current_user["id"])
-        else:
-            self.display_msg("Error",f'Could not recognize file: "{filetype}"')
-            return
-        self.left_pane.browser.clear()
-        if is_html:
-            self.left_pane.browser.insertHtml(data)
-            self.db.add_recent_file(filepath,self.current_user["id"])
-        else:
-            self.left_pane.browser.insertPlainText(data)
-            self.db.add_recent_file(filepath,self.current_user["id"])
-        self.load_audio(filepath)
-        self.start_update_highlight_words()
+            self.start_update_highlight_words()
+        except Exception as e:
+            self.display_msg("Error Loading file",f"{e}")
     
     def set_audio_for_flashcard(self):
         if self.audio_player.isAudioAvailable():

@@ -39,8 +39,11 @@ class DatabaseHelper(object):
         rows = self.cursor.fetchall()
         return rows[len(rows)-limit if limit else 0:]
     
-    def get_sql(self,sql):
-        self.cursor.execute(sql)
+    def get_sql(self,sql,params=None):
+        if params is None:
+            self.cursor.execute(sql)
+        else:
+            self.cursor.execute(sql,params)
         return self.cursor.fetchall()
 
     def write(self,table,columns,data):
@@ -325,12 +328,12 @@ class Database(object):
 
     def get_grammar_rules(self,user_id):
         with DatabaseHelper(self.name) as db:
-            return db.get_sql(f"SELECT * FROM grammar_rules WHERE user_id={user_id} ORDER BY style DESC")
+            return db.get_sql("SELECT * FROM grammar_rules WHERE user_id=? ORDER BY style DESC",(user_id,))
 
 
     def get_highlighters(self, user_id):
         with DatabaseHelper(self.name) as db:
-            return db.get_sql(f"SELECT * FROM highlighters WHERE user_id = {user_id}")
+            return db.get_sql("SELECT * FROM highlighters WHERE user_id = ?",(user_id,))
 
     def get_last_user(self):
         with DatabaseHelper(self.name) as db:
@@ -342,7 +345,7 @@ class Database(object):
                 dict_to_return["name"] = "default_user"
                 return dict_to_return
             else:
-                user_name = db.get_sql(f"SELECT * FROM users WHERE id = {the_list[0][1]}")[0][1]
+                user_name = db.get_sql("SELECT * FROM users WHERE id = ?",(the_list[0][1],))[0][1]
                 dict_to_return["name"] = user_name
                 dict_to_return["id"] = the_list[0][1]
                 return dict_to_return
@@ -350,7 +353,7 @@ class Database(object):
     def set_last_user(self,new_user_name):
         #get id from name
         with DatabaseHelper(self.name) as db:
-            new_user_id = db.get_sql(f"SELECT * FROM users WHERE name = '{new_user_name}'")[0][0]
+            new_user_id = db.get_sql("SELECT * FROM users WHERE name = ?",(new_user_name,))[0][0]
         with DatabaseHelper(self.name) as db:
             #replace last user values
             # db.execute_single(f"UPDATE last_user SET user_id={new_user_id} WHERE id=1")
@@ -360,7 +363,7 @@ class Database(object):
         
     def get_online_tools(self,active_user):
         with DatabaseHelper(self.name) as db:
-            return db.get_sql(f"SELECT * FROM online_tools WHERE user_id = {active_user}")
+            return db.get_sql("SELECT * FROM online_tools WHERE user_id = ?",(active_user,))
 
     def get_other_settings(self,active_user_id):
         with DatabaseHelper(self.name) as db:
@@ -371,11 +374,11 @@ class Database(object):
 
     def get_recent_files(self,current_user):
         with DatabaseHelper(self.name) as db:
-            return db.get_sql(f"SELECT * FROM recent_files WHERE user_id = {current_user} ORDER BY created_at DESC LIMIT 10")
+            return db.get_sql("SELECT * FROM recent_files WHERE user_id = ? ORDER BY created_at DESC LIMIT 10",(current_user,))
 
     def get_all_users(self):
         with DatabaseHelper(self.name) as db:
-            users = db.get_sql(f"SELECT * FROM users")
+            users = db.get_sql("SELECT * FROM users")
             list_to_return = []
             for user in users:
                 list_to_return.append(user[1])
@@ -384,7 +387,7 @@ class Database(object):
     def add_new_user(self, new_user_name):
         # check if user already exists
         with DatabaseHelper(self.name) as db:
-            result = db.get_sql(f"SELECT * FROM users WHERE name = '{new_user_name}'")
+            result = db.get_sql("SELECT * FROM users WHERE name = ?",(new_user_name,))
         if result != []: 
             print("user name already exists!")
             return True
@@ -401,12 +404,12 @@ class Database(object):
 
     def get_id_from_name(self, name):
         with DatabaseHelper(self.name) as db:
-            id = db.get_sql(f"SELECT * FROM users WHERE name='{name}'")[0][0]
+            id = db.get_sql("SELECT * FROM users WHERE name=?",(name,))[0][0]
             return id
 
     def save_online_tools(self,online_tools,current_user_id):  
         with DatabaseHelper(self.name) as db:
-            db.execute_single(f"DELETE FROM online_tools WHERE user_id = {current_user_id}")
+            db.execute_single("DELETE FROM online_tools WHERE user_id = ?",(current_user_id,))
         with DatabaseHelper(self.name) as db:
             for row in online_tools:
                 row_sql = """INSERT INTO online_tools(title,url,user_id)
@@ -416,7 +419,7 @@ class Database(object):
     
     def save_grammar_rules(self,grammar_rules,current_user_id):
         with DatabaseHelper(self.name) as db:
-            db.execute_single(f"DELETE FROM grammar_rules WHERE user_id ={current_user_id}")
+            db.execute_single("DELETE FROM grammar_rules WHERE user_id = ?",(current_user_id,))
         with DatabaseHelper(self.name) as db:
             for row in grammar_rules:
                 sql = """INSERT INTO grammar_rules(user_id,is_enabled,name,color,opacity,style,list)
@@ -427,17 +430,17 @@ class Database(object):
 
     def save_other_settings(self,current_user_id,other_settings):
         with DatabaseHelper(self.name) as db:
-            db.execute_single(f"DELETE FROM settings WHERE user_id ={current_user_id} AND name ='dark_theme'")
-            db.execute_single(f"DELETE FROM settings WHERE user_id ={current_user_id} AND name ='autofill_back_of_flashcard'")
+            db.execute_single("DELETE FROM settings WHERE user_id = ? AND name ='dark_theme'",(current_user_id,))
+            db.execute_single(f"DELETE FROM settings WHERE user_id = ? AND name ='autofill_back_of_flashcard'",(current_user_id,))
         with DatabaseHelper(self.name) as db:
-            db.execute_single(f"INSERT INTO settings(name,value,user_id) VALUES (:name,:value,:user_id)",("dark_theme",other_settings["dark_theme"],current_user_id))
-            db.execute_single(f"INSERT INTO settings(name,value,user_id) VALUES (:name,:value,:user_id)",("autofill_back_of_flashcard",other_settings["autofill_back_of_flashcard"],current_user_id))
+            db.execute_single("INSERT INTO settings(name,value,user_id) VALUES (:name,:value,:user_id)",("dark_theme",other_settings["dark_theme"],current_user_id))
+            db.execute_single("INSERT INTO settings(name,value,user_id) VALUES (:name,:value,:user_id)",("autofill_back_of_flashcard",other_settings["autofill_back_of_flashcard"],current_user_id))
 
 
     def add_recent_file(self,filepath,current_user_id):
         date_time = datetime.now()
         with DatabaseHelper(self.name) as db:
-            check = db.get_sql(f"SELECT * FROM recent_files WHERE filepath ='{filepath}'")
+            check = db.get_sql("SELECT * FROM recent_files WHERE filepath = ? AND user_id = ?",(filepath,current_user_id))
             if check == []: #it must be a new file
                 with DatabaseHelper(self.name) as db:
                     sql = "INSERT INTO recent_files (filepath,created_at,user_id) VALUES (:filepath,:created_at,:user_id)"
@@ -454,24 +457,25 @@ class Database(object):
     
     def save_word_to_vocabulary(self,current_user_id, term, defin, confid):
         date = datetime.now()
-        sql = f"INSERT INTO vocabulary(user_id,term,definition,highlighter_id,is_regex,created_at) VALUES(:user_id,:term,:definition,:highlighter_id,:is_regex,:created_at)"
+        sql = "INSERT INTO vocabulary(user_id,term,definition,highlighter_id,is_regex,created_at) VALUES(:user_id,:term,:definition,:highlighter_id,:is_regex,:created_at)"
         params = (current_user_id,term.lower() ,defin, confid, False,date)
         with DatabaseHelper(self.name) as db:
             db.execute_single(sql, params)
 
     def update_word_to_vocab(self,old_id,defin,confid):
         date = datetime.now()
-        sql = f"UPDATE vocabulary SET definition='{defin}', highlighter_id ={confid}, created_at ='{date}' WHERE id ={old_id}"
+        sql = "UPDATE vocabulary SET definition = ?, highlighter_id = ?, created_at = ? WHERE id = ?"
+        params = (defin,confid,date,old_id)
         with DatabaseHelper(self.name) as db:
-            db.execute_single(sql)
+            db.execute_single(sql, params)
 
     def look_up_sel_in_db(self,sel,current_user_id):
         with DatabaseHelper(self.name) as db:
-            return db.get_sql(f"SELECT * FROM vocabulary WHERE term='{str(sel).lower()}'AND user_id={current_user_id} LIMIT 1")
+            return db.get_sql("SELECT * FROM vocabulary WHERE term=? AND user_id=? LIMIT 1",(str(sel).lower(),current_user_id))
     
     def get_list_of_vocab_by_highlighter(self,current_user_id,highlighter_id):
         with DatabaseHelper(self.name) as db:
-            return db.get_sql(f"SELECT * FROM vocabulary WHERE user_id={current_user_id} AND highlighter_id={highlighter_id}")
+            return db.get_sql("SELECT * FROM vocabulary WHERE user_id = ? AND highlighter_id = ?",(current_user_id,highlighter_id))
 
     def add_flashcard_to_db(self,fc,current_user_id):
         with DatabaseHelper(self.name) as db:
@@ -495,19 +499,19 @@ class Database(object):
     def delete_user(self,current_user_id):
         with DatabaseHelper("database.db") as db:
             sql_list = [
-                f"DELETE FROM flashcards WHERE user_id={current_user_id}",
-                f"DELETE FROM last_user WHERE user_id ={current_user_id}",
-                f"DELETE FROM recent_files WHERE user_id ={current_user_id}",
-                f"DELETE FROM vocabulary WHERE user_id ={current_user_id}",
-                f"DELETE FROM grammar_rules WHERE user_id ={current_user_id}",
-                f"DELETE FROM highlighters WHERE user_id ={current_user_id}",
-                f"DELETE FROM online_tools WHERE user_id ={current_user_id}",
-                f"DELETE FROM settings WHERE user_id ={current_user_id}",
-                f"DELETE FROM users WHERE id={current_user_id}",
+                "DELETE FROM flashcards WHERE user_id = ?",
+                "DELETE FROM last_user WHERE user_id = ?",
+                "DELETE FROM recent_files WHERE user_id = ?",
+                "DELETE FROM vocabulary WHERE user_id = ?",
+                "DELETE FROM grammar_rules WHERE user_id = ?",
+                "DELETE FROM highlighters WHERE user_id = ?",
+                "DELETE FROM online_tools WHERE user_id = ?",
+                "DELETE FROM settings WHERE user_id = ?",
+                "DELETE FROM users WHERE id= ?",
             ]
             for item in sql_list:
                 try:
-                    db.execute_single(item)
+                    db.execute_single(item,(current_user_id,))
                 except Exception as e:
                     print(e)
 
