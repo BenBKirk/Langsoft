@@ -18,7 +18,6 @@ class CustomTextBrowser(QTextEdit):
         self.setFontPointSize(16)
         self.setMouseTracking(True)  
         self.installEventFilter(self)
-    
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.Wheel: #.ToolTip:

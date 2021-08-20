@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from database_helper import DatabaseHelper
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl, Qt
+# from BlurWindow.blurWindow import GlobalBlur
 
 import logging
 logging.basicConfig(level=logging.DEBUG,filename="app.log",format='%(asctime)s - %(levelname)s - %(message)s')
@@ -23,6 +24,9 @@ class FlashcardManager(QWidget):
     del_btn = {}
     def __init__(self):
         super(FlashcardManager, self).__init__()
+        # self.setAttribute(Qt.WA_TranslucentBackground,True)
+        # GlobalBlur(self.winId(),Dark=True,QWidget=self)
+        # print(f"Window id is {self.winId()}")
         self.setAttribute(Qt.WA_QuitOnClose,False)
         self.fontL = QtGui.QFont("Ubuntu",12, 200)
         self.resize(800,700)

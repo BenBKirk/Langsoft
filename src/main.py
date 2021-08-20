@@ -25,6 +25,7 @@ from multi_threading import Worker
 from database_helper import Database
 from syntax_highlighter import SyntaxHighlighter
 import logging
+# from BlurWindow.blurWindow import GlobalBlur
 logging.basicConfig(level=logging.DEBUG,filename="app.log",format='%(asctime)s - %(levelname)s - %(message)s')
 class MainWindow(MainUIWidget):
 
@@ -396,6 +397,7 @@ class MainWindow(MainUIWidget):
         elif action == 'list':
             self.flashcards_list.set_up(self.current_user["id"])
             self.flashcards_list.show()
+            # GlobalBlur(self.flashcards_list.winId(),Dark=True,QWidget=self.flashcards_list)
         elif action == 'help':
             self.help_page.show()
         elif action == 'highlight':
@@ -726,6 +728,8 @@ if __name__ == "__main__":
     mainApp.setWindowTitle("Langsoft")
     mainApp.setWindowIcon(QtGui.QIcon(os.path.join(os.getcwd(),"src","img","langsoft.png")))
     mainApp.showMaximized()
+    # mainApp.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
+    # GlobalBlur(mainApp.winId(),Dark=True,QWidget=mainApp)
     try:
         sys.exit(app.exec_())
     except Exception as e:
