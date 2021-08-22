@@ -18,8 +18,9 @@ class FlashcardManager(QWidget):
     text_edits_back = {}
     text_edits_img = {}
     text_edits_audio = {}
-    audio_start ={}
-    audio_end ={}
+    audio_path = {}
+    audio_start = {}
+    audio_end = {}
     play_button = {}
     del_btn = {}
     def __init__(self):
@@ -75,9 +76,10 @@ class FlashcardManager(QWidget):
             if card[4] != "":
                 self.text_edits_img[i] = self.create_text_edit_widget('<img src="' + card[4] + '>')
                 self.list_table_widget.setCellWidget(i, 3,self.text_edits_img[i])
-            if card[5] != None and card[6] != None:
-                self.audio_start[i] = card[5]
-                self.audio_end[i] = card[6]
+            if card[6] != None and card[7] != None:
+                self.audio_path[i] = card[5]
+                self.audio_start[i] = card[6]
+                self.audio_end[i] = card[7]
                 audio_btn = self.create_audio_edit_widget(i)
                 self.list_table_widget.setCellWidget(i, 4,audio_btn)
             del_btn = self.make_del_btn(i)
@@ -103,6 +105,10 @@ class FlashcardManager(QWidget):
             else:
                 card["img"] = ""
             try:
+                card["audio_path"] =  self.audio_path[i]
+            except:
+                card["audio_path"] =  None
+            try:
                 card["audio_start"] = self.audio_start[i]
                 card["audio_end"] = self.audio_end[i]
             except:
@@ -117,10 +123,10 @@ class FlashcardManager(QWidget):
             db.execute_single(f"DELETE FROM flashcards WHERE user_id={self.current_user_id}")
         with DatabaseHelper("database.db") as db:
             for card in flashcards:
-                sql = """INSERT INTO flashcards(user_id,front,back,back_image,audio_start,audio_end)
-                VALUES (:user_id,:front,:back,:back_image,:audio_start,:audio_end)
+                sql = """INSERT INTO flashcards(user_id,front,back,back_image,audio_file,audio_start,audio_end)
+                VALUES (:user_id,:front,:back,:back_image,:audio_file,:audio_start,:audio_end)
                 """
-                params = (self.current_user_id,card["front"],card["back"],card["img"],card["audio_start"],card["audio_end"])
+                params = (self.current_user_id,card["front"],card["back"],card["img"],card["audio_path"],card["audio_start"],card["audio_end"])
                 db.execute_single(sql, params)
         self.hide()
 
@@ -145,7 +151,7 @@ class FlashcardManager(QWidget):
     def play_audio_clip(self):
         current_index = self.list_table_widget.currentIndex().row()
         audio_file = self.flashcard_list[current_index][-3]
-        print(audio_file)
+        # print(audio_file)
         self.start = self.flashcard_list[current_index][-2]
         self.end = self.flashcard_list[current_index][-1]
         self.player.setMedia(QMediaContent(QUrl.fromLocalFile(audio_file)))
