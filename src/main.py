@@ -79,9 +79,9 @@ class MainWindow(MainUIWidget):
         self.toggle_audio_shortcut = QShortcut(QtGui.QKeySequence("Alt+Up"),self)
         self.toggle_audio_shortcut.activated.connect(self.toggle_play_audio)
         self.skip_back_shortcut = QShortcut(QtGui.QKeySequence("Alt+Left"),self)
-        self.skip_back_shortcut.activated.connect(self.skip_back)
+        self.skip_back_shortcut.activated.connect(lambda: self.skip_back(3))
         self.skip_forward_shortcut = QShortcut(QtGui.QKeySequence("Alt+Right"),self)
-        self.skip_forward_shortcut.activated.connect(self.skip_forward)
+        self.skip_forward_shortcut.activated.connect(lambda: self.skip_forward(3))
     
 
     # startup settings - last user, darktheme...
@@ -387,10 +387,14 @@ class MainWindow(MainUIWidget):
                 self.display_msg("Error","Failed to save file.\n" + str(e))
         elif action == 'download':
             self.download_flashcards()
-        elif action == 'skip_back':
-            self.skip_back()
-        elif action == 'skip_forward':
-            self.skip_forward()
+        elif action == '<- 3s':
+            self.skip_back(3)
+        elif action == '3s ->':
+            self.skip_forward(3)
+        elif action == '<- 10s':
+            self.skip_back(10)
+        elif action == '10s ->':
+            self.skip_forward(10)
         elif action == 'settings':
             self.load_settings_to_settings_page()
             self.settings.show()
@@ -604,16 +608,15 @@ class MainWindow(MainUIWidget):
             else:
                 self.left_pane.play_action.setIcon(QIcon(os.path.join("src", "img", "pause.png")))
         
-    def skip_forward(self):
-        skip_amount = 3000
+    def skip_forward(self,seconds):
+        skip_amount = seconds * 1000
         pos = self.audio_player.position()
         new_pos = pos + skip_amount
         self.audio_player.setPosition(new_pos)
 
-    def skip_back(self):
-        skip_amount = 3000
+    def skip_back(self,seconds):
+        skip_amount = seconds * 1000
         pos = self.audio_player.position()
-        print(pos)
         new_pos = pos - skip_amount
         self.audio_player.setPosition(new_pos)
     

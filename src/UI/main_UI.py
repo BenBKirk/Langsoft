@@ -59,12 +59,15 @@ class MainUIWidget(QWidget):
             for x in self.left_pane.toolbar.actions() + self.top_right_pane.toolbar.actions():
                 name = x.text()
                 path = os.path.join(os.getcwd(),"src","img",name + "_dark.png")
-                x.setIcon(QIcon(path))
+                if os.path.exists(path):
+                    x.setIcon(QIcon(path))
         else:
             for x in self.left_pane.toolbar.actions() + self.top_right_pane.toolbar.actions():
                 name = x.text()
                 path = os.path.join(os.getcwd(),"src","img",name + ".png")
-                x.setIcon(QIcon(path))
+                if os.path.exists(path):
+                    x.setIcon(QIcon(path))
+
 
     def toggle_theme(self,state):
         if state == 2:
@@ -102,11 +105,15 @@ class LeftPane(QWidget):
         helpaction = QAction("help",self) 
         helpaction.setToolTip("How To Use This Program")
         self.play_action = QAction("play",self)
-        skip_back_action = QAction("skip_back",self)
-        skip_forward_action = QAction("skip_forward",self)
+        # skip_back_action = QAction("minus_three_seconds",self)
+        # skip_forward_action = QAction("plus_three_seconds",self)
+        # skip_back_action_futher = QAction("minus_ten_seconds",self)
+        # skip_forward_action_futher = QAction("plus_ten_seconds",self)
+        skip_back_action = QAction("<- 3s",self)
+        skip_forward_action = QAction("3s ->",self)
+        skip_back_action_futher = QAction("<- 10s",self)
+        skip_forward_action_futher = QAction("10s ->",self)
         settings_action = QAction("settings",self)
-        # highlight_action = QAction("highlight",self)
-        # highlight_action.setToolTip("Highlight Discourse Features")
         format_action = QAction("format",self)
         format_action.setToolTip("Format selected text")
         search_action = QAction("search",self)
@@ -125,9 +132,11 @@ class LeftPane(QWidget):
         self.toolbar.addAction(recent_file_action)
         self.toolbar.addWidget(QLabel(" ")) 
         self.toolbar.addWidget(spacer_widget)
+        self.toolbar.addAction(skip_back_action_futher)
         self.toolbar.addAction(skip_back_action)
         self.toolbar.addAction(self.play_action)
         self.toolbar.addAction(skip_forward_action)
+        self.toolbar.addAction(skip_forward_action_futher)
         self.toolbar.addWidget(spacer_widget2)
         self.toolbar.addWidget(self.searchbar_lineedit)
         self.toolbar.addAction(search_action)
@@ -136,8 +145,6 @@ class LeftPane(QWidget):
         self.toolbar.addWidget(QLabel(" ")) 
         self.toolbar.addAction(format_action)
         self.toolbar.addWidget(QLabel(" ")) 
-        # self.toolbar.addAction(highlight_action)
-        # self.toolbar.addWidget(QLabel(" ")) 
         self.toolbar.addAction(helpaction)
         self.toolbar.addWidget(QLabel(" ")) 
         self.toolbar.addAction(settings_action)
