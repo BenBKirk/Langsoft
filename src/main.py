@@ -518,10 +518,10 @@ class MainWindow(MainUIWidget):
         back = self.top_right_pane.flash_back.toHtml()
         front_html = BeautifulSoup(front,"html.parser")
         back_html = BeautifulSoup(back,"html.parser")
-        front = front_html.body
-        back = back_html.body
-        front_text = front.getText()
-        back_text = back.getText() 
+        front = front_html.body.findChild()
+        back = back_html.body.findChild()
+        front_text = front_html.getText()
+        back_text = back_html.getText() 
         image = back_html.find('img')
         try:
             img_source = image['src']
