@@ -95,6 +95,7 @@ class MainWindow(MainUIWidget):
         self.recent_files = self.db.get_recent_files(self.current_user["id"])
         self.current_selection = {"selection":"", "db_findings":[]}
         self.current_flashcard_audio = {"start":None,"end":None}
+        self.current_audio = None
         # UI
         if self.current_other_settings["dark_theme"]:
             self.setPalette(self.dark_theme_palette)
