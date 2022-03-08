@@ -257,7 +257,7 @@ class BottomRightPane(QWidget):
 
  
 if __name__ == "__main__":
-    from custom_text_browser import CustomTextBrowser
+    from text_browser.custom_text_browser import CustomTextBrowser
     import sys
     app = QApplication(sys.argv)
     window = MainUIWidget()

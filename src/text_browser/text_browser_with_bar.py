@@ -1,6 +1,6 @@
 
 from PyQt5.QtWidgets import QApplication, QWidget, QSplitter, QHBoxLayout, QVBoxLayout# QFrame, QLineEdit, , , QTableWidget, QTableWidgetItem, QAbstractItemView, QTabWidget, QToolBar
-from custom_text_browser import CustomTextBrowser
+from text_browser.custom_text_browser import CustomTextBrowser
 from toolbars import FileOperationsBar, AudioPlayerBar
 
 
