@@ -3,11 +3,17 @@ from PyQt5.QtWidgets import * #QApplication, QWidget, QFrame, QLineEdit, QHBoxLa
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QSize
 from API.google_trans_API import GoogleTranslate
+from database.vocabulary import Vocabulary
 
-class WordEditor(QWidget):
+class WordDefiner(QWidget):
     def __init__(self):
         super().__init__()
         self.set_up_gui()
+        self.unknown_btn.clicked.connect(lambda: self.save_word(confidence="unknown"))
+        self.semi_known_btn.clicked.connect(lambda: self.save_word(confidence="semi-known"))
+        self.known_btn.clicked.connect(lambda: self.save_word(confidence="known"))
+
+        
 
     def set_up_gui(self):
         self.text_editor = QTextEdit()
@@ -49,26 +55,23 @@ class WordEditor(QWidget):
     
     def get_google_suggestion(self):
         self.google_suggestion = GoogleTranslate().translate(self.selected_word)
+    
+    def save_word(self,confidence):
+        definition = self.text_editor.toPlainText().strip()
+        voc = Vocabulary(1)
+        voc.add_word_to_database(self.selected_word, definition, confidence)
+
         
-class DefinitionFinder:
-    """
-   This class is responible for finding the definition of a word
-   whether using the google translate API or the database lookup 
-    """
-    def __init__(self,selected_word):
-        self.selected_word = selected_word
 
-    def search_db(self,selected_word):
-        pass
 
-    def search_google_api(self,selected_word):
-        pass
+        
+        
     
 if __name__ == "__main__":
     """this is just test code"""
     import sys
     app = QApplication(sys.argv)
-    window = WordEditor()
+    window = WordDefiner()
     # example data
     window.set_definition_text("Hello World")
 

@@ -25,7 +25,14 @@ class DatabaseHelper:
     def __exit__(self,exc_type,exc_value,traceback):
         self.close() 
     
-    def fech_all(self,sql, params=None):
+    def fetch_one(self,sql, params=None):
+        if params is None:
+            self.cursor.execute(sql)
+        else:
+            self.cursor.execute(sql,params)
+        return self.cursor.fetchone()
+    
+    def fetch_all(self,sql, params=None):
         if params is None:
             self.cursor.execute(sql)
         else:
@@ -45,6 +52,8 @@ class DatabaseCreator:
     """creates default database"""
     def __init__(self, name="database.db"):
         self.name = name
+    
+    def create_db(self):
         self.create_tables()
         self.set_up_default_user()
         self.set_up_default_online_tools()

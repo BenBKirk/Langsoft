@@ -31,7 +31,7 @@ class CustomTextBrowser(QTextEdit):
     def mouseReleaseEvent(self, event):
         """ detects a click release in the text window
         and then broadcasts a signal for looking up words/sent """
-        # get selection info before signaling
+        # get selection word or phrase before signaling
         cursor = self.textCursor()
         selection = self.find_selection(cursor)
         if selection is not None: # it is possible to click on empty space

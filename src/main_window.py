@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt, QSize
 from text_browser.custom_text_browser import CustomTextBrowser
 from web_browser.web_viewer import WebViewer
 from text_browser.text_browser_with_bar import TextBrowserWithBar
-from word_definer import WordEditor
+from word_definer.word_definer import WordDefiner
 from pathlib import Path
 from database.database import DatabaseCreator
 
@@ -14,7 +14,6 @@ from database.database import DatabaseCreator
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        #check database
         self.user_id = 1
         db_name = "database.db"
         if not Path(db_name).is_file():
@@ -33,10 +32,10 @@ class MainWindow(QMainWindow):
 
         self.text_browser_with_bar_1 = TextBrowserWithBar()
         self.text_browser_with_bar_2 = TextBrowserWithBar()
-        self.text_browser_with_bar_1.text_browser.clicked_signal.connect(lambda x: self.handle_word_selection(selection=x[0],context=x[1])) 
-        self.text_browser_with_bar_2.text_browser.clicked_signal.connect(lambda x: self.handle_word_selection(selection=x[0], context=x[1]))
+        self.text_browser_with_bar_1.text_browser.clicked_signal.connect(lambda x: self.handle_word_clicked_signal(selection=x[0],context=x[1])) 
+        self.text_browser_with_bar_2.text_browser.clicked_signal.connect(lambda x: self.handle_word_clicked_signal(selection=x[0], context=x[1]))
         self.web_viewer = WebViewer(self.user_id)
-        self.word_editor = WordEditor()
+        self.word_editor = WordDefiner()
 
         self.create_dock_widgets()
 
@@ -51,7 +50,7 @@ class MainWindow(QMainWindow):
 
     
     def create_dock_widgets(self):
-        self.word_editor_dock = QDockWidget("Definition Editor", self)
+        self.word_editor_dock = QDockWidget("Define & Highlight", self)
         self.word_editor_dock.setWidget(self.word_editor)
         # self.word_editor_dock.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
         self.addDockWidget(Qt.RightDockWidgetArea, self.word_editor_dock)
@@ -68,10 +67,9 @@ class MainWindow(QMainWindow):
 
         
     def create_database(self,name):
-        """Create the database."""
-        DatabaseCreator(name=name)
+        DatabaseCreator(name=name).create_db()
     
-    def handle_word_selection(self, selection,context):
+    def handle_word_clicked_signal(self, selection,context):
         self.web_viewer.update_selection_context(selection,context)
         self.word_editor.set_selection_text(selection)
 

@@ -11,7 +11,7 @@ class OnlineTools:
 
     def set_online_tools(self):
         with DatabaseHelper() as db:
-            data = db.fech_all( "SELECT * FROM online_tools WHERE user_id = ?",(self.user_id,))
+            data = db.fetch_all( "SELECT * FROM online_tools WHERE user_id = ?",(self.user_id,))
         for data in data:
             self.list_of_titles.append(data[1])
             self.list_of_urls.append(data[2])
