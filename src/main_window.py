@@ -9,12 +9,13 @@ from text_browser.text_browser_with_bar import TextBrowserWithBar
 from word_definer.word_definer import WordDefiner
 from pathlib import Path
 from database.database import DatabaseCreator
+from database.user import User
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.user_id = 1
+        self.user_id = User().get_user_id()
         db_name = "database.db"
         if not Path(db_name).is_file():
             self.create_database(name=db_name)
@@ -34,7 +35,7 @@ class MainWindow(QMainWindow):
         self.text_browser_with_bar_2 = TextBrowserWithBar()
         self.text_browser_with_bar_1.text_browser.clicked_signal.connect(lambda x: self.handle_word_clicked_signal(selection=x[0],context=x[1])) 
         self.text_browser_with_bar_2.text_browser.clicked_signal.connect(lambda x: self.handle_word_clicked_signal(selection=x[0], context=x[1]))
-        self.web_viewer = WebViewer(self.user_id)
+        self.web_viewer = WebViewer()
         self.word_editor = WordDefiner()
 
         self.create_dock_widgets()

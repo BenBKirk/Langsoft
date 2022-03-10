@@ -58,8 +58,15 @@ class WordDefiner(QWidget):
     
     def save_word(self,confidence):
         definition = self.text_editor.toPlainText().strip()
-        voc = Vocabulary(1)
-        voc.add_word_to_database(self.selected_word, definition, confidence)
+        Vocabulary().add_word_to_database(self.selected_word, definition, confidence)
+        self.clear_ui()
+    
+    def clear_ui(self):
+        self.text_editor.clear()
+        self.selected_word_label.clear()
+        self.selected_word = ""
+        self.definition_text = ""
+        self.google_suggestion = ""
 
         
 

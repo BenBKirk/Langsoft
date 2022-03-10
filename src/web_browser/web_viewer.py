@@ -3,15 +3,16 @@ from PyQt5.QtWidgets import * #QApplication, QWidget, QFrame, QLineEdit, QHBoxLa
 from PyQt5.QtWebEngineWidgets import *
 from PyQt5.QtCore import QUrl
 from database.online_tools import OnlineTools
+from database.user import User
 from web_browser.custom_web_browser import CustomWebBrowser
 
 class WebViewer(QWidget):
-    def __init__(self,user_id):
+    def __init__(self):
         super().__init__()
-        self.user_id = user_id
+        self.user_id = User().get_user_id()
         self.selection = ""
         self.context = ""
-        self.online_tools = OnlineTools(self.user_id) #this loads the setting from db
+        self.online_tools = OnlineTools() #this loads the setting from db
         self.online_tools.set_online_tools()
         self.web_engine_dict = {}
         self.tabs = QTabWidget()
@@ -50,7 +51,7 @@ if __name__ == "__main__":
     """This code is just to test the web viewer"""
     import sys
     app = QApplication(sys.argv)
-    window = WebViewer(user_id=1)
+    window = WebViewer()
     # example data
     window.update_selection_context("apple","banana")
     window.update_active_tab()

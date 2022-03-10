@@ -2,13 +2,14 @@
 from datetime import datetime
 from database.database import DatabaseHelper
 from database.highlighters import Highlighters
+from database.user import User
 
 class Vocabulary:
     """
     Serves as an interface between the widgets that use this data and the database
     """
-    def __init__(self,user_id):
-        self.user_id = user_id
+    def __init__(self):
+        self.user_id = User().get_user_id()
         self.single_exact_match_results = None
         self.like_results = []
 
