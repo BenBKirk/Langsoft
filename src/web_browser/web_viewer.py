@@ -20,6 +20,7 @@ class WebViewer(QWidget):
         self.tabs.currentChanged.connect(self.update_active_tab)
         layout = QVBoxLayout()
         layout.addWidget(self.tabs)
+        layout.setContentsMargins(0,0,0,0)
         self.setLayout(layout)
     
         self.create_tabs(self.online_tools.list_of_titles,self.online_tools.list_of_urls)

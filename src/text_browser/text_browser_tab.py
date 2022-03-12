@@ -19,7 +19,6 @@ class TextBrowserTab(QTabWidget):
         self.add_new_tab()
     
     def do_you_really_want_to_close(self,index):
-        print(f"index is {index}")
         msg_box = QMessageBox()
         msg_box.setIcon(QMessageBox.Question)
         msg_box.setText("Do you really want to close this tab?")

@@ -45,6 +45,7 @@ class WordDefiner(QWidget):
         # self.main_layout.addLayout(suggestion_layout)
         self.main_layout.setStretch(0,1)
         self.main_layout.setStretch(1,0)
+        self.main_layout.setContentsMargins(0,0,0,0)
         self.setLayout(self.main_layout)
 
     def set_definition_text(self, text):
