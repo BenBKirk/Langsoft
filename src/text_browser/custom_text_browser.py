@@ -43,11 +43,13 @@ class CustomTextBrowser(QTextEdit):
             self.clicked_signal.emit([selection,context])
 
     def find_selection(self,cursor):
-        if not cursor.hasSelection():# What it a click or click and drag selection?
+        if not cursor.hasSelection():# Was it a drag selection?
             cursor.select(QTextCursor.WordUnderCursor)# if not, select the word under the cursor
-        if cursor.selectedText() == "":
+            return cursor.selectedText()
+        elif cursor.selectedText() == "" or len(cursor.selectedText()) > 50:
             return None
-        return cursor.selectedText() #return whatever is selected
+        else:
+            return cursor.selectedText()
  
     def contextMenuEvent(self, event):
         contextMenu = self.createStandardContextMenu(event.pos())

@@ -8,7 +8,10 @@ class GoogleTranslate:
         self.url = "https://translate.googleapis.com/translate_a/single?client=gtx&ie=UTF-8&oe=UTF-8&sl=id&tl=en&dt=t&q="
 
     def translate(self, text):
-        response = requests.get(self.url + text)
-        jsonResponse = response.json()
-        # plainText = json.loads(jsonResponse)
-        return jsonResponse[0][0][0]
+        if text:
+            try:
+                response = requests.get(self.url + text)
+                jsonResponse = response.json()
+                return jsonResponse[0][0][0]
+            except:
+                return None

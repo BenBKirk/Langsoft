@@ -25,6 +25,7 @@ class WordDefiner(QWidget):
         #display selected word
         self.selected_word_label = QLabel()
         self.selected_word_label.setFont(QtGui.QFont("Calibri",15))
+        self.selected_word_label.setMaximumHeight(30)
 
         #buttons
         self.unknown_btn = QPushButton("Unknown")
@@ -59,7 +60,7 @@ class WordDefiner(QWidget):
             self.set_definition_text(from_db)
         else:
             self.get_google_suggestion()
-            self.set_definition_text(self.google_suggestion)
+            self.set_definition_text(self.google_suggestion) if self.google_suggestion != None else self.set_definition_text("")
     
     def set_selection_text(self, text):
         self.selected_word = text
