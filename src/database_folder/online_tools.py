@@ -1,5 +1,5 @@
-from database.database import DatabaseHelper
-from database.user import User
+from database_folder.database import DatabaseHelper
+from database_folder.user import User
 
 class OnlineTools:
     """

@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from text_browser.context_finder import ContextFinder
+from .syntax_highlighter import SyntaxHighlighter
 
 class CustomTextBrowser(QTextEdit):
     clicked_signal = pyqtSignal(list)
@@ -18,13 +19,15 @@ class CustomTextBrowser(QTextEdit):
         self.setFontPointSize(16)
         self.setMouseTracking(True)  
         self.installEventFilter(self)
+        self.syntax_highlighter = SyntaxHighlighter(self.document())
 
 
     def eventFilter(self, obj, event):
-        if event.type() == QEvent.Wheel: #.ToolTip:
-            # self.hover.emit(event.pos())
-            self.scroll.emit()
-            return False
+        # if event.type() == QEvent.Wheel: 
+        #     # self.hover.emit(event.pos())
+        #     print("the user is scrolling")
+        #     self.scroll.emit()
+        #     return False
         # Call Base Class Method to Continue Normal Event Processing
         return super(CustomTextBrowser, self).eventFilter(obj, event)
 
@@ -36,7 +39,7 @@ class CustomTextBrowser(QTextEdit):
         selection = self.find_selection(cursor)
         if selection is not None: # it is possible to click on empty space
             context = ContextFinder(cursor,length_of_context=15).get_context()
-            selection, context = self.clean_up_results(selection,context)
+            selection, context = self.clean_up_strings(selection,context)
             self.clicked_signal.emit([selection,context])
 
     def find_selection(self,cursor):
@@ -59,7 +62,7 @@ class CustomTextBrowser(QTextEdit):
         if action == clear_highlighting:
             self.clear_highlighting.emit()
     
-    def clean_up_results(self, selection,context):
+    def clean_up_strings(self, selection,context):
         cleaned_up_selection = selection.strip()
         cleaned_up_context = context.strip()
         return cleaned_up_selection, cleaned_up_context

@@ -1,11 +1,13 @@
 
-from PyQt5.QtWidgets import * #QApplication, QWidget, QFrame, QLineEdit, QHBoxLayout, QVBoxLayout, QSplitter, QTableWidget, QTableWidgetItem, QAbstractItemView, QTabWidget, QToolBar
+from PyQt5.QtWidgets import QTextEdit, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QWidget, QApplication
 from PyQt5 import QtGui
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from API.google_trans_API import GoogleTranslate
-from database.vocabulary import Vocabulary
+from database_folder.vocabulary import Vocabulary
 
 class WordDefiner(QWidget):
+    word_saved_signal = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         self.set_up_gui()
@@ -49,6 +51,15 @@ class WordDefiner(QWidget):
         self.definition_text = text
         self.text_editor.setText(text)
     
+    def look_up_word(self,text):
+        self.set_selection_text(text)
+        from_db = Vocabulary().fetch_single_exact_vocab(text)
+        if from_db != None:
+            self.set_definition_text(from_db)
+        else:
+            self.get_google_suggestion()
+            self.set_definition_text(self.google_suggestion)
+    
     def set_selection_text(self, text):
         self.selected_word = text
         self.selected_word_label.setText(f"<b>{text}</b>")
@@ -60,6 +71,7 @@ class WordDefiner(QWidget):
         definition = self.text_editor.toPlainText().strip()
         Vocabulary().add_word_to_database(self.selected_word, definition, confidence)
         self.clear_ui()
+        self.word_saved_signal.emit()
     
     def clear_ui(self):
         self.text_editor.clear()
@@ -69,18 +81,4 @@ class WordDefiner(QWidget):
         self.google_suggestion = ""
 
         
-
-
         
-        
-    
-if __name__ == "__main__":
-    """this is just test code"""
-    import sys
-    app = QApplication(sys.argv)
-    window = WordDefiner()
-    # example data
-    window.set_definition_text("Hello World")
-
-    window.show()
-    sys.exit(app.exec())

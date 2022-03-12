@@ -2,8 +2,8 @@
 from PyQt5.QtWidgets import * #QApplication, QWidget, QFrame, QLineEdit, QHBoxLayout, QVBoxLayout, QSplitter, QTableWidget, QTableWidgetItem, QAbstractItemView, QTabWidget, QToolBar
 from PyQt5.QtWebEngineWidgets import *
 from PyQt5.QtCore import QUrl
-from database.online_tools import OnlineTools
-from database.user import User
+from database_folder.online_tools import OnlineTools
+from database_folder.user import User
 from web_browser.custom_web_browser import CustomWebBrowser
 
 class WebViewer(QWidget):

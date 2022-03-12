@@ -10,8 +10,8 @@ from text_browser.text_browser_with_bar import TextBrowserWithBar
 from text_browser.text_browser_tab import TextBrowserTab
 from word_definer.word_definer import WordDefiner
 from pathlib import Path
-from database.database import DatabaseCreator
-from database.user import User
+from database_folder.database import DatabaseCreator
+from database_folder.user import User
 
 
 class MainWindow(QMainWindow):
@@ -33,13 +33,17 @@ class MainWindow(QMainWindow):
         self.split_middle.setSizes([1000,500])
         self.setCentralWidget(self.split_middle)
         self.tab.forward_signal_from_text_browser.connect(lambda x: self.handle_word_clicked_signal(x[0],x[1]))
+        self.word_definer.word_saved_signal.connect(self.update_syntax_highlighting)
 
      
     def handle_word_clicked_signal(self, selection,context):
         self.web_viewer.update_selection_context(selection,context)
-        self.word_definer.set_selection_text(selection)
-        self.word_definer.get_google_suggestion()
-        self.word_definer.set_definition_text(self.word_definer.google_suggestion)
+        self.word_definer.look_up_word(selection)
+
+    def update_syntax_highlighting(self):
+        for i in range(self.tab.count()):
+            self.tab.widget(i).text_browser.syntax_highlighter.get_data_from_database()
+            self.tab.widget(i).text_browser.syntax_highlighter.rehighlight()
 
 
 
