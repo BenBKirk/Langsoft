@@ -6,6 +6,7 @@ from PyQt5.QtCore import Qt
 
 from text_browser.custom_text_browser import CustomTextBrowser
 from toolbars import FileOperationsBar, AudioPlayerBar, AudioSliderBar, CustomiseBar
+from file_operations.file_manager import FileManager
 
 
 class TextBrowserWithBar(QWidget):
@@ -20,6 +21,7 @@ class TextBrowserWithBar(QWidget):
         self.customise_bar = CustomiseBar()
         self.create_bar()
         self.combine_bar_with_text_browser()
+        self.file_opts_bar.open_file_action.triggered.connect(self.open_file)
 
     def create_bar(self):
         self.horizontal_layout = QHBoxLayout()
@@ -36,6 +38,12 @@ class TextBrowserWithBar(QWidget):
         self.vertical_layout.addWidget(self.text_browser)
         self.setLayout(self.vertical_layout)
         self.vertical_layout.setContentsMargins(0,0,0,0)
+    
+
+    def open_file(self):
+        file_manager = FileManager()
+        file_manager.open_files()
+
 
 
 
