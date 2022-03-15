@@ -17,6 +17,7 @@ class TextBrowserTab(QTabWidget):
         self.add_new_tab_btn.setMinimumSize(self.add_new_tab_btn.sizeHint())
         self.add_new_tab_btn.clicked.connect(self.add_new_tab)
         self.add_new_tab()
+        self.tabBar().setContentsMargins(0,0,0,0)
     
     def do_you_really_want_to_close(self,index):
         msg_box = QMessageBox()

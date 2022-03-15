@@ -26,12 +26,5 @@ class TextBrowserWithBar(QWidget):
         self.setLayout(self.vertical_layout)
         self.vertical_layout.setContentsMargins(0,0,0,0)
 
-if __name__ == "__main__":
-    """this is just test code"""
-    import sys
-    app = QApplication(sys.argv)
-    window = TextBrowserWithBar()
-    window.show()
-    sys.exit(app.exec())
 
 

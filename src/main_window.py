@@ -29,6 +29,7 @@ class MainWindow(QMainWindow):
         self.split_right_side = QSplitter(Qt.Vertical)
         self.split_right_side.addWidget(self.word_definer)
         self.split_right_side.addWidget(self.web_viewer)
+        self.split_right_side.setSizes([100,500])
         self.split_middle.addWidget(self.tab)
         self.split_middle.addWidget(self.split_right_side)
         self.split_middle.setSizes([1000,500])
