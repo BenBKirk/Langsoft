@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import * #QApplication, QWidget, QFrame, QLineEdit, QHBoxLayout, QVBoxLayout, QSplitter, QTableWidget, QTableWidgetItem, QAbstractItemView, QTabWidget, QToolBar
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
-from pathlib import Path
+import os
 
 
 class FileOperationsBar(QToolBar):
@@ -38,8 +38,7 @@ class AudioPlayerBar(QToolBar):
         self.skip_forward_3_action = QAction("3s ->",self)
         self.skip_back_10_action = QAction("<- 10s",self)
         self.skip_forward_10_action = QAction("10s ->",self)
-
-        self.play_pause_action = QAction("Play/Pause", self)
+        self.play_pause_action = QAction("play/Pause", self)
     
     def add_actions(self):
         self.addAction(self.skip_back_10_action)
@@ -49,19 +48,10 @@ class AudioPlayerBar(QToolBar):
         self.addAction(self.skip_forward_10_action)
     
     def set_icons(self):
-        #in future should check selected theme
-        for action in self.actions():
-            name = action.text()
-            icon =  self.generate_q_icon(name)
-            action.setIcon(icon)
-
-    def generate_q_icon(self, name) -> QtGui.QIcon:
-        path = Path(Path.cwd(),"src","img",name + ".png")
-        if Path(path).exists():
-            icon = QtGui.QIcon(path)
-            return icon
-
-
+        path = os.path.join(os.getcwd(),"src", "img","play.png")
+        play_icon = QtGui.QIcon(path)
+        self.play_pause_action.setIcon(play_icon)
+ 
     def add_shortcuts(self):
        pass
 

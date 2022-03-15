@@ -13,6 +13,7 @@ from pathlib import Path
 from database_folder.database import DatabaseCreator
 from database_folder.user import User
 from word_definer.definition_finder import DefinitionFinder
+from palette import DarkPalette
 
 
 class MainWindow(QMainWindow):
@@ -36,7 +37,10 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.split_middle)
         self.tab.forward_signal_from_text_browser.connect(lambda x: self.handle_word_clicked_signal(x[0],x[1]))
         self.word_definer.word_saved_signal.connect(self.update_syntax_highlighting)
-
+    
+    def enable_dark_theme(self):
+        self.dark_palette = DarkPalette()
+        self.setPalette(self.dark_palette)
      
     def handle_word_clicked_signal(self, selection,context):
         self.web_viewer.update_selection_context(selection,context)
