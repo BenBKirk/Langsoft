@@ -12,6 +12,8 @@ from database_folder.database import DatabaseCreator
 from database_folder.user import User
 from word_definer.definition_finder import DefinitionFinder
 from palette import DarkPalette
+from BlurWindow.blurWindow import GlobalBlur
+
 
 
 class MainWindow(QMainWindow):
@@ -35,10 +37,23 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.split_middle)
         self.tab.forward_click_signal_from_text_browser.connect(lambda x: self.handle_word_clicked_signal(x[0],x[1],x[2]))
         self.word_definer.word_saved_signal.connect(self.update_syntax_highlighting)
+        # self.enable_dark_theme()
+        self.enable_glass_theme()
     
     def enable_dark_theme(self):
         self.dark_palette = DarkPalette()
         self.setPalette(self.dark_palette)
+    
+    def enable_glass_theme(self):
+        GlobalBlur(self.winId(),Dark=True,QWidget=[MainWindow,self.tab])
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.tab.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.web_viewer.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.word_definer.setAttribute(Qt.WA_TranslucentBackground, True)
+        for i in range(self.tab.count()):
+            self.tab.widget(i).setAttribute(Qt.WA_TranslucentBackground, True)
+            self.tab.widget(i).text_browser.setAttribute(Qt.WA_TranslucentBackground, True)
+
      
     def handle_word_clicked_signal(self, selection,context,pos):
         width = self.word_definer.width()
@@ -46,8 +61,8 @@ class MainWindow(QMainWindow):
         self.word_definer.move(pos.x()-width/2,pos.y()-height/2 -100)
         self.word_definer.show()
         self.word_definer.activateWindow()
-        #raise the window to front
         self.word_definer.raise_()
+        self.word_definer.setPalette(self.palette())
         self.web_viewer.update_selection_context(selection,context)
         self.definition_finder = DefinitionFinder()
         self.definition_finder.lookup(selection)

@@ -14,7 +14,8 @@ class WordDefiner(QWidget):
         self.unknown_btn.clicked.connect(lambda: self.save_word(confidence="unknown"))
         self.semi_known_btn.clicked.connect(lambda: self.save_word(confidence="semi-known"))
         self.known_btn.clicked.connect(lambda: self.save_word(confidence="known"))
-        self.setContentsMargins(0,0,0,0)
+        # self.setContentsMargins(0,0,0,0)
+        self.setWindowFlag(Qt.WindowStaysOnTopHint)
 
     def set_up_gui(self):
         self.text_editor = QTextEdit()
@@ -78,6 +79,7 @@ class WordDefiner(QWidget):
         self.selected_word = ""
         self.definition_text = ""
         self.google_suggestion = ""
+    
 
         
         

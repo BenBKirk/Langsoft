@@ -18,3 +18,4 @@ class DarkPalette(QPalette):
         self.setColor(QPalette.Link, QColor(42, 130, 218))
         self.setColor(QPalette.Highlight, QColor(42, 130, 218))
         self.setColor(QPalette.HighlightedText, Qt.black)
+

@@ -17,7 +17,7 @@ class TextBrowserTab(QTabWidget):
         self.add_new_tab_btn = QPushButton("+")
         self.setCornerWidget(self.add_new_tab_btn, Qt.TopLeftCorner)
         self.add_new_tab_btn.setMinimumSize(self.add_new_tab_btn.sizeHint())
-        self.add_new_tab_btn.clicked.connect(self.add_new_tab)
+        self.add_new_tab_btn.clicked.connect(lambda :self.add_new_tab())
         self.add_new_tab()
         self.tabBar().setContentsMargins(0,0,0,0)
     
@@ -33,7 +33,11 @@ class TextBrowserTab(QTabWidget):
         new_tab = TextBrowserWithBar()
         new_tab.text_browser.clicked_signal.connect(lambda x: self.forward_click_signal_from_text_browser.emit(x))
         new_tab.open_files_signal.connect(self.open_files_in_tabs)
-        self.addTab(new_tab,name if name is not None else f"Tab {self.count()+1}")
+        if name is not None:
+            name = name
+        else:
+            name = f"Tab {self.count()+1}"
+        self.addTab(new_tab,name)
         return new_tab # in case we need to keep reference to it
   
     def open_files_in_tabs(self, files):
