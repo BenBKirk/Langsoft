@@ -1,7 +1,7 @@
 
 from PyQt5.QtWidgets import QTextEdit, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QWidget, QApplication
-from PyQt5.QtGui import QFont
-from PyQt5.QtCore import Qt, QSize, pyqtSignal
+from PyQt5.QtGui import QFont, QFocusEvent
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QEvent
 from API.google_trans_API import GoogleTranslate
 from database_folder.vocabulary import Vocabulary
 
@@ -15,11 +15,11 @@ class WordDefiner(QWidget):
         self.semi_known_btn.clicked.connect(lambda: self.save_word(confidence="semi-known"))
         self.known_btn.clicked.connect(lambda: self.save_word(confidence="known"))
         self.setContentsMargins(0,0,0,0)
-        
 
     def set_up_gui(self):
         self.text_editor = QTextEdit()
         self.text_editor.setMinimumHeight(30)
+        self.text_editor.setMaximumHeight(30)
         self.text_editor.setFont(QFont("Arial", 12))
 
         #display selected word

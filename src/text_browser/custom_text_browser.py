@@ -32,16 +32,24 @@ class CustomTextBrowser(QTextEdit):
         # Call Base Class Method to Continue Normal Event Processing
         return super(CustomTextBrowser, self).eventFilter(obj, event)
 
-    def mouseReleaseEvent(self, event):
-        """ detects a click release in the text window
-        and then broadcasts a signal for looking up words/sent """
-        # get selection word or phrase before signaling
+    def mouseDoubleClickEvent(self,event):
         cursor = self.textCursor()
         selection = self.find_selection(cursor)
         if selection is not None: # it is possible to click on empty space
             context = ContextFinder(cursor,length_of_context=15).get_context()
             selection, context = self.clean_up_strings(selection,context)
-            self.clicked_signal.emit([selection,context])
+            self.clicked_signal.emit([selection,context,event.globalPos()])
+
+    # def mouseReleaseEvent(self, event):
+    #     """ detects a click release in the text window
+    #     and then broadcasts a signal for looking up words/sent """
+    #     # get selection word or phrase before signaling
+    #     cursor = self.textCursor()
+    #     selection = self.find_selection(cursor)
+    #     if selection is not None: # it is possible to click on empty space
+    #         context = ContextFinder(cursor,length_of_context=15).get_context()
+    #         selection, context = self.clean_up_strings(selection,context)
+    #         self.clicked_signal.emit([selection,context,event.globalPos()])
 
     def find_selection(self,cursor):
         if not cursor.hasSelection():# Was it a drag selection?

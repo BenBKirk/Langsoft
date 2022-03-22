@@ -8,7 +8,7 @@ class ContextFinder:
     def __init__(self,cursor,length_of_context):
         super().__init__()
         self.cursor = cursor
-        self.length_of_context = length_of_context
+        self.length_of_context = length_of_context #TODO should get this from database settings
         self.upper_limit_reached = True # if the limit is reached then "..." will be appended to the text so show that did not reach the end of the sentence before being too long
         self.lower_limit_reached = True
 
