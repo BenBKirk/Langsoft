@@ -1,8 +1,8 @@
 """
 This needs to be custom in order to detect a click release in the main text window
 """
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
+from PyQt5.QtWidgets import QTextEdit, QColorDialog
+from PyQt5.QtGui import QFont, QTextCursor
 from PyQt5.QtCore import *
 from text_browser.context_finder import ContextFinder
 from .syntax_highlighter import SyntaxHighlighter
@@ -20,6 +20,7 @@ class CustomTextBrowser(QTextEdit):
         self.setMouseTracking(True)  
         self.installEventFilter(self)
         self.syntax_highlighter = SyntaxHighlighter(self.document())
+        self.setFont(QFont("Calibri",14))
 
 
     def eventFilter(self, obj, event):
