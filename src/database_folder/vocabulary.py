@@ -15,9 +15,8 @@ class Vocabulary:
         with DatabaseHelper() as db:
             data = db.fetch_one("SELECT definition FROM vocabulary WHERE term=? AND user_id=? LIMIT 1",(search_term.lower(),self.user_id))
             # TODO probably need to slice this better
-            if data:
+            if data is not None:
                 return data[0]
-            return None
     
     def fetch_like_vocab(self,search_term):
         with DatabaseHelper() as db:
@@ -42,7 +41,7 @@ class Vocabulary:
             self.add_new_word_to_db(word,definition,confidence,date)
     
     def is_word_in_database(self,word):
-        if self.fetch_single_exact_vocab(word):
+        if self.fetch_single_exact_vocab(word) is not None:
             return True
 
     def add_new_word_to_db(self,word,definition,confidence,date):

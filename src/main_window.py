@@ -17,10 +17,10 @@ from palette import DarkPalette
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.user_id = User().get_user_id()
         db_name = "database.db"
         if not Path(db_name).is_file():
             DatabaseCreator(name=db_name).create_db()
+        self.user_id = User().get_user_id()
         self.web_viewer = WebViewer()
         self.word_definer = WordDefiner()
         self.tab = TextBrowserTab()
