@@ -34,31 +34,23 @@ class CustomTextBrowser(QTextEdit):
 
     def mouseDoubleClickEvent(self,event):
         cursor = self.textCursor()
-        selection = self.find_selection(cursor)
-        if selection is not None: # it is possible to click on empty space
-            context = ContextFinder(cursor,length_of_context=15).get_context()
-            selection, context = self.clean_up_strings(selection,context)
-            self.clicked_signal.emit([selection,context,event.globalPos()])
+        cursor.select(QTextCursor.WordUnderCursor)
+        selection = cursor.selectedText()
+        context = ContextFinder(cursor,length_of_context=15).get_context()
+        selection, context = self.clean_up_strings(selection,context)
+        self.clicked_signal.emit([selection,context,event.globalPos()])
 
-    # def mouseReleaseEvent(self, event):
-    #     """ detects a click release in the text window
-    #     and then broadcasts a signal for looking up words/sent """
-    #     # get selection word or phrase before signaling
-    #     cursor = self.textCursor()
-    #     selection = self.find_selection(cursor)
-    #     if selection is not None: # it is possible to click on empty space
-    #         context = ContextFinder(cursor,length_of_context=15).get_context()
-    #         selection, context = self.clean_up_strings(selection,context)
-    #         self.clicked_signal.emit([selection,context,event.globalPos()])
+    def mouseReleaseEvent(self, event):
+        """ detects a click release in the text window
+        and then broadcasts a signal for looking up words/sent """
+        cursor = self.textCursor()
+        if cursor.hasSelection():
+            selection = cursor.selectedText()
+            if len(selection) < 50:
+                context = ContextFinder(cursor,length_of_context=15).get_context()
+                selection, context = self.clean_up_strings(selection,context)
+                self.clicked_signal.emit([selection,context,event.globalPos()])
 
-    def find_selection(self,cursor):
-        if not cursor.hasSelection():# Was it a drag selection?
-            cursor.select(QTextCursor.WordUnderCursor)# if not, select the word under the cursor
-            return cursor.selectedText()
-        elif cursor.selectedText() == "" or len(cursor.selectedText()) > 50:
-            return None
-        else:
-            return cursor.selectedText()
  
     def contextMenuEvent(self, event):
         contextMenu = self.createStandardContextMenu(event.pos())
