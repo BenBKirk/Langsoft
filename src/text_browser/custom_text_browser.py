@@ -22,23 +22,14 @@ class CustomTextBrowser(QTextEdit):
         self.syntax_highlighter = SyntaxHighlighter(self.document())
         self.setFont(QFont("Calibri",14))
 
-
-    def eventFilter(self, obj, event):
-        # if event.type() == QEvent.Wheel: 
-        #     # self.hover.emit(event.pos())
-        #     print("the user is scrolling")
-        #     self.scroll.emit()
-        #     return False
-        # Call Base Class Method to Continue Normal Event Processing
-        return super(CustomTextBrowser, self).eventFilter(obj, event)
-
     def mouseDoubleClickEvent(self,event):
         cursor = self.textCursor()
         cursor.select(QTextCursor.WordUnderCursor)
         selection = cursor.selectedText()
-        context = ContextFinder(cursor,length_of_context=15).get_context()
-        selection, context = self.clean_up_strings(selection,context)
-        self.clicked_signal.emit([selection,context,event.globalPos()])
+        if selection != "":
+            context = ContextFinder(cursor,length_of_context=15).get_context()
+            selection, context = self.clean_up_strings(selection,context)
+            self.clicked_signal.emit([selection,context,event.globalPos()])
 
     def mouseReleaseEvent(self, event):
         """ detects a click release in the text window

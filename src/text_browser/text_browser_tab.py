@@ -22,12 +22,13 @@ class TextBrowserTab(QTabWidget):
         self.tabBar().setContentsMargins(0,0,0,0)
     
     def do_you_really_want_to_close(self,index):
-        msg_box = QMessageBox()
-        msg_box.setIcon(QMessageBox.Question)
-        msg_box.setText("Do you really want to close this tab?")
-        msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        if msg_box.exec() == QMessageBox.Yes:
-            self.removeTab(index)
+        # msg_box = QMessageBox()
+        # msg_box.setIcon(QMessageBox.Question)
+        # msg_box.setText("Do you really want to close this tab?")
+        # msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        # if msg_box.exec() == QMessageBox.Yes:
+        #     self.removeTab(index)
+        self.removeTab(index)
     
     def add_new_tab(self,name=None):
         new_tab = TextBrowserWithBar()
@@ -45,6 +46,8 @@ class TextBrowserTab(QTabWidget):
         The first file will be opened in the current tab
         and any other tabs will be opened in a new tab.
         """
+        if len(files) == 0:
+            return
         file_manager = FileManager()
         first_file = files[0]
         current_tab = self.currentWidget()
@@ -54,13 +57,14 @@ class TextBrowserTab(QTabWidget):
         current_tab.load_text(text, is_html)
         current_tab.load_audio(first_file[1])
 
-        if len(files) > 1:
-            for file in files[1:]:# slice to slip the first file
-                name = file_manager.get_file_name_from_path(file[0])
-                new_tab = self.add_new_tab(name)
-                text, is_html = file_manager.read_text_file(file[0])
-                new_tab.load_text(text, is_html)
-                new_tab.load_audio(file[1])
+        if len(files) == 1:
+            return
+        for file in files[1:]:# slice to slip the first file
+            name = file_manager.get_file_name_from_path(file[0])
+            new_tab = self.add_new_tab(name)
+            text, is_html = file_manager.read_text_file(file[0])
+            new_tab.load_text(text, is_html)
+            new_tab.load_audio(file[1])
 
 if __name__ == "__main__":
     """this is just test code"""

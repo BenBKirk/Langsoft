@@ -14,8 +14,9 @@ class WordDefiner(QWidget):
         self.unknown_btn.clicked.connect(lambda: self.save_word(confidence="unknown"))
         self.semi_known_btn.clicked.connect(lambda: self.save_word(confidence="semi-known"))
         self.known_btn.clicked.connect(lambda: self.save_word(confidence="known"))
-        # self.setContentsMargins(0,0,0,0)
+        self.setContentsMargins(0,0,0,0)
         self.setWindowFlag(Qt.WindowStaysOnTopHint)
+        self.setGeometry(0,0,300,100)
 
     def set_up_gui(self):
         self.text_editor = QTextEdit()
@@ -57,15 +58,12 @@ class WordDefiner(QWidget):
         if from_db != None:
             self.set_definition_text(from_db)
         else:
-            self.get_google_suggestion()
+            self.google_suggestion = GoogleTranslate().translate(self.selected_word)
             self.set_definition_text(self.google_suggestion) if self.google_suggestion != None else self.set_definition_text("")
     
     def set_selection_text(self, text):
         self.selected_word = text
         self.selected_word_label.setText(f"<b>{text}</b>")
-    
-    def get_google_suggestion(self):
-        self.google_suggestion = GoogleTranslate().translate(self.selected_word)
     
     def save_word(self,confidence):
         definition = self.text_editor.toPlainText().strip()
@@ -81,5 +79,18 @@ class WordDefiner(QWidget):
         self.google_suggestion = ""
     
 
-        
+    def move_to_click_position(self,pos):
+        width = self.width()
+        height = self.height()
+        # make sure it doesn't go off the side 
+        x = int(pos.x())
+        y = int(pos.y())
+        dis_cen = width/2 # minimum allowed distance from the center, in other words don't go past this limit otherwise it will be cut off the screen.
+        while x <= dis_cen: # if passes the limit add 1 until it is  no longer past the limit.
+            x += 1
+        if x > dis_cen:
+            x = x-dis_cen # center over click pos
+        y = y - height/2 # center over click pos
+        y = y - 120 # offset above click pos
+        self.move(x,y)
         

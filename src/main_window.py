@@ -34,24 +34,22 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.split_middle)
         self.tab.forward_click_signal_from_text_browser.connect(lambda x: self.handle_word_clicked_signal(x[0],x[1],x[2]))
         self.word_definer.word_saved_signal.connect(self.update_syntax_highlighting)
-        # self.enable_dark_theme()
+        self.enable_dark_theme()
     
     def enable_dark_theme(self):
         self.dark_palette = DarkPalette()
         self.setPalette(self.dark_palette)
+        self.word_definer.setPalette(self.dark_palette)
     
     def handle_word_clicked_signal(self, selection,context,pos):
-        width = self.word_definer.width()
-        height = self.word_definer.height()
-        self.word_definer.move(pos.x()-width/2,pos.y()-height/2 -100)
+        self.word_definer.move_to_click_position(pos)
         self.word_definer.show()
         self.word_definer.activateWindow()
         self.word_definer.raise_()
-        self.word_definer.setPalette(self.palette())
-        self.web_viewer.update_selection_context(selection,context)
-        self.definition_finder = DefinitionFinder()
-        self.definition_finder.lookup(selection)
         self.word_definer.look_up_word(selection) # TODO: use the definition_finder instead
+        self.web_viewer.update_selection_context(selection,context)
+        # self.definition_finder = DefinitionFinder()
+        # self.definition_finder.lookup(selection)
  
     def update_syntax_highlighting(self):
         """forces the syntax_highlighter to load data again. called when a word is saved"""

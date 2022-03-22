@@ -16,7 +16,7 @@ class Highlighters:
         
 
     def is_word_actually_a_phrase(self,word):
-        pattern = re.compile("\s") #this is a regex that matches any whitespace
+        pattern = re.compile("[\s-]") #this is a regex that matches any whitespace
         if re.search(pattern, word):
             return True
         return False
