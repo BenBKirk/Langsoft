@@ -33,6 +33,7 @@ class AudioPlayerBar(QToolBar):
         self.create_actions()
         self.add_actions()
         self.set_icons()
+        self.hide()
         self.playing_icon = QtGui.QIcon(os.path.join("src", "img", "playing.png"))
         self.playing_icon_dark = QtGui.QIcon(os.path.join("src", "img", "playing_dark.png"))
         self.paused_icon = QtGui.QIcon(os.path.join("src", "img", "paused.png"))
@@ -65,6 +66,7 @@ class AudioSliderBar(QToolBar):
         super().__init__()
         self.create_actions()
         self.add_actions()
+        self.hide()
 
     def create_actions(self):
         self.audio_slider = QSlider()
