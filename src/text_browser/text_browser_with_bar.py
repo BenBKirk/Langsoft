@@ -67,10 +67,14 @@ class TextBrowserWithBar(QWidget):
     
     def load_audio(self,audio):
         print(f"loading audio {audio}")
-        self.audio_player.setMedia(QMediaContent(QUrl.fromLocalFile(audio)))
-        self.update_audio_player_icon()
-        self.audio_player_bar.show()
-        self.audio_slider_bar.show()
+        if audio is None:
+            self.audio_player_bar.hide()
+            self.audio_slider_bar.hide()
+        else:
+            self.audio_player.setMedia(QMediaContent(QUrl.fromLocalFile(audio)))
+            self.update_audio_player_icon()
+            self.audio_player_bar.show()
+            self.audio_slider_bar.show()
     
     def toggle_play_pause(self):
         if self.audio_player.state() == QMediaPlayer.PlayingState:

@@ -55,8 +55,7 @@ class TextBrowserTab(QTabWidget):
         self.setTabText(current_tab_index, file_manager.get_file_name_from_path(first_file[0]))
         text, is_html = file_manager.read_text_file(first_file[0])
         current_tab.load_text(text, is_html)
-        if first_file[1] is not None:
-            current_tab.load_audio(first_file[1])
+        current_tab.load_audio(first_file[1])
 
         if len(files) == 1:
             return
@@ -65,8 +64,8 @@ class TextBrowserTab(QTabWidget):
             new_tab = self.add_new_tab(name)
             text, is_html = file_manager.read_text_file(file[0])
             new_tab.load_text(text, is_html)
-            if file[1] is not None:
-                new_tab.load_audio(file[1])
+            new_tab.load_audio(file[1])
+
 
 if __name__ == "__main__":
     """this is just test code"""
