@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import * #QApplication, QWidget, QFrame, QLineEdit, QHBoxLa
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 import os
+import datetime
 
 
 class FileOperationsBar(QToolBar):
@@ -32,6 +33,10 @@ class AudioPlayerBar(QToolBar):
         self.create_actions()
         self.add_actions()
         self.set_icons()
+        self.playing_icon = QtGui.QIcon(os.path.join("src", "img", "playing.png"))
+        self.playing_icon_dark = QtGui.QIcon(os.path.join("src", "img", "playing_dark.png"))
+        self.paused_icon = QtGui.QIcon(os.path.join("src", "img", "paused.png"))
+        self.paused_icon_dark = QtGui.QIcon(os.path.join("src", "img", "paused_dark.png"))
 
     def create_actions(self):
         self.skip_back_3_action = QAction("<- 3s",self)
@@ -72,6 +77,17 @@ class AudioSliderBar(QToolBar):
         self.addWidget(self.audio_pos_label)
         self.addWidget(self.audio_slider)
         self.addWidget(self.audio_dur_label)
+    
+    def set_duration(self, dur):
+        self.audio_slider.setRange(0, dur)
+        self.audio_dur_label.setText(str(datetime.timedelta(seconds=dur/1000))[:7])
+    
+    def set_position(self, pos):
+        self.audio_slider.blockSignals(True) # block signals to avoid signal loop
+        self.audio_slider.setValue(pos)
+        self.audio_slider.blockSignals(False)
+        self.audio_pos_label.setText(str(datetime.timedelta(seconds=pos/1000))[:7])
+    
 
 class SearchBar(QToolBar):
     def __init__(self):

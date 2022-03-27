@@ -52,7 +52,7 @@ class MainWindow(QMainWindow):
         self.web_viewer.update_selection_context(selection,context)
  
     def update_syntax_highlighting(self):
-        """forces the syntax_highlighter to load data again. called when a word is saved"""
+        """forces the syntax_highlighter to load data again after a word is saved"""
         self.word_definer.hide()
         for i in range(self.tab.count()):
             self.tab.widget(i).text_browser.syntax_highlighter.get_data_from_database()
