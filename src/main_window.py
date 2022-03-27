@@ -46,10 +46,10 @@ class MainWindow(QMainWindow):
         self.word_definer.show()
         self.word_definer.activateWindow()
         self.word_definer.raise_()
-        self.word_definer.look_up_word(selection) # TODO: use the definition_finder instead
-        self.web_viewer.update_selection_context(selection,context)
         # self.definition_finder = DefinitionFinder()
         # self.definition_finder.lookup(selection)
+        self.word_definer.look_up_word(selection) # TODO: use the definition_finder instead. also think about using threading for the api calls
+        self.web_viewer.update_selection_context(selection,context)
  
     def update_syntax_highlighting(self):
         """forces the syntax_highlighter to load data again. called when a word is saved"""
