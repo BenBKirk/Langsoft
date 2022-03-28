@@ -46,7 +46,7 @@ class Vocabulary:
 
     def add_new_word_to_db(self,word,definition,confidence,date):
         sql = "INSERT INTO vocabulary(user_id,term,definition,highlighter_id,is_regex,created_at) VALUES(:user_id,:term,:definition,:highlighter_id,:is_regex,:created_at)"
-        params = (self.user_id,word.lower() ,definition, confidence, False,date)
+        params = (self.user_id,word, definition, confidence, False,date)
         with DatabaseHelper() as db:
             db.execute_single(sql, params)
     

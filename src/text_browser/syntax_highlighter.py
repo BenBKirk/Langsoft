@@ -10,7 +10,6 @@ from database_folder.highlighters import Highlighters
 class SyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self, parent): # the parent here is QTextDocument object
         super(SyntaxHighlighter, self).__init__(parent)
-        self.vocab = ["test","ben"]
         self.test_format =  QTextCharFormat()
         self.test_format.setUnderlineColor(Qt.red)
         self.test_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
@@ -37,7 +36,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
                 the_vocab = []
 
             for word in the_vocab:
-                regex_expression = QRegularExpression(f"\\b{word}\\b",QRegularExpression.CaseInsensitiveOption)
+                regex_expression = QRegularExpression(f"(?<=[\s\W]){word}(?=[\s\W])",QRegularExpression.CaseInsensitiveOption)
                 i = QRegularExpressionMatchIterator(regex_expression.globalMatch(text))
                 while i.hasNext():
                     match = QRegularExpressionMatch(i.next())

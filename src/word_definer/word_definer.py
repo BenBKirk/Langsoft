@@ -21,7 +21,7 @@ class WordDefiner(QWidget):
     def set_up_gui(self):
         self.text_editor = QTextEdit()
         self.text_editor.setMinimumHeight(30)
-        self.text_editor.setMaximumHeight(30)
+        # self.text_editor.setMaximumHeight(30)
         self.text_editor.setFont(QFont("Arial", 12))
 
         #display selected word
@@ -66,7 +66,8 @@ class WordDefiner(QWidget):
         self.selected_word_label.setText(f"<b>{text}</b>")
     
     def save_word(self,confidence):
-        definition = self.text_editor.toPlainText().strip()
+        definition = self.text_editor.toPlainText()
+        # word = self.selected_word.lower()
         Vocabulary().add_word_to_database(self.selected_word, definition, confidence)
         self.clear_ui()
         self.word_saved_signal.emit()
