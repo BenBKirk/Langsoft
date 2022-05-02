@@ -19,12 +19,6 @@ class FileManager:
         else:
             return None
    
-    def load_audio_file_to_audio_player(self,path,audio_player=None):
-        if audio_player:
-            self.audio_player = audio_player
-        else:
-            print("no audio player specified")
-
     def read_text_file(self,path):
         """reads from the file and returns the txt html and bool"""
         file_type = self.get_file_extension_from_path(path)

@@ -11,7 +11,7 @@ class DarkPalette(QPalette):
         self.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
         self.setColor(QPalette.ToolTipBase, Qt.white)
         self.setColor(QPalette.ToolTipText, Qt.white)
-        self.setColor(QPalette.Text, Qt.white)
+        self.setColor(QPalette.Text, Qt.lightGray)
         self.setColor(QPalette.Button, QColor(53, 53, 53))
         self.setColor(QPalette.ButtonText, Qt.white)
         self.setColor(QPalette.BrightText, Qt.red)

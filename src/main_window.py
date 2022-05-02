@@ -10,7 +10,6 @@ from word_definer.word_definer import WordDefiner
 from pathlib import Path
 from database_folder.database import DatabaseCreator
 from database_folder.user import User
-from word_definer.definition_finder import DefinitionFinder
 from palette import DarkPalette
 
 class MainWindow(QMainWindow):
@@ -43,16 +42,15 @@ class MainWindow(QMainWindow):
     
     def handle_word_clicked_signal(self, selection,context,pos):
         self.word_definer.move_to_click_position(pos)
+        self.word_definer.clear_ui()
         self.word_definer.show()
         self.word_definer.activateWindow()
         self.word_definer.raise_()
-        # self.definition_finder = DefinitionFinder()
-        # self.definition_finder.lookup(selection)
-        self.word_definer.look_up_word(selection) # TODO: use the definition_finder instead. also think about using threading for the api calls
+        self.word_definer.look_up_word(selection) 
         self.web_viewer.update_selection_context(selection,context)
  
     def update_syntax_highlighting(self):
-        """forces the syntax_highlighter to load data again after a word is saved"""
+        """forces the syntax_highlighter to load data again"""
         self.word_definer.hide()
         for i in range(self.tab.count()):
             self.tab.widget(i).text_browser.syntax_highlighter.get_data_from_database()

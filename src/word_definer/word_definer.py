@@ -1,10 +1,10 @@
 
 from PyQt5.QtWidgets import QTextEdit, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QWidget, QApplication
 from PyQt5.QtGui import QFont, QFocusEvent
-from PyQt5.QtCore import Qt, QSize, pyqtSignal, QEvent
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QEvent, QThreadPool
 from API.google_trans_API import GoogleTranslate
 from database_folder.vocabulary import Vocabulary
-
+from word_definer.definition_finder import DefinitionFinder, GoogleTranslateWorker
 class WordDefiner(QWidget):
     word_saved_signal = pyqtSignal()
 
@@ -17,6 +17,7 @@ class WordDefiner(QWidget):
         self.setContentsMargins(0,0,0,0)
         self.setWindowFlag(Qt.WindowStaysOnTopHint)
         self.setGeometry(0,0,300,100)
+        self.thread_pool = QThreadPool()
 
     def set_up_gui(self):
         self.text_editor = QTextEdit()
@@ -54,13 +55,15 @@ class WordDefiner(QWidget):
     
     def look_up_word(self,text):
         self.set_selection_text(text)
+
         from_db = Vocabulary().fetch_single_exact_vocab(text)
         if from_db != None:
             self.set_definition_text(from_db)
         else:
-            self.google_suggestion = GoogleTranslate().translate(self.selected_word)
-            self.set_definition_text(self.google_suggestion) if self.google_suggestion != None else self.set_definition_text("")
-    
+            google_translate = GoogleTranslateWorker(text)
+            google_translate.signals.finished.connect(lambda x : self.set_definition_text(x))
+            self.thread_pool.start(google_translate)
+
     def set_selection_text(self, text):
         self.selected_word = text
         self.selected_word_label.setText(f"<b>{text}</b>")
@@ -79,7 +82,6 @@ class WordDefiner(QWidget):
         self.definition_text = ""
         self.google_suggestion = ""
     
-
     def move_to_click_position(self,pos):
         width = self.width()
         height = self.height()
