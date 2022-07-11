@@ -1,8 +1,8 @@
 
 import os
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
-import fitz
-import mammoth
+# import fitz
+# import mammoth
 
 class FileManager:
     """ responsible for reading, writing and converting files."""
@@ -46,16 +46,18 @@ class FileManager:
             return None
 
     def convert_pdf_to_html(self,path):
-        with fitz.open(path, 'r', encoding='utf8', errors='ignore') as doc:
-            pages = []
-            for i in range(doc.page_count()):
-                pages.append(doc.load_page(i).get_text("html"))
-            return "\n".join(pages)
+        pass
+        # with fitz.open(path, 'r', encoding='utf8', errors='ignore') as doc:
+        #     pages = []
+        #     for i in range(doc.page_count()):
+        #         pages.append(doc.load_page(i).get_text("html"))
+        #     return "\n".join(pages)
 
     def convert_docx_to_html(self,path):
-        with open(path, 'rb') as docx_file:
-            result = mammoth.convert_to_html(docx_file)
-            return result.value
+        pass
+        # with open(path, 'rb') as docx_file:
+        #     result = mammoth.convert_to_html(docx_file)
+        #     return result.value
      
     def sort_chosen_files(self,files):
         """ returns list of lists like this [[example.txt, example.mp3], [example2.txt, example2.mp3]] """
