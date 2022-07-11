@@ -95,5 +95,5 @@ class WordDefiner(QWidget):
             x = x-dis_cen # center over click pos
         y = y - height/2 # center over click pos
         y = y - 120 # offset above click pos
-        self.move(x,y)
+        self.move(int(x),int(y))
         
